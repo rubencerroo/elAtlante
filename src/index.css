@@ -9,8 +9,64 @@
   body {
     @apply bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100;
     font-family: 'Work Sans', sans-serif;
-    background: radial-gradient(circle at 50% 50%, #f6f7f8 0%, #e5e9f0 100%);
     min-height: 100vh;
+  }
+
+  :root:not(.dark) body {
+    background: radial-gradient(circle at 50% 50%, #f6f7f8 0%, #e5e9f0 100%);
+  }
+
+  option {
+    @apply bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100;
+  }
+
+  /* ── Custom Scrollbar ── */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #1a75e8 0%, #0e4fad 100%);
+    border-radius: 9999px;
+    border: 2px solid #f6f7f8;
+    transition: background 0.2s ease, opacity 0.2s ease;
+    opacity: 0.75;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #2481f5 0%, #1162d4 100%);
+    opacity: 1;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #1162d4 transparent;
+  }
+
+  /* Dark mode overrides */
+  .dark ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #2481f5 0%, #1162d4 100%);
+    border-color: #101822;
+    opacity: 0.7;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #4a9aff 0%, #1a75e8 100%);
+    opacity: 1;
+  }
+
+  .dark * {
+    scrollbar-color: #2481f5 transparent;
   }
 }
 
@@ -41,4 +97,87 @@
 /* Custom layout container if needed, though Tailwind classes usually suffice */
 .layout-container {
   @apply flex h-full grow flex-col;
+}
+
+/* react-international-phone custom styles */
+.phone-input-custom.react-international-phone-input-container {
+  border: none !important;
+  background: transparent !important;
+  gap: 8px;
+}
+
+.phone-input-custom .react-international-phone-country-selector-button {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  height: auto !important;
+  min-width: auto !important;
+}
+
+.phone-input-custom .react-international-phone-country-selector-button__button-content {
+  gap: 4px;
+}
+
+.phone-input-custom .react-international-phone-input {
+  border: none !important;
+  background: transparent !important;
+  font-size: 1.125rem !important;
+  font-weight: 300 !important;
+  padding: 0 !important;
+  height: auto !important;
+  font-family: 'Work Sans', sans-serif !important;
+  color: #0f172a !important;
+}
+
+.phone-input-custom .react-international-phone-input::placeholder {
+  color: #cbd5e1 !important;
+}
+
+.phone-input-custom .react-international-phone-input:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.phone-input-custom .react-international-phone-country-selector-dropdown {
+  max-height: 200px;
+  border-radius: 12px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  font-family: 'Work Sans', sans-serif !important;
+  z-index: 50 !important;
+}
+
+.phone-input-custom .react-international-phone-country-selector-dropdown__list-item {
+  padding: 8px 12px !important;
+  font-size: 0.875rem !important;
+}
+
+.phone-input-custom .react-international-phone-country-selector-dropdown__list-item:hover {
+  background: #f1f5f9 !important;
+}
+
+/* Dark mode */
+.dark .phone-input-custom .react-international-phone-input {
+  color: #fff !important;
+}
+
+.dark .phone-input-custom .react-international-phone-input::placeholder {
+  color: #475569 !important;
+}
+
+.dark .phone-input-custom .react-international-phone-country-selector-dropdown {
+  background: #1e293b !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark .phone-input-custom .react-international-phone-country-selector-dropdown__list-item:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark .phone-input-custom .react-international-phone-country-selector-dropdown__list-item-country-name {
+  color: #e2e8f0 !important;
+}
+
+.dark .phone-input-custom .react-international-phone-country-selector-dropdown__list-item-dial-code {
+  color: #94a3b8 !important;
 }
