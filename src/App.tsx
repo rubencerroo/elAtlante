@@ -4,6 +4,9 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Reservations from './pages/Reservations';
+import AdminLogin from './pages/AdminLogin';
+import AdminPanel from './pages/AdminPanel';
+import WaiterPanel from './pages/WaiterPanel';
 
 // Scroll to top component to reset scroll on route change
 function ScrollToTop() {
@@ -24,28 +27,41 @@ function ScrollToTop() {
   return null;
 }
 
-function App() {
+function AppLayout() {
+  const { pathname } = useLocation();
+  const isAdmin = pathname.startsWith('/admin');
+
   return (
-    <Router>
-      <ScrollToTop />
-      <div className="min-h-screen bg-slate-50 dark:bg-background-dark font-['Work_Sans',sans-serif] selection:bg-primary selection:text-white">
-        {/* Dynamic Background Gradients */}
+    <div className="min-h-screen bg-slate-50 dark:bg-background-dark font-['Work_Sans',sans-serif] selection:bg-primary selection:text-white">
+      {!isAdmin && (
         <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
           <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px] dark:bg-primary/10"></div>
           <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px] dark:bg-primary/10"></div>
         </div>
+      )}
 
-        <Header />
-        
-        <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/reservar" element={<Reservations />} />
-          </Routes>
-        </main>
+      {!isAdmin && <Header />}
+      
+      <main>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/reservar" element={<Reservations />} />
+          <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/admin/owner" element={<AdminPanel />} />
+          <Route path="/admin/waiter" element={<WaiterPanel />} />
+        </Routes>
+      </main>
 
-        <Footer />
-      </div>
+      {!isAdmin && <Footer />}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <ScrollToTop />
+      <AppLayout />
     </Router>
   );
 }
