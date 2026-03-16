@@ -61,9 +61,9 @@ export default function Footer() {
             </svg>
             Facebook
           </a>
-          <a className="hover:text-primary transition-colors" href="#">Legal</a>
-          <a className="hover:text-primary transition-colors" href="#">Privacidad</a>
-          <a className="hover:text-primary transition-colors" href="#">Cookies</a>
+          <Link className="hover:text-primary transition-colors" to="/aviso-legal">Legal</Link>
+          <Link className="hover:text-primary transition-colors" to="/privacidad">Privacidad</Link>
+          <Link className="hover:text-primary transition-colors" to="/cookies">Cookies</Link>
         </div>
       </div>
     </footer>
