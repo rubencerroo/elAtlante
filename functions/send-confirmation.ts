@@ -38,6 +38,9 @@ export const onRequestPost = async (context: any) => {
 				subject: 'Confirma tu reserva en El Atlante',
 				htmlContent: `
 					<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #334155;">
+						<div style="text-align: center; margin-bottom: 30px;">
+							<img src="${url.origin}/logoblack.png" alt="El Atlante" style="max-height: 80px; width: auto;" />
+						</div>
 						<h1 style="color: #0f172a;">¡Hola ${reservation.name}!</h1>
 						<p>Gracias por tu reserva en El Atlante para el día <strong>${reservation.date}</strong> a las <strong>${reservation.time}</strong>.</p>
 						<p>Para confirmar tu asistencia y verificar tu reserva, por favor haz clic en el siguiente botón:</p>

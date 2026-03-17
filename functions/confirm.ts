@@ -61,7 +61,10 @@ export const onRequestGet = async (context: any) => {
 				to: [{ email: env.OWNER_EMAIL || 'dev@elatlantedesancristobal.com' }],
 				subject: `Nueva Reserva Confirmada: ${reservation.booking_number}`,
 				htmlContent: `
-					<div style="font-family: sans-serif; color: #1e293b;">
+					<div style="font-family: sans-serif; color: #1e293b; max-width: 600px;">
+						<div style="margin-bottom: 20px;">
+							<img src="${url.origin}/logoblack.png" alt="El Atlante" style="max-height: 60px; width: auto;" />
+						</div>
 						<h2 style="color: #0f172a;">Nueva reserva confirmada</h2>
 						<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
 							<tr><td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">Referencia:</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${reservation.booking_number}</td></tr>

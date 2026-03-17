@@ -145,7 +145,9 @@ export default function AdminPanel() {
         .seated { background: #dbeafe; color: #1e40af; }
         .completed { background: #e2e8f0; color: #475569; }
         .footer { margin-top: 30px; padding-top: 10px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; }
+        .header-logo { height: 60px; margin-bottom: 20px; }
       </style></head><body>
+      <img src="${window.location.origin}/logoblack.png" alt="Logo" class="header-logo" />
       <h1>🍽 Reservas El Atlante</h1>
       <h2>${filterDate} · ${dayReservations.length} reservas · ${dayReservations.reduce((s, r) => s + r.guests, 0)} comensales</h2>
       <table>
