@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import SEO from '../components/SEO';
 
 interface Dish {
+// ... existing Dish interface ...
   id: number;
   num: string;
   price: string;
@@ -148,6 +150,49 @@ export default function Home() {
 
   return (
     <>
+      <SEO 
+        title="Sabor del Mar en San Cristóbal"
+        description="Tradición pesquera y producto Km 0 en un entorno inigualable frente al Atlántico. Disfruta del mejor pescado fresco en Las Palmas."
+        ogImage="/og-image.jpg"
+      />
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Restaurant",
+          "name": "El Atlante de San Cristóbal",
+          "image": "https://elatlantedesancristobal.com/logo-icon.svg",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Calle Marina, 81",
+            "addressLocality": "Las Palmas de Gran Canaria",
+            "postalCode": "35001",
+            "addressCountry": "ES"
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 28.0934, 
+            "longitude": -15.4165
+          },
+          "url": "https://elatlantedesancristobal.com",
+          "telephone": "+34928584422",
+          "servesCuisine": "Canaria, Pescado, Mariscos",
+          "priceRange": "$$",
+          "openingHoursSpecification": [
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday", "Thursday", "Friday", "Saturday"],
+              "opens": "12:30",
+              "closes": "23:00"
+            },
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": "Sunday",
+              "opens": "12:30",
+              "closes": "16:30"
+            }
+          ]
+        })}
+      </script>
       {/* Hero Section */}
       <section className="@container" id="inicio">
         <div className="p-4 md:p-10">

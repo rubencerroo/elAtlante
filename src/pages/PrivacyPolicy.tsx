@@ -1,8 +1,14 @@
+import SEO from '../components/SEO';
 
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen pt-28 pb-24 px-6 lg:px-28 flex flex-col items-center bg-white dark:bg-slate-950 relative overflow-hidden">
-      {/* Background Decor */}
+      <SEO 
+        title="Política de Privacidad"
+        description="Información detallada sobre cómo tratamos tus datos personales en El Atlante de San Cristóbal."
+        canonical="/privacidad"
+      />
+      {/* Background Decor ... existing code ... */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[120px] -z-10"></div>
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-primary/5 rounded-full blur-[120px] -z-10"></div>
 

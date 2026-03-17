@@ -1,8 +1,14 @@
+import SEO from '../components/SEO';
 
 export default function LegalNotice() {
   return (
     <div className="min-h-screen pt-28 pb-24 px-6 lg:px-28 flex flex-col items-center bg-white dark:bg-slate-950 relative overflow-hidden">
-      {/* Background Decor */}
+      <SEO 
+        title="Aviso Legal"
+        description="Aviso legal y términos de uso del sitio web oficial de El Atlante de San Cristóbal."
+        canonical="/aviso-legal"
+      />
+      {/* Background Decor ... existing code ... */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[120px] -z-10"></div>
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-primary/5 rounded-full blur-[120px] -z-10"></div>
 
