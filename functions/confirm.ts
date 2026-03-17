@@ -29,7 +29,7 @@ export const onRequestGet = async (context: any) => {
 		const reservation = reservations[0];
 
 		if (reservation.status !== 'pending') {
-			return Response.redirect(env.CLIENT_REDIRECT_URL || `${url.origin}/reservar`, 302);
+			return Response.redirect(env.CLIENT_REDIRECT_URL || `${url.origin}/reservar?confirmed=true&id=${id}`, 302);
 		}
 
 		// Update status in Supabase
@@ -81,7 +81,7 @@ export const onRequestGet = async (context: any) => {
 		});
 
 		// Redirect to website
-		return Response.redirect(env.CLIENT_REDIRECT_URL || `${url.origin}/reservar?confirmed=true`, 302);
+		return Response.redirect(env.CLIENT_REDIRECT_URL || `${url.origin}/reservar?confirmed=true&id=${id}`, 302);
 	} catch (error: any) {
 		return new Response(`Error: ${error.message}`, { status: 500 });
 	}

@@ -1,17 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
-import { addReservation, type Reservation } from '../services/reservationStore';
+import { addReservation, getReservationById, type Reservation } from '../services/reservationStore';
 
 export default function Reservations() {
+  const [searchParams] = useSearchParams();
   const [phone, setPhone] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [lastReservation, setLastReservation] = useState<Reservation | null>(null);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '', email: '', date: '', time: '13:00',
     guests: '2 Personas', preference: 'Indiferente' as const,
     hasPet: false, notes: '',
   });
+
+  useEffect(() => {
+    const isConfirmed = searchParams.get('confirmed') === 'true';
+    const reservationId = searchParams.get('id');
+
+    if (isConfirmed && reservationId && !submitted) {
+      setLoading(true);
+      getReservationById(reservationId).then(res => {
+        if (res) {
+          setLastReservation(res);
+          setSubmitted(true);
+        }
+        setLoading(false);
+      });
+    }
+  }, [searchParams, submitted]);
 
   const handleChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -60,14 +79,20 @@ export default function Reservations() {
             <div className="w-20 h-20 mx-auto rounded-full bg-emerald-500/10 flex items-center justify-center animate-[pulse_2s_ease-in-out_1]">
               <svg className="w-10 h-10 text-emerald-500" fill="currentColor" viewBox="0 -960 960 960"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg>
             </div>
-            <h2 className="text-slate-900 dark:text-white text-2xl font-bold">¡Reserva registrada!</h2>
+            <h2 className="text-slate-900 dark:text-white text-2xl font-bold">
+              {lastReservation.status === 'confirmed' ? '¡Reserva confirmada!' : '¡Reserva registrada!'}
+            </h2>
             <div className="space-y-2">
               <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-                Hemos enviado un correo a <span className="text-primary font-semibold">{lastReservation.email}</span> para confirmar tu asistencia.
+                {lastReservation.status === 'confirmed' 
+                  ? 'Tu mesa está asegurada. ¡Te esperamos!' 
+                  : `Hemos enviado un correo a ${lastReservation.email} para confirmar tu asistencia.`}
               </p>
-              <p className="text-primary font-bold text-sm bg-primary/5 py-2 px-4 rounded-full inline-block">
-                Por favor, revisa tu bandeja de entrada y pulsa el botón de confirmar.
-              </p>
+              {lastReservation.status !== 'confirmed' && (
+                <p className="text-primary font-bold text-sm bg-primary/5 py-2 px-4 rounded-full inline-block">
+                  Por favor, revisa tu bandeja de entrada y pulsa el botón de confirmar.
+                </p>
+              )}
             </div>
           </div>
 

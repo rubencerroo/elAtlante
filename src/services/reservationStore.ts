@@ -93,6 +93,20 @@ export async function getReservations(): Promise<Reservation[]> {
   return data.map(mapToReservation);
 }
 
+export async function getReservationById(id: string): Promise<Reservation | null> {
+  const { data, error } = await supabase
+    .from('reservations')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    console.error('Error fetching reservation by ID:', error);
+    return null;
+  }
+  return mapToReservation(data);
+}
+
 export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber' | 'status' | 'createdAt'>): Promise<Reservation | null> {
   const newR = {
     booking_number: generateBookingNumber(),
