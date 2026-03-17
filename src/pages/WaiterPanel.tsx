@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getReservationsForDate, updateReservation, addWalkIn, getOccupiedTables, type Reservation, type ReservationStatus } from '../services/reservationStore';
 import TableSelector from '../components/TableSelector';
 import FeedbackButton from '../components/FeedbackButton';
+import logoWhite from '../assets/logowhite.png';
 
 const STATUS_COLORS: Record<ReservationStatus, string> = {
   'pending': 'border-l-amber-400 bg-amber-400/5',
@@ -168,13 +169,13 @@ export default function WaiterPanel() {
       {/* Top Bar */}
       <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-              <svg className="w-3.5 h-3.5 text-emerald-400" fill="currentColor" viewBox="0 -960 960 960"><path d="M160-80q-33 0-56.5-23.5T80-160v-440q0-33 23.5-56.5T160-680h200v-120q0-33 23.5-56.5T440-880h80q33 0 56.5 23.5T600-800v120h200q33 0 56.5 23.5T880-600v440q0 33-23.5 56.5T800-80H160Zm280-600h80v-120h-80v120ZM160-160h640v-440H160v440Zm320-220Z"/></svg>
+          <div className="flex items-center gap-4">
+            <div className="h-7">
+              <img src={logoWhite} alt="El Atlante" className="h-full w-auto object-contain" />
             </div>
             <div>
               <h1 className="text-sm font-bold">Camarero</h1>
-              <p className="text-slate-500 text-[10px]">{today} · {currentTimeStr}</p>
+              <p className="text-slate-500 text-[10px] uppercase tracking-tight">{today} · {currentTimeStr}</p>
             </div>
           </div>
           <div className="flex items-center gap-4">

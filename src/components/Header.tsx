@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import logoWhite from '../assets/logowhite.png';
+import logoBlack from '../assets/logoblack.png';
 
 export default function Header() {
   const [isVisible, setIsVisible] = useState(true);
@@ -70,12 +72,13 @@ export default function Header() {
     <div className={`fixed top-0 left-0 right-0 z-[100] flex justify-center px-4 pt-6 transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 fill-mode-forwards'}`}>
       <header className={`glass flex items-center justify-between w-full max-w-5xl rounded-full px-6 py-3 transition-all duration-300 ${isAtTop ? 'bg-white/10' : 'bg-white/40 shadow-2xl shadow-black/10'}`}>
         <Link to="/" className="flex items-center gap-3 text-primary group">
-          <div className="size-8 transition-transform group-hover:rotate-12">
-            <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-              <path clipRule="evenodd" d="M24 0.757355L47.2426 24L24 47.2426L0.757355 24L24 0.757355ZM21 35.7574V12.2426L9.24264 24L21 35.7574Z" fill="currentColor" fillRule="evenodd"></path>
-            </svg>
+          <div className="h-10 transition-transform group-hover:scale-105">
+            <img 
+              src={theme === 'dark' ? logoWhite : logoBlack} 
+              alt="El Atlante" 
+              className="h-full w-auto object-contain"
+            />
           </div>
-          <h2 className="text-slate-900 dark:text-slate-100 text-lg font-black tracking-tighter">El Atlante</h2>
         </Link>
         
         <nav className="hidden md:flex items-center gap-10">

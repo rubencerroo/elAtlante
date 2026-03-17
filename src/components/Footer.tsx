@@ -1,17 +1,15 @@
 import { Link } from 'react-router-dom';
+import logoWhite from '../assets/logowhite.png';
 
 export default function Footer() {
   return (
     <footer className="bg-slate-950 text-white pt-24 pb-12 px-6 lg:px-40">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-16 border-b border-white/5 pb-16 mb-12">
         <div>
-          <div className="flex items-center gap-3 text-primary mb-6">
-            <div className="size-8">
-              <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <path d="M24 0.757355L47.2426 24L24 47.2426L0.757355 24L24 0.757355ZM21 35.7574V12.2426L9.24264 24L21 35.7574Z" fill="currentColor"></path>
-              </svg>
+          <div className="flex items-center gap-4 mb-6">
+            <div className="h-10">
+              <img src={logoWhite} alt="El Atlante" className="h-full w-auto object-contain" />
             </div>
-            <h2 className="text-2xl font-black tracking-tighter">El Atlante</h2>
           </div>
           <p className="text-slate-500 font-light leading-relaxed">
             Honrando la tradición pesquera de San Cristóbal con el producto más fresco del Atlántico.

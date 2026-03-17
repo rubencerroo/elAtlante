@@ -9,6 +9,7 @@ import {
 import TableSelector from '../components/TableSelector';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import FeedbackButton from '../components/FeedbackButton';
+import logoWhite from '../assets/logowhite.png';
 
 // ── Status config ──
 const STATUS_CONFIG: Record<ReservationStatus, { label: string; color: string; bg: string }> = {
@@ -189,13 +190,13 @@ export default function AdminPanel() {
       {/* Top Bar */}
       <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-              <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 -960 960 960"><path d="m354-287 126-76 126 77-33-144 111-96-146-13-58-136-58 135-146 13 111 97-33 143ZM233-120l65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-350Z"/></svg>
+          <div className="flex items-center gap-4">
+            <div className="h-8 transition-transform hover:scale-105">
+              <img src={logoWhite} alt="El Atlante" className="h-full w-auto object-contain" />
             </div>
             <div>
               <h1 className="text-sm font-bold">Panel Dueño</h1>
-              <p className="text-slate-500 text-[10px] uppercase tracking-widest">El Atlante</p>
+              <p className="text-slate-500 text-[10px] uppercase tracking-widest leading-none">Restaurante</p>
             </div>
           </div>
           
