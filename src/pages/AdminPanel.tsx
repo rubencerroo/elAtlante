@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   getReservations, addReservation, updateReservation, getStats, deleteReservation,
   getOccupancyByHour, getStatusDistribution, getWeeklyComparison, getNoShowRate,
-  getClientProfiles, getClientMeta, saveClientMeta, generateCSV, getOccupiedTables,
+  getClientProfiles, getClientMeta, saveClientMeta, generateCSV, getOccupiedTables, getShiftNote, saveShiftNote, getFeedbacks,
   type Reservation, type ReservationStatus, type ReservationStats, type ClientProfile, type ClientMeta
 } from '../services/reservationStore';
 import { signOut, getStaffRole, getSession, getStaffProfiles, inviteStaff, deleteStaff, type StaffProfile, type StaffRole } from '../services/authStore';
@@ -24,7 +24,7 @@ const STATUS_CONFIG: Record<ReservationStatus, { label: string; color: string; b
   'waiting':   { label: 'En Espera', color: 'text-purple-400',  bg: 'bg-purple-400/10 border-purple-400/20' },
 };
 
-type AdminTab = 'kanban' | 'dashboard' | 'crm' | 'staff';
+type AdminTab = 'kanban' | 'dashboard' | 'crm' | 'staff' | 'feedback';
 
 
 
@@ -46,6 +46,9 @@ export default function AdminPanel() {
   const [noShowRate, setNoShowRate] = useState(0);
   const [clientProfiles, setClientProfiles] = useState<ClientProfile[]>([]);
   const [occupiedTables, setOccupiedTables] = useState<number[]>([]);
+  const [shiftNote, setShiftNote] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
+  const [feedbacks, setFeedbacks] = useState<any[]>([]);
 
   // CRM state
   const [selectedClient, setSelectedClient] = useState<ClientProfile | null>(null);
@@ -70,7 +73,7 @@ export default function AdminPanel() {
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
-    const [resData, statsData, occData, distData, weeklyData, nsRate, profiles, occTables] = await Promise.all([
+    const [resData, statsData, occData, distData, weeklyData, nsRate, profiles, occTables, note] = await Promise.all([
       getReservations(),
       getStats(filterDate),
       getOccupancyByHour(filterDate === 'all' ? new Date().toISOString().split('T')[0] : filterDate),
@@ -78,7 +81,8 @@ export default function AdminPanel() {
       getWeeklyComparison(),
       getNoShowRate(),
       getClientProfiles(),
-      getOccupiedTables(filterDate === 'all' ? new Date().toISOString().split('T')[0] : filterDate)
+      getOccupiedTables(filterDate === 'all' ? new Date().toISOString().split('T')[0] : filterDate),
+      getShiftNote(filterDate === 'all' ? new Date().toISOString().split('T')[0] : filterDate)
     ]);
 
     setReservations(resData);
@@ -89,6 +93,12 @@ export default function AdminPanel() {
     setNoShowRate(nsRate);
     setClientProfiles(profiles);
     setOccupiedTables(occTables);
+    setShiftNote(note || '');
+    
+    // Fetch feedbacks separately or in parallel
+    const fbData = await getFeedbacks();
+    setFeedbacks(fbData);
+    
     setLoading(false);
   }, [filterDate]);
 
@@ -106,7 +116,13 @@ export default function AdminPanel() {
   }, [reservations, filterDate, search]);
 
   const handleStatus = async (id: string, status: ReservationStatus) => {
-    await updateReservation(id, { status });
+    let cancellationReason;
+    if (status === 'cancelled') {
+      const reason = prompt('Por favor, indica el motivo de la cancelación (o deja en blanco):');
+      if (reason === null) return; // User clicked Cancel
+      cancellationReason = reason;
+    }
+    await updateReservation(id, { status, ...(cancellationReason ? { cancellationReason } : {}) });
     reload();
   };
 
@@ -194,6 +210,7 @@ export default function AdminPanel() {
     { key: 'dashboard', label: 'Dashboard', icon: '📊' },
     { key: 'crm', label: 'Clientes', icon: '👥' },
     { key: 'staff', label: 'Equipo', icon: '🔑' },
+    { key: 'feedback', label: 'Feedback', icon: '💬' },
   ];
 
   if (!authChecked) {
@@ -203,6 +220,12 @@ export default function AdminPanel() {
       </div>
     );
   }
+
+  const handleSaveNote = async () => {
+    setSavingNote(true);
+    await saveShiftNote(filterDate === 'all' ? new Date().toISOString().split('T')[0] : filterDate, shiftNote);
+    setSavingNote(false);
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -276,9 +299,10 @@ export default function AdminPanel() {
 
         {/* Tab Content */}
         {activeTab === 'kanban' && <StatusKanban filtered={filtered} handleStatus={handleStatus} handleDelete={handleDelete} handleAssignTable={handleAssignTable} showTableSelector={showTableSelector} setShowTableSelector={setShowTableSelector} occupiedTables={occupiedTables} draggedId={draggedId} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} />}
-        {activeTab === 'dashboard' && <DashboardView reservations={reservations} occupancyData={occupancyData} statusData={statusData} weeklyComp={weeklyComp} noShowRate={noShowRate} />}
+        {activeTab === 'dashboard' && <DashboardView filterDate={filterDate} reservations={reservations} occupancyData={occupancyData} statusData={statusData} weeklyComp={weeklyComp} noShowRate={noShowRate} shiftNote={shiftNote} setShiftNote={setShiftNote} handleSaveNote={handleSaveNote} savingNote={savingNote} />}
         {activeTab === 'crm' && <CRMView search={crmSearch} setSearch={setCrmSearch} selectedClient={selectedClient} setSelectedClient={setSelectedClient} clientProfiles={clientProfiles} />}
         {activeTab === 'staff' && <StaffView />}
+        {activeTab === 'feedback' && <FeedbackView feedbacks={feedbacks} onReload={fetchDashboardData} />}
 
         {loading && (
           <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center z-[100]">
@@ -301,13 +325,47 @@ export default function AdminPanel() {
 // DASHBOARD VIEW
 // ═══════════════════════════════════════════════
 
-function DashboardView({ reservations, occupancyData, statusData, weeklyComp, noShowRate }: { 
+function DashboardView({ 
+  filterDate, reservations, occupancyData, statusData, weeklyComp, noShowRate,
+  shiftNote, setShiftNote, handleSaveNote, savingNote
+}: { 
+  filterDate: string;
   reservations: Reservation[];
   occupancyData: { hour: string; guests: number }[];
   statusData: { name: string; value: number; color: string }[];
   weeklyComp: { thisWeek: number; lastWeek: number; change: number };
   noShowRate: number;
+  shiftNote: string;
+  setShiftNote: (note: string) => void;
+  handleSaveNote: () => void;
+  savingNote: boolean;
 }) {
+  const getSourceDistribution = () => {
+    const list = reservations.filter(r => filterDate === 'all' ? true : r.date === filterDate);
+    const data: Record<string, number> = {};
+    list.forEach(r => {
+      const src = r.source || 'website';
+      data[src] = (data[src] || 0) + 1;
+    });
+    return Object.entries(data).map(([name, value]) => ({ name, value }));
+  };
+
+  const getForecast = () => {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const result = [];
+    for (let i = 1; i <= 7; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() + i);
+      const dStr = d.toISOString().split('T')[0];
+      const count = reservations.filter(r => r.date === dStr && r.status !== 'cancelled').length;
+      result.push({ date: d.toLocaleDateString('es-ES', { weekday: 'short' }), count });
+    }
+    return result;
+  };
+
+  const sourceData = getSourceDistribution();
+  const forecastData = getForecast();
 
   return (
     <div className="space-y-8">
@@ -393,6 +451,79 @@ function DashboardView({ reservations, occupancyData, statusData, weeklyComp, no
           )}
         </div>
       </div>
+
+      {/* Charts Row 2 */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Booking Sources */}
+        <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-6">
+          <h3 className="text-sm font-semibold mb-4">Orígenes de Reserva</h3>
+          {sourceData.length > 0 ? (
+            <>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie data={sourceData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
+                    {sourceData.map((_, i) => (
+                      <Cell key={i} fill={['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'][i % 5]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px' }} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="space-y-1.5 mt-2">
+                {sourceData.map((d, i) => (
+                  <div key={d.name} className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full" style={{ background: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'][i % 5] }}></span>
+                      <span className="text-slate-400 capitalize">{d.name}</span>
+                    </div>
+                    <span className="font-bold">{d.value}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-12 text-slate-600 text-xs">Sin datos</div>
+          )}
+        </div>
+
+        {/* Forecast */}
+        <div className="lg:col-span-2 bg-white/[0.03] border border-white/5 rounded-2xl p-6">
+          <h3 className="text-sm font-semibold mb-4">Previsión 7 días (visión global)</h3>
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={forecastData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+              <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+              <Tooltip
+                contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px' }}
+                labelStyle={{ color: '#94a3b8' }}
+                itemStyle={{ color: '#10b981' }}
+              />
+              <Bar dataKey="count" fill="#10b981" radius={[8, 8, 0, 0]} name="Reservas Esperadas" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Shift Notes */}
+      <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-6 mb-8 flex flex-col">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-sm font-semibold">Notas del Turno</h3>
+          <button 
+            onClick={handleSaveNote} 
+            disabled={savingNote}
+            className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-lg px-4 py-1.5 text-xs font-bold transition-all disabled:opacity-50">
+            {savingNote ? 'Guardando...' : 'Guardar Notas'}
+          </button>
+        </div>
+        <textarea
+          value={shiftNote}
+          onChange={(e) => setShiftNote(e.target.value)}
+          placeholder="Anota aquí las incidencias, clientes VIP que vienen hoy, o tareas pendientes para los camareros..."
+          className="w-full h-32 bg-slate-900/50 border border-white/10 rounded-xl p-4 text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-primary/50 resize-none"
+        ></textarea>
+      </div>
+
     </div>
   );
 }
@@ -563,7 +694,8 @@ function ManualReservationModal({ onClose, onSave }: { onClose: () => void; onSa
     guests: 2,
     preference: 'Indiferente' as any,
     hasPet: false,
-    notes: ''
+    notes: '',
+    source: 'google'
   });
   const [loading, setLoading] = useState(false);
 
@@ -649,6 +781,17 @@ function ManualReservationModal({ onClose, onSave }: { onClose: () => void; onSa
               </label>
               <span className="text-xs font-semibold text-slate-400">¿Trae mascota? 🐾</span>
             </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Origen de la Reserva</label>
+              <select value={formData.source} onChange={e => setFormData({ ...formData, source: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary/50 appearance-none">
+                <option value="phone">📞 Teléfono</option>
+                <option value="in-person">🚶 En Persona</option>
+                <option value="google">🌐 Google My Business</option>
+                <option value="instagram">📸 Instagram</option>
+                <option value="website">💻 Página Web (Manual)</option>
+              </select>
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -666,6 +809,58 @@ function ManualReservationModal({ onClose, onSave }: { onClose: () => void; onSa
           </div>
         </form>
       </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// FEEDBACK VIEW
+// ═══════════════════════════════════════════════
+
+function FeedbackView({ feedbacks, onReload }: { feedbacks: any[], onReload: () => void }) {
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center bg-white/[0.03] border border-white/5 rounded-2xl px-6 py-4">
+        <div>
+          <h3 className="text-sm font-bold">Feedback del Sistema</h3>
+          <p className="text-[10px] text-slate-500 uppercase tracking-widest">Informes de errores y sugerencias</p>
+        </div>
+        <button onClick={onReload} className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg px-4 py-1.5 text-xs font-bold transition-all">
+          🔄 Actualizar
+        </button>
+      </div>
+      
+      {feedbacks.length === 0 ? (
+        <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-12 text-center">
+          <span className="text-4xl block mb-4">🔇</span>
+          <p className="text-slate-500 text-sm italic">No hay feedback registrado aún en el sistema.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {feedbacks.map((f, i) => (
+            <div key={i} className="bg-white/[0.03] border border-white/5 rounded-2xl p-5 space-y-4 relative overflow-hidden group">
+              <div className={`absolute top-0 left-0 w-1 h-full ${f.type === 'bug' ? 'bg-red-500' : 'bg-blue-500'}`}></div>
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter ${
+                    f.type === 'bug' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'
+                  }`}>
+                    {f.type === 'bug' ? '🐞 Bug' : '💡 Sugerencia'}
+                  </span>
+                  <span className="text-[9px] text-slate-400 font-bold uppercase px-2 py-0.5 bg-white/5 rounded-full">
+                    {f.role === 'admin' ? 'Dueño' : 'Camarero'}
+                  </span>
+                </div>
+                <span className="text-[9px] text-slate-600 font-mono italic">{new Date(f.created_at).toLocaleDateString()}</span>
+              </div>
+              <p className="text-sm text-slate-300 leading-relaxed italic">"{f.content}"</p>
+              <div className="flex justify-end gap-2 pt-2 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                 <span className="text-[9px] text-slate-600">ID: {f.id.slice(0,8)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

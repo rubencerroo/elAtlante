@@ -21,9 +21,9 @@ export default function LegalNotice() {
               En cumplimiento con el deber de información recogido en artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y del Comercio Electrónico, a continuación se reflejan los siguientes datos:
             </p>
             <ul className="list-disc pl-5 space-y-2">
-              <li><strong>Titular:</strong> Restaurante El Atlante de San Cristóbal (Denominación Social Temporal)</li>
-              <li><strong>NIF:</strong> B00000000 (Pendiente de validación)</li>
-              <li><strong>Domicilio:</strong> Calle Marina, 81, CP 35016, San Cristóbal, Las Palmas de Gran Canaria.</li>
+              <li><strong>Titular:</strong> FELRODEZ S.L.</li>
+              <li><strong>NIF:</strong> B76254267</li>
+              <li><strong>Domicilio:</strong> Calle León y Castillo, 199, 35280 Santa Lucía de Tirajana, Las Palmas</li>
               <li><strong>Email:</strong> info@elatlante.com</li>
               <li><strong>Teléfono:</strong> +34 928 58 44 22</li>
             </ul>
@@ -50,11 +50,6 @@ export default function LegalNotice() {
             </p>
           </section>
 
-          <div className="bg-primary/5 p-8 rounded-2xl border border-primary/10 mt-16">
-            <p className="text-xs text-center text-slate-500 dark:text-slate-400 font-medium leading-relaxed italic">
-              Este documento es una versión simplificada con fines demostrativos. Para una validez legal completa, se recomienda la revisión por parte de un profesional jurídico.
-            </p>
-          </div>
         </div>
       </div>
     </div>

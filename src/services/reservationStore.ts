@@ -22,6 +22,14 @@ export interface Reservation {
   tableNumber?: number;
   seatedAt?: string; // ISO – when seated
   isWalkIn?: boolean;
+
+  // New tracking and operations fields
+  source?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  cancellationReason?: string;
+  language?: string;
 }
 
 // ── Client CRM ──
@@ -75,6 +83,12 @@ function mapToReservation(data: any): Reservation {
     tableNumber: data.table_number,
     seatedAt: data.seated_at,
     isWalkIn: data.is_walk_in,
+    source: data.source,
+    utmSource: data.utm_source,
+    utmMedium: data.utm_medium,
+    utmCampaign: data.utm_campaign,
+    cancellationReason: data.cancellation_reason,
+    language: data.language,
   };
 }
 
@@ -123,6 +137,11 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
     status: r.status || 'pending',
     table_number: r.tableNumber,
     is_walk_in: r.isWalkIn || false,
+    source: r.source || 'website',
+    utm_source: r.utmSource,
+    utm_medium: r.utmMedium,
+    utm_campaign: r.utmCampaign,
+    language: r.language,
   };
 
   // Check for duplicate reservation (same person, same time, not cancelled)
@@ -252,6 +271,7 @@ export async function updateReservation(id: string, updates: Partial<Reservation
   if (updates.tableNumber !== undefined) dbUpdates.table_number = updates.tableNumber;
   if (updates.seatedAt !== undefined) dbUpdates.seated_at = updates.seatedAt;
   if (updates.isWalkIn !== undefined) dbUpdates.is_walk_in = updates.isWalkIn;
+  if (updates.cancellationReason !== undefined) dbUpdates.cancellation_reason = updates.cancellationReason;
 
   // Auto-set seatedAt when transitioning to seated
   if (updates.status === 'seated' && updates.seatedAt === undefined) {
@@ -550,6 +570,19 @@ export async function submitFeedback(type: FeedbackType, role: FeedbackRole, con
   return true;
 }
 
+export async function getFeedbacks(): Promise<any[]> {
+  const { data, error } = await supabase
+    .from('feedback')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching feedback:', error);
+    return [];
+  }
+  return data;
+}
+
 // ── CSV Export ──
 
 export async function generateCSV(dateStr: string): Promise<string> {
@@ -560,3 +593,37 @@ export async function generateCSV(dateStr: string): Promise<string> {
   );
   return [header, ...rows].join('\n');
 }
+
+// ── Shift Notes ──
+
+export interface ShiftNote {
+  date: string;
+  content: string;
+  createdAt: string;
+}
+
+export async function getShiftNote(dateStr: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('shift_notes')
+    .select('content')
+    .eq('date', dateStr)
+    .single();
+
+  if (error) return null;
+  return data?.content || null;
+}
+
+export async function saveShiftNote(dateStr: string, content: string): Promise<void> {
+  const { error } = await supabase
+    .from('shift_notes')
+    .upsert({
+      date: dateStr,
+      content,
+      created_at: new Date().toISOString()
+    });
+
+  if (error) {
+    console.error('Error saving shift note:', error);
+  }
+}
+

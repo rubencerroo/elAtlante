@@ -102,6 +102,8 @@ function KanbanCard({ reservation: r, handleStatus, handleDelete, handleAssignTa
             <div><span className="text-slate-500">📞 </span>{r.phone || '—'}</div>
             <div><span className="text-slate-500">📅 </span>{r.date}</div>
             <div><span className="text-slate-500">🕐 </span>{r.createdAt ? new Date(r.createdAt).toLocaleString('es-ES') : '—'}</div>
+            <div><span className="text-slate-500">📍 Origen: </span>{r.source || 'website'}</div>
+            <div><span className="text-slate-500">🌐 Idioma: </span>{r.language || '—'}</div>
           </div>
 
           {/* Table selector */}

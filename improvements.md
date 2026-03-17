@@ -338,6 +338,32 @@ Si un usuario intenta instalar la PWA desde la Home, la app se abriría directam
 
 ---
 
+## 🟢 NUEVAS MEJORAS DE ANALÍTICA Y OPERATIVA (Añadidas)
+
+### 35. Falta de captura de datos de marketing (UTM, Fuente, Idioma)
+**Problema:** Al hacer una reserva, no sabemos de qué campaña, red social o idioma proviene el cliente.
+**Solución:**
+- Capturar `utm_source`, `utm_medium`, `utm_campaign` desde la URL.
+- Capturar `navigator.language` del navegador.
+- Añadir estos campos a la base de datos `reservations` y guardarlos en el submit de reserva.
+
+### 36. Falta de motivos de cancelación
+**Problema:** Cuando se cancela una reserva desde el panel, no se especifica el motivo.
+**Solución:** Añadir campo `cancellation_reason` en BBDD y en UI solicitar el motivo al cancelar.
+
+### 37. Falta de métricas de origen y previsión en Panel Dueño
+**Problema:** El panel no visualiza fuentes de tráfico ni volumen de reservas a futuro (próximos 7 días).
+**Solución:** Añadir gráficas de "Fuentes de reserva" y "Previsión próximos 7 días" en el Dashboard.
+
+### 38. Notas de turno (Shift Briefing) y acceso rápido CRM en Panel Camarero
+**Problema:** No hay canal de comunicación rápido entre Dueño y Camareros para el turno del día. Los camareros no ven si una reserva es VIP fácilmente.
+**Solución:**
+- Crear tabla `shift_notes`.
+- Mostrar nota del turno en Panel de Camarero.
+- Añadir indicador `⭐ VIP` y botón a los detalles del cliente en la tarjeta del panel Camarero.
+
+---
+
 ## 📊 Resumen por categoría
 
 | Categoría | Cantidad | Severidad |
@@ -346,7 +372,8 @@ Si un usuario intenta instalar la PWA desde la Home, la app se abriría directam
 | 🟠 Bugs | 9 | Alta |
 | 🟡 UX/UI | 10 | Media |
 | 🔵 Técnicas/Código | 9 | Baja-Media |
-| **Total** | **34** | — |
+| 🟢 Analítica y Op. | 4 | Alta |
+| **Total** | **38** | — |
 
 ---
 
@@ -355,4 +382,5 @@ Si un usuario intenta instalar la PWA desde la Home, la app se abriría directam
 1. **Inmediato:** Añadir `.env` a `.gitignore`, quitar PINs visibles de la UI
 2. **Urgente:** Arreglar enum `Mesas altas` (reservas fallan), implementar RLS adecuado
 3. **Importante:** Unificar dark mode, arreglar `handleSeatFromWaitlist`, añadir ruta 404
-4. **Mejora:** Optimizar queries, separar componentes, eliminar assets no usados
+4. **Valor Añadido:** Nuevas métricas UTM, Panel de Dueño con previsión, Panel de camarero con Notas de Turno y VIPs.
+5. **Mejora Técnica:** Optimizar queries, separar componentes.

@@ -18,7 +18,7 @@ export default function PrivacyPolicy() {
           <section className="space-y-4">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">1. Responsable del Tratamiento</h2>
             <p>
-              El responsable del tratamiento de sus datos personales es Restaurante El Atlante de San Cristóbal, con domicilio en Calle Marina, 81, CP 35016, San Cristóbal, Las Palmas de Gran Canaria.
+              El responsable del tratamiento de sus datos personales es FELRODEZ S.L., con domicilio en Calle León y Castillo, 199, 35280 Santa Lucía de Tirajana, Las Palmas.
             </p>
           </section>
 
@@ -56,11 +56,6 @@ export default function PrivacyPolicy() {
             </p>
           </section>
 
-          <div className="bg-primary/5 p-8 rounded-2xl border border-primary/10 mt-16">
-            <p className="text-xs text-center text-slate-500 dark:text-slate-400 font-medium leading-relaxed italic">
-              Este documento es una versión simplificada con fines demostrativos. Para una validez legal completa, se recomienda la revisión por parte de un profesional jurídico.
-            </p>
-          </div>
         </div>
       </div>
     </div>

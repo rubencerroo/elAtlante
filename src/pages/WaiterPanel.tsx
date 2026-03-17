@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getReservationsForDate, updateReservation, addWalkIn, getOccupiedTables, type Reservation, type ReservationStatus } from '../services/reservationStore';
+import { getReservationsForDate, updateReservation, addWalkIn, getOccupiedTables, getShiftNote, getClientProfiles, type Reservation, type ReservationStatus, type ClientProfile } from '../services/reservationStore';
 import { signOut, getStaffRole, getSession } from '../services/authStore';
 import TableSelector from '../components/TableSelector';
 import FeedbackButton from '../components/FeedbackButton';
@@ -66,6 +66,8 @@ export default function WaiterPanel() {
   const [walkInGuests, setWalkInGuests] = useState(2);
   const [walkInTable, setWalkInTable] = useState<number | null>(null);
   const [occupiedTables, setOccupiedTables] = useState<number[]>([]);
+  const [shiftNote, setShiftNote] = useState<string | null>(null);
+  const [clientProfiles, setClientProfiles] = useState<ClientProfile[]>([]);
   const today = new Date().toISOString().split('T')[0];
   const prevCountRef = useRef(0);
   const [authChecked, setAuthChecked] = useState(false);
@@ -85,11 +87,17 @@ export default function WaiterPanel() {
   }, [navigate]);
 
   const reload = useCallback(async () => {
-    const data = await getReservationsForDate(today);
-    const occTables = await getOccupiedTables(today);
+    const [data, occTables, note, profiles] = await Promise.all([
+      getReservationsForDate(today),
+      getOccupiedTables(today),
+      getShiftNote(today),
+      getClientProfiles()
+    ]);
     
     setReservations(data);
     setOccupiedTables(occTables);
+    setShiftNote(note);
+    setClientProfiles(profiles);
 
     // Sound notification if new reservations appeared
     const activeCount = data.filter(r => r.status !== 'cancelled' && r.status !== 'completed').length;
@@ -199,8 +207,17 @@ export default function WaiterPanel() {
         </div>
       </header>
 
-      {/* Quick Stats */}
-      <div className="max-w-3xl mx-auto px-4 py-4">
+      {/* Quick Stats & Notes */}
+      <div className="max-w-3xl mx-auto px-4 py-4 space-y-4">
+        {shiftNote && (
+          <div className="bg-amber-400/10 border border-amber-400/20 rounded-2xl p-4 flex gap-3">
+            <span className="text-amber-400 text-lg">💡</span>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-amber-500 mb-1">Notas del Turno</p>
+              <p className="text-sm text-slate-300">{shiftNote}</p>
+            </div>
+          </div>
+        )}
         <div className="grid grid-cols-4 gap-2">
           {tabs.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
@@ -221,6 +238,7 @@ export default function WaiterPanel() {
             removeFromWaitList={removeFromWaitList}
             onSeat={handleSeatFromWaitlist}
             occupiedTables={occupiedTables}
+            clientProfiles={clientProfiles}
           />
         ) : currentList.length === 0 ? (
           <div className="text-center py-12 text-slate-500">
@@ -228,7 +246,7 @@ export default function WaiterPanel() {
           </div>
         ) : (
           currentList.map(r => (
-            <SwipeableCard key={r.id} reservation={r} handleStatus={handleStatus} occupiedTables={occupiedTables} />
+            <SwipeableCard key={r.id} reservation={r} handleStatus={handleStatus} occupiedTables={occupiedTables} profile={clientProfiles.find(p => p.email === r.email || p.phone === r.phone)} />
           ))
         )}
       </div>
@@ -287,12 +305,13 @@ export default function WaiterPanel() {
 // WAIT LIST VIEW
 // ═══════════════════════════════════════════════
 
-function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occupiedTables }: {
+function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occupiedTables, clientProfiles }: {
   waitList: Reservation[];
   addToWaitList: (name: string, guests: number, phone?: string) => void;
   removeFromWaitList: (id: string) => void;
   onSeat: (id: string, guests: number, table: number) => void;
   occupiedTables: number[];
+  clientProfiles: ClientProfile[];
 }) {
   const [waitName, setWaitName] = useState('');
   const [waitGuests, setWaitGuests] = useState(2);
@@ -328,25 +347,32 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
             </div>
           ) : (
             <div className="space-y-3">
-              {waitList.map((w, idx) => (
-                <div key={w.id} className="bg-white/[0.04] border border-white/5 rounded-2xl px-5 py-4 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <span className="bg-primary/20 text-primary rounded-xl w-10 h-10 flex items-center justify-center font-black text-lg">{idx + 1}</span>
-                    <div>
-                      <p className="font-bold text-base">{w.name}</p>
-                      <p className="text-xs text-slate-500 font-medium">👥 {w.guests} comensales · Esperando desde {new Date(w.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
+              {waitList.map((w, idx) => {
+                const profile = clientProfiles.find(p => p.email === w.email || p.phone === w.phone);
+                return (
+                  <div key={w.id} className="bg-white/[0.04] border border-white/5 rounded-2xl px-5 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <span className="bg-primary/20 text-primary rounded-xl w-10 h-10 flex items-center justify-center font-black text-lg">{idx + 1}</span>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-base">{w.name}</p>
+                          {profile?.isVIP && <span title="Cliente VIP" className="text-sm">⭐</span>}
+                          {profile?.isProblem && <span title="Atención requerida" className="text-sm">⚠️</span>}
+                        </div>
+                        <p className="text-xs text-slate-500 font-medium">👥 {w.guests} comensales · Esperando desde {new Date(w.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => setSeatingId(w.id)} className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-xl px-4 py-2 text-xs font-bold transition-all">
+                        🪑 Sentar
+                      </button>
+                      <button onClick={() => removeFromWaitList(w.id)} className="p-2 text-slate-500 hover:text-red-400 transition-colors">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => setSeatingId(w.id)} className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-xl px-4 py-2 text-xs font-bold transition-all">
-                      🪑 Sentar
-                    </button>
-                    <button onClick={() => removeFromWaitList(w.id)} className="p-2 text-slate-500 hover:text-red-400 transition-colors">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -386,10 +412,11 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
 // SWIPEABLE RESERVATION CARD
 // ═══════════════════════════════════════════════
 
-function SwipeableCard({ reservation: r, handleStatus, occupiedTables }: {
+function SwipeableCard({ reservation: r, handleStatus, occupiedTables, profile }: {
   reservation: Reservation;
   handleStatus: (id: string, status: ReservationStatus, tableNumber?: number) => void;
   occupiedTables: number[];
+  profile?: ClientProfile;
 }) {
   const [swipeX, setSwipeX] = useState(0);
   const [swiping, setSwiping] = useState(false);
@@ -468,6 +495,8 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables }: {
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-base">{r.name}</span>
+                {profile?.isVIP && <span title="Cliente VIP" className="text-sm">⭐</span>}
+                {profile?.isProblem && <span title="Atención requerida" className="text-sm">⚠️</span>}
                 {r.isWalkIn && <span className="text-[9px] bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-full px-1.5 py-0.5 font-bold">WALK-IN</span>}
                 {r.hasPet && <span title="Con mascota">🐾</span>}
               </div>
@@ -503,9 +532,16 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables }: {
           )}
 
           {/* Notes */}
-          {r.notes && (
-            <div className="bg-white/5 rounded-xl px-3 py-2 text-sm text-amber-300/80">
-              📝 {r.notes}
+          {(r.notes || (profile && profile.allNotes.length > 0) || profile?.favoritePreference) && (
+            <div className="bg-white/5 rounded-xl px-3 py-2 text-sm text-amber-300/80 space-y-1">
+              {r.notes && <div>📝 {r.notes}</div>}
+              {profile?.favoritePreference && <div className="text-xs text-blue-300">💡 Prefiere: {profile.favoritePreference}</div>}
+              {profile && profile.allNotes.length > 0 && (
+                <div className="text-[10px] text-slate-400 pt-1 border-t border-white/5 mt-1">
+                  <strong>Historial CRM:</strong> {profile.allNotes.slice(0, 2).join(' | ')}
+                  {profile.allNotes.length > 2 && ' ...'}
+                </div>
+              )}
             </div>
           )}
 

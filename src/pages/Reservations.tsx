@@ -13,7 +13,7 @@ export default function Reservations() {
   const [formData, setFormData] = useState({
     name: '', email: '', date: '', time: '13:00',
     guests: '2', preference: 'Indiferente' as const,
-    hasPet: false, notes: '',
+    hasPet: false, notes: '', acceptPolicies: false,
   });
 
   useEffect(() => {
@@ -114,6 +114,10 @@ export default function Reservations() {
         preference: formData.preference as 'Indiferente' | 'Interior' | 'Mesas altas' | 'Terraza exterior',
         hasPet: formData.hasPet,
         notes: formData.notes,
+        utmSource: searchParams.get('utm_source') || undefined,
+        utmMedium: searchParams.get('utm_medium') || undefined,
+        utmCampaign: searchParams.get('utm_campaign') || undefined,
+        language: navigator.language,
       });
       if (reservation) {
         setLastReservation(reservation);
@@ -215,7 +219,7 @@ export default function Reservations() {
 
           {/* Actions */}
           <div className="flex flex-col items-center gap-4">
-            <button onClick={() => { setSubmitted(false); setLastReservation(null); setFormData({ name: '', email: '', date: '', time: '13:00', guests: '2 Personas', preference: 'Indiferente', hasPet: false, notes: '' }); setPhone(''); }}
+            <button onClick={() => { setSubmitted(false); setLastReservation(null); setFormData({ name: '', email: '', date: '', time: '13:00', guests: '2 Personas', preference: 'Indiferente', hasPet: false, notes: '', acceptPolicies: false }); setPhone(''); }}
               className="text-primary font-semibold text-sm hover:underline">
               Hacer otra reserva
             </button>
@@ -365,6 +369,14 @@ export default function Reservations() {
                   placeholder="¿Alguna alergia o preferencia de mesa?" rows={3} value={formData.notes} onChange={e => handleChange('notes', e.target.value)}></textarea>
               </div>
 
+              <div className="flex items-center gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
+                <input type="checkbox" id="policies" required className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary/20 bg-slate-50 dark:bg-white/5 dark:border-white/10"
+                  checked={formData.acceptPolicies} onChange={e => handleChange('acceptPolicies', e.target.checked)} />
+                <label htmlFor="policies" className="text-xs font-light text-slate-600 dark:text-slate-300 cursor-pointer">
+                  He leído y acepto los <a href="/aviso-legal" target="_blank" className="text-primary hover:underline font-medium">Términos y Condiciones</a> y la <a href="/privacidad" target="_blank" className="text-primary hover:underline font-medium">Política de Privacidad</a> *
+                </label>
+              </div>
+
               <div className="pt-6">
                 {formData.guests === '9' ? (
                   <div className="space-y-4">
@@ -383,7 +395,7 @@ export default function Reservations() {
                     </div>
                   </div>
                 ) : (
-                  <button type="submit" disabled={isSubmitting} className="relative w-full h-16 overflow-hidden group rounded-2xl shadow-2xl shadow-primary/30 disabled:opacity-70 disabled:cursor-not-allowed">
+                  <button type="submit" disabled={isSubmitting || !formData.acceptPolicies} className="relative w-full h-16 overflow-hidden group rounded-2xl shadow-2xl shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
                     <div className="absolute inset-0 bg-primary transition-transform duration-500 group-hover:scale-110"></div>
                     <span className="relative z-10 text-white font-bold uppercase tracking-[0.3em] text-sm">
                       {isSubmitting ? 'Procesando...' : 'Realizar Reserva'}

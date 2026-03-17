@@ -14,6 +14,7 @@ import CookiePolicy from './pages/CookiePolicy';
 import ComingSoon from './pages/ComingSoon';
 import NotFound from './pages/NotFound';
 import { registerSW } from 'virtual:pwa-register';
+import CookieBanner from './components/CookieBanner';
 
 function PWASetup() {
   const { pathname } = useLocation();
@@ -127,6 +128,7 @@ function AppLayout() {
       </main>
 
       {!isAdmin && <Footer />}
+      <CookieBanner />
     </div>
   );
 }

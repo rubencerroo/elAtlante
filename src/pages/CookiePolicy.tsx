@@ -16,14 +16,21 @@ export default function CookiePolicy() {
 
         <div className="prose prose-slate dark:prose-invert max-w-none space-y-8 text-slate-600 dark:text-slate-400 font-light leading-relaxed">
           <section className="space-y-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">1. ¿Qué son las Cookies?</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">1. Responsable</h2>
+            <p>
+              El responsable de esta página web y de las cookies que se instalan es FELRODEZ S.L., con NIF B76254267 y domicilio en Calle León y Castillo, 199, 35280 Santa Lucía de Tirajana, Las Palmas.
+            </p>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">2. ¿Qué son las Cookies?</h2>
             <p>
               Una cookie es un fichero que se descarga en su ordenador al acceder a determinadas páginas web. Las cookies permiten a una página web, entre otras cosas, almacenar y recuperar información sobre los hábitos de navegación de un usuario o de su equipo.
             </p>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">2. Tipos de Cookies utilizadas</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">3. Tipos de Cookies utilizadas</h2>
             <div className="space-y-4">
               <div className="bg-slate-50 dark:bg-white/5 p-6 rounded-2xl border border-slate-100 dark:border-white/5">
                 <h3 className="text-slate-900 dark:text-white font-bold mb-2">Cookies Técnicas (Necesarias)</h3>
@@ -37,7 +44,7 @@ export default function CookiePolicy() {
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">3. Desactivación de Cookies</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">4. Desactivación de Cookies</h2>
             <p>
               Usted puede permitir, bloquear o eliminar las cookies instaladas en su equipo mediante la configuración de las opciones del navegador instalado en su ordenador:
             </p>
@@ -49,11 +56,6 @@ export default function CookiePolicy() {
             </ul>
           </section>
 
-          <div className="bg-primary/5 p-8 rounded-2xl border border-primary/10 mt-16">
-            <p className="text-xs text-center text-slate-500 dark:text-slate-400 font-medium leading-relaxed italic">
-              Este documento es una versión simplificada con fines demostrativos. Para una validez legal completa, se recomienda la revisión por parte de un profesional jurídico.
-            </p>
-          </div>
         </div>
       </div>
     </div>
