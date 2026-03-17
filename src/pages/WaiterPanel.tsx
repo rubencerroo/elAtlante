@@ -21,7 +21,7 @@ const STATUS_BADGES: Record<ReservationStatus, { label: string; color: string }>
   'no-show':   { label: 'No Show',    color: 'text-orange-400 bg-orange-400/10' },
 };
 
-type Tab = 'upcoming' | 'seated' | 'done';
+type Tab = 'upcoming' | 'seated' | 'waitlist' | 'done';
 
 // ── Sound helper ──
 function playDing() {
@@ -61,6 +61,7 @@ export default function WaiterPanel() {
   const [walkInGuests, setWalkInGuests] = useState(2);
   const [walkInTable, setWalkInTable] = useState<number | null>(null);
   const [occupiedTables, setOccupiedTables] = useState<number[]>([]);
+  const [waitList, setWaitList] = useState<{ id: string; name: string; guests: number; addedAt: string }[]>([]);
   const today = new Date().toISOString().split('T')[0];
   const prevCountRef = useRef(0);
 
@@ -106,7 +107,7 @@ export default function WaiterPanel() {
     done: reservations.filter(r => r.status === 'completed' || r.status === 'cancelled' || r.status === 'no-show').sort((a, b) => a.time.localeCompare(b.time)),
   }), [reservations]);
 
-  const currentList = grouped[tab];
+  const currentList = grouped[tab === 'waitlist' ? 'upcoming' : tab];
 
   const handleStatus = async (id: string, status: ReservationStatus, tableNumber?: number) => {
     await updateReservation(id, { status, ...(tableNumber ? { tableNumber } : {}) });
@@ -123,6 +124,14 @@ export default function WaiterPanel() {
     }
   };
 
+  const addToWaitList = (name: string, guests: number) => {
+    setWaitList(prev => [...prev, { id: Date.now().toString(), name, guests, addedAt: new Date().toISOString() }]);
+  };
+
+  const removeFromWaitList = (id: string) => {
+    setWaitList(prev => prev.filter(w => w.id !== id));
+  };
+
   const logout = () => { sessionStorage.removeItem('admin_role'); navigate('/admin'); };
 
   const now = new Date();
@@ -131,6 +140,7 @@ export default function WaiterPanel() {
   const tabs: { key: Tab; label: string; count: number; color: string }[] = [
     { key: 'upcoming', label: 'Por llegar', count: grouped.upcoming.length, color: 'text-amber-400' },
     { key: 'seated', label: 'En mesa', count: grouped.seated.length, color: 'text-blue-400' },
+    { key: 'waitlist', label: 'Espera', count: waitList.length, color: 'text-purple-400' },
     { key: 'done', label: 'Finalizadas', count: grouped.done.length, color: 'text-slate-400' },
   ];
 
@@ -154,12 +164,12 @@ export default function WaiterPanel() {
 
       {/* Quick Stats */}
       <div className="max-w-3xl mx-auto px-4 py-4">
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-2">
           {tabs.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
-              className={`rounded-2xl p-4 text-center transition-all border ${tab === t.key ? 'bg-white/[0.06] border-white/10' : 'bg-white/[0.02] border-transparent hover:bg-white/[0.04]'}`}>
-              <p className={`text-2xl font-black ${t.color}`}>{t.count}</p>
-              <p className="text-slate-500 text-[10px] font-medium uppercase tracking-wider mt-1">{t.label}</p>
+              className={`rounded-2xl py-3 px-1 text-center transition-all border ${tab === t.key ? 'bg-white/[0.06] border-white/10' : 'bg-white/[0.02] border-transparent hover:bg-white/[0.04]'}`}>
+              <p className={`text-xl font-black ${t.color}`}>{t.count}</p>
+              <p className="text-slate-500 text-[9px] font-medium uppercase tracking-wider mt-1">{t.label}</p>
             </button>
           ))}
         </div>
@@ -167,15 +177,21 @@ export default function WaiterPanel() {
 
       {/* Reservation Cards */}
       <div className="max-w-3xl mx-auto px-4 pb-28 space-y-3">
-        {currentList.length === 0 && (
+        {tab === 'waitlist' ? (
+          <WaitListView 
+            waitList={waitList} 
+            addToWaitList={addToWaitList} 
+            removeFromWaitList={removeFromWaitList} 
+          />
+        ) : currentList.length === 0 ? (
           <div className="text-center py-12 text-slate-500">
             <p className="text-sm">No hay reservas en esta sección</p>
           </div>
+        ) : (
+          currentList.map(r => (
+            <SwipeableCard key={r.id} reservation={r} handleStatus={handleStatus} occupiedTables={occupiedTables} />
+          ))
         )}
-
-        {currentList.map(r => (
-          <SwipeableCard key={r.id} reservation={r} handleStatus={handleStatus} occupiedTables={occupiedTables} />
-        ))}
       </div>
 
       {/* Walk-in Modal */}
@@ -224,6 +240,68 @@ export default function WaiterPanel() {
         className="fixed bottom-6 right-6 w-14 h-14 bg-primary rounded-2xl shadow-2xl shadow-primary/30 flex items-center justify-center hover:scale-110 transition-transform active:scale-95 z-50">
         <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 -960 960 960"><path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"/></svg>
       </button>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// WAIT LIST VIEW
+// ═══════════════════════════════════════════════
+
+function WaitListView({ waitList, addToWaitList, removeFromWaitList }: {
+  waitList: { id: string; name: string; guests: number; addedAt: string }[];
+  addToWaitList: (name: string, guests: number) => void;
+  removeFromWaitList: (id: string) => void;
+}) {
+  const [waitName, setWaitName] = useState('');
+  const [waitGuests, setWaitGuests] = useState(2);
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5 space-y-4">
+        <div className="flex flex-col gap-3">
+          <input type="text" value={waitName} onChange={e => setWaitName(e.target.value)} placeholder="Nombre del cliente"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary/50" />
+          
+          <div className="flex gap-2">
+            <select value={waitGuests} onChange={e => setWaitGuests(Number(e.target.value))}
+              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:outline-none appearance-none cursor-pointer">
+              {[1,2,3,4,5,6,7,8,9,10,12].map(n => <option key={n} value={n}>{n} personas</option>)}
+            </select>
+            <button onClick={() => { if (waitName) { addToWaitList(waitName, waitGuests); setWaitName(''); } }}
+              className="bg-primary hover:bg-primary/90 text-white rounded-xl px-6 py-3 text-sm font-bold transition-all shrink-0">
+              + Añadir
+            </button>
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-white/5">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4">Clientes esperando</h3>
+          
+          {waitList.length === 0 ? (
+            <div className="text-center py-12 text-slate-600">
+              <p className="text-sm italic">La lista está vacía</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {waitList.map((w, idx) => (
+                <div key={w.id} className="bg-white/[0.04] border border-white/5 rounded-2xl px-5 py-4 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <span className="bg-primary/20 text-primary rounded-xl w-10 h-10 flex items-center justify-center font-black text-lg">{idx + 1}</span>
+                    <div>
+                      <p className="font-bold text-base">{w.name}</p>
+                      <p className="text-xs text-slate-500 font-medium">👥 {w.guests} comensales · Esperando desde {new Date(w.addedAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
+                  </div>
+                  <button onClick={() => removeFromWaitList(w.id)} className="p-3 text-slate-500 hover:text-red-400 transition-colors">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

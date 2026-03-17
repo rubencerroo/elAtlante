@@ -19,7 +19,7 @@ const STATUS_CONFIG: Record<ReservationStatus, { label: string; color: string; b
   'no-show':   { label: 'No Show',    color: 'text-orange-400',  bg: 'bg-orange-400/10 border-orange-400/20' },
 };
 
-type AdminTab = 'kanban' | 'dashboard' | 'crm' | 'walkins';
+type AdminTab = 'kanban' | 'dashboard' | 'crm';
 
 const KANBAN_COLUMNS: { status: ReservationStatus; label: string; icon: string; color: string }[] = [
   { status: 'pending', label: 'Pendientes', icon: '⏳', color: 'border-t-amber-400' },
@@ -47,18 +47,9 @@ export default function AdminPanel() {
   const [clientProfiles, setClientProfiles] = useState<ClientProfile[]>([]);
   const [occupiedTables, setOccupiedTables] = useState<number[]>([]);
 
-  // Walk-in state
-  const [walkInGuests, setWalkInGuests] = useState(2);
-  const [walkInName, setWalkInName] = useState('');
-  const [walkInTable, setWalkInTable] = useState<number | null>(null);
-  const [showWalkInForm, setShowWalkInForm] = useState(false);
-
   // CRM state
   const [selectedClient, setSelectedClient] = useState<ClientProfile | null>(null);
   const [crmSearch, setCrmSearch] = useState('');
-
-  // Wait list
-  const [waitList, setWaitList] = useState<{ id: string; name: string; guests: number; addedAt: string }[]>([]);
 
   useEffect(() => {
     if (sessionStorage.getItem('admin_role') !== 'owner') navigate('/admin');
@@ -115,25 +106,6 @@ export default function AdminPanel() {
     await updateReservation(id, { tableNumber });
     setShowTableSelector(null);
     reload();
-  };
-
-  const handleWalkIn = async () => {
-    if (walkInTable && walkInGuests > 0) {
-      await addWalkIn(walkInGuests, walkInTable, walkInName || undefined);
-      setWalkInGuests(2);
-      setWalkInName('');
-      setWalkInTable(null);
-      setShowWalkInForm(false);
-      reload();
-    }
-  };
-
-  const addToWaitList = (name: string, guests: number) => {
-    setWaitList(prev => [...prev, { id: Date.now().toString(), name, guests, addedAt: new Date().toISOString() }]);
-  };
-
-  const removeFromWaitList = (id: string) => {
-    setWaitList(prev => prev.filter(w => w.id !== id));
   };
 
   const exportCSV = async () => {
@@ -205,7 +177,6 @@ export default function AdminPanel() {
     { key: 'kanban', label: 'Reservas', icon: '📋' },
     { key: 'dashboard', label: 'Dashboard', icon: '📊' },
     { key: 'crm', label: 'Clientes', icon: '👥' },
-    { key: 'walkins', label: 'Walk-ins', icon: '🚶' },
   ];
 
   return (
@@ -288,7 +259,6 @@ export default function AdminPanel() {
         {activeTab === 'kanban' && <KanbanView filtered={filtered} handleStatus={handleStatus} handleDelete={handleDelete} handleAssignTable={handleAssignTable} showTableSelector={showTableSelector} setShowTableSelector={setShowTableSelector} occupiedTables={occupiedTables} draggedId={draggedId} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} />}
         {activeTab === 'dashboard' && <DashboardView reservations={reservations} occupancyData={occupancyData} statusData={statusData} weeklyComp={weeklyComp} noShowRate={noShowRate} />}
         {activeTab === 'crm' && <CRMView search={crmSearch} setSearch={setCrmSearch} selectedClient={selectedClient} setSelectedClient={setSelectedClient} clientProfiles={clientProfiles} />}
-        {activeTab === 'walkins' && <WalkInsView showForm={showWalkInForm} setShowForm={setShowWalkInForm} guests={walkInGuests} setGuests={setWalkInGuests} name={walkInName} setName={setWalkInName} table={walkInTable} setTable={setWalkInTable} occupiedTables={occupiedTables} onSubmit={handleWalkIn} waitList={waitList} addToWaitList={addToWaitList} removeFromWaitList={removeFromWaitList} />}
 
         {loading && (
           <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center z-[100]">
@@ -635,109 +605,3 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
   );
 }
 
-// ═══════════════════════════════════════════════
-// WALK-INS VIEW
-// ═══════════════════════════════════════════════
-
-function WalkInsView({ showForm, setShowForm, guests, setGuests, name, setName, table, setTable, occupiedTables, onSubmit, waitList, addToWaitList, removeFromWaitList }: {
-  showForm: boolean;
-  setShowForm: (v: boolean) => void;
-  guests: number;
-  setGuests: (n: number) => void;
-  name: string;
-  setName: (s: string) => void;
-  table: number | null;
-  setTable: (n: number | null) => void;
-  occupiedTables: number[];
-  onSubmit: () => void;
-  waitList: { id: string; name: string; guests: number; addedAt: string }[];
-  addToWaitList: (name: string, guests: number) => void;
-  removeFromWaitList: (id: string) => void;
-}) {
-  const [waitName, setWaitName] = useState('');
-  const [waitGuests, setWaitGuests] = useState(2);
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      {/* Walk-in Form */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold">Walk-in Rápido</h2>
-          <button onClick={() => setShowForm(!showForm)} className="bg-primary hover:bg-primary/90 text-white rounded-xl px-5 py-2.5 text-sm font-bold transition-all shadow-lg shadow-primary/20">
-            {showForm ? 'Cancelar' : '+ Nueva Mesa'}
-          </button>
-        </div>
-
-        {showForm && (
-          <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-6 space-y-5">
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Nombre (opcional)</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Walk-in"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary/50" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Comensales</label>
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
-                  <button key={n} onClick={() => setGuests(n)}
-                    className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${guests === n ? 'bg-primary text-white' : 'bg-white/5 border border-white/10 text-slate-400 hover:text-white'}`}>
-                    {n}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mesa</label>
-              <TableSelector occupiedTables={occupiedTables} selectedTable={table} onSelect={t => setTable(t)} />
-            </div>
-            <button onClick={onSubmit} disabled={!table}
-              className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-emerald-500/20">
-              🪑 Sentar ahora
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Wait List */}
-      <div className="space-y-6">
-        <h2 className="text-lg font-bold">Lista de Espera</h2>
-        
-        <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5 space-y-4">
-          <div className="flex gap-2">
-            <input type="text" value={waitName} onChange={e => setWaitName(e.target.value)} placeholder="Nombre"
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary/50" />
-            <select value={waitGuests} onChange={e => setWaitGuests(Number(e.target.value))}
-              className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none appearance-none cursor-pointer">
-              {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n}p</option>)}
-            </select>
-            <button onClick={() => { if (waitName) { addToWaitList(waitName, waitGuests); setWaitName(''); } }}
-              className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 rounded-xl px-4 py-2.5 text-sm font-medium transition-all">
-              + Añadir
-            </button>
-          </div>
-
-          {waitList.length === 0 ? (
-            <div className="text-center py-8 text-slate-600 text-xs">No hay nadie esperando 🎉</div>
-          ) : (
-            <div className="space-y-2">
-              {waitList.map((w, idx) => (
-                <div key={w.id} className="bg-white/[0.04] border border-white/5 rounded-xl px-4 py-3 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="bg-amber-500/20 text-amber-400 rounded-lg w-8 h-8 flex items-center justify-center font-bold text-sm">{idx + 1}</span>
-                    <div>
-                      <p className="font-semibold text-sm">{w.name}</p>
-                      <p className="text-xs text-slate-500">👥 {w.guests} · {new Date(w.addedAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => removeFromWaitList(w.id)} className="text-slate-500 hover:text-red-400 text-xs transition-colors">Quitar</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
