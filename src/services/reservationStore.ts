@@ -123,9 +123,10 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
 
   const reservation = mapToReservation(data);
 
-  // Trigger email confirmation flow if worker URL is configured
-  if (WORKER_URL && !reservation.isWalkIn) {
-    fetch(`${WORKER_URL}/send-confirmation`, {
+  // Trigger email confirmation flow
+  if (!reservation.isWalkIn) {
+    const endpoint = WORKER_URL ? `${WORKER_URL}/send-confirmation` : '/send-confirmation';
+    fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(reservation),
