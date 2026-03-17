@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 const WORKER_URL = import.meta.env.VITE_WORKER_URL || '';
 
 
-export type ReservationStatus = 'pending' | 'confirmed' | 'seated' | 'completed' | 'cancelled' | 'no-show';
+export type ReservationStatus = 'pending' | 'confirmed' | 'seated' | 'completed' | 'cancelled' | 'no-show' | 'waiting';
 
 export interface Reservation {
   id: string;
@@ -137,6 +137,14 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
 
   const reservation = mapToReservation(data);
 
+  // Auto-create client meta if phone exists but meta doesn't
+  if (reservation.phone && reservation.phone !== 'Walk-in') {
+    const existingMeta = await getClientMeta(reservation.phone);
+    if (!existingMeta) {
+      await saveClientMeta({ phone: reservation.phone });
+    }
+  }
+
   // Trigger email confirmation flow
   if (!reservation.isWalkIn) {
     const endpoint = WORKER_URL ? `${WORKER_URL}/send-confirmation` : '/send-confirmation';
@@ -177,6 +185,42 @@ export async function addWalkIn(guests: number, tableNumber: number, name?: stri
     console.error('Error adding walk-in:', error);
     return null;
   }
+
+  // Auto-create client meta for walk-in if they share a phone (though walk-in default is 'Walk-in')
+  return mapToReservation(data);
+}
+
+export async function addToWaitList(name: string, guests: number, phone?: string): Promise<Reservation | null> {
+  const now = new Date();
+  const newR = {
+    booking_number: generateBookingNumber(),
+    name: name,
+    phone: phone || 'Walk-in',
+    date: now.toISOString().split('T')[0],
+    time: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
+    guests,
+    preference: 'Indiferente',
+    has_pet: false,
+    status: 'waiting',
+    is_walk_in: true,
+  };
+
+  const { data, error } = await supabase
+    .from('reservations')
+    .insert([newR])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error adding to waitlist:', error);
+    return null;
+  }
+
+  if (phone && phone !== 'Walk-in') {
+    const existingMeta = await getClientMeta(phone);
+    if (!existingMeta) await saveClientMeta({ phone });
+  }
+
   return mapToReservation(data);
 }
 

@@ -10,6 +10,7 @@ const STATUS_COLORS: Record<ReservationStatus, string> = {
   'completed': 'border-l-slate-500 bg-slate-500/5',
   'cancelled': 'border-l-red-400 bg-red-400/5',
   'no-show': 'border-l-orange-400 bg-orange-400/5',
+  'waiting': 'border-l-purple-400 bg-purple-400/5',
 };
 
 const STATUS_BADGES: Record<ReservationStatus, { label: string; color: string }> = {
@@ -19,6 +20,7 @@ const STATUS_BADGES: Record<ReservationStatus, { label: string; color: string }>
   'completed': { label: 'Completada', color: 'text-slate-400 bg-slate-400/10' },
   'cancelled': { label: 'Cancelada',  color: 'text-red-400 bg-red-400/10' },
   'no-show':   { label: 'No Show',    color: 'text-orange-400 bg-orange-400/10' },
+  'waiting':   { label: 'En Espera', color: 'text-purple-400 bg-purple-400/10' },
 };
 
 type Tab = 'upcoming' | 'seated' | 'waitlist' | 'done';
@@ -61,7 +63,6 @@ export default function WaiterPanel() {
   const [walkInGuests, setWalkInGuests] = useState(2);
   const [walkInTable, setWalkInTable] = useState<number | null>(null);
   const [occupiedTables, setOccupiedTables] = useState<number[]>([]);
-  const [waitList, setWaitList] = useState<{ id: string; name: string; guests: number; addedAt: string }[]>([]);
   const today = new Date().toISOString().split('T')[0];
   const prevCountRef = useRef(0);
 
@@ -104,10 +105,11 @@ export default function WaiterPanel() {
   const grouped = useMemo(() => ({
     upcoming: reservations.filter(r => r.status === 'pending' || r.status === 'confirmed').sort((a, b) => a.time.localeCompare(b.time)),
     seated: reservations.filter(r => r.status === 'seated').sort((a, b) => a.time.localeCompare(b.time)),
+    waitlist: reservations.filter(r => r.status === 'waiting').sort((a, b) => a.time.localeCompare(b.time)),
     done: reservations.filter(r => r.status === 'completed' || r.status === 'cancelled' || r.status === 'no-show').sort((a, b) => a.time.localeCompare(b.time)),
   }), [reservations]);
 
-  const currentList = grouped[tab === 'waitlist' ? 'upcoming' : tab];
+  const currentList = grouped[tab];
 
   const handleStatus = async (id: string, status: ReservationStatus, tableNumber?: number) => {
     await updateReservation(id, { status, ...(tableNumber ? { tableNumber } : {}) });
@@ -124,12 +126,20 @@ export default function WaiterPanel() {
     }
   };
 
-  const addToWaitList = (name: string, guests: number) => {
-    setWaitList(prev => [...prev, { id: Date.now().toString(), name, guests, addedAt: new Date().toISOString() }]);
+  const addToWaitList = async (name: string, guests: number, phone?: string) => {
+    await import('../services/reservationStore').then(s => s.addToWaitList(name, guests, phone));
+    reload();
   };
 
-  const removeFromWaitList = (id: string) => {
-    setWaitList(prev => prev.filter(w => w.id !== id));
+  const removeFromWaitList = async (id: string) => {
+    await updateReservation(id, { status: 'cancelled' });
+    reload();
+  };
+
+  const handleSeatFromWaitlist = async (waitlistId: string, guests: number, tableNumber: number) => {
+    await addWalkIn(guests, tableNumber);
+    removeFromWaitList(waitlistId);
+    reload();
   };
 
   const logout = () => { sessionStorage.removeItem('admin_role'); navigate('/admin'); };
@@ -140,7 +150,7 @@ export default function WaiterPanel() {
   const tabs: { key: Tab; label: string; count: number; color: string }[] = [
     { key: 'upcoming', label: 'Por llegar', count: grouped.upcoming.length, color: 'text-amber-400' },
     { key: 'seated', label: 'En mesa', count: grouped.seated.length, color: 'text-blue-400' },
-    { key: 'waitlist', label: 'Espera', count: waitList.length, color: 'text-purple-400' },
+    { key: 'waitlist', label: 'Espera', count: grouped.waitlist.length, color: 'text-purple-400' },
     { key: 'done', label: 'Finalizadas', count: grouped.done.length, color: 'text-slate-400' },
   ];
 
@@ -179,9 +189,11 @@ export default function WaiterPanel() {
       <div className="max-w-3xl mx-auto px-4 pb-28 space-y-3">
         {tab === 'waitlist' ? (
           <WaitListView 
-            waitList={waitList} 
+            waitList={grouped.waitlist} 
             addToWaitList={addToWaitList} 
-            removeFromWaitList={removeFromWaitList} 
+            removeFromWaitList={removeFromWaitList}
+            onSeat={handleSeatFromWaitlist}
+            occupiedTables={occupiedTables}
           />
         ) : currentList.length === 0 ? (
           <div className="text-center py-12 text-slate-500">
@@ -248,27 +260,35 @@ export default function WaiterPanel() {
 // WAIT LIST VIEW
 // ═══════════════════════════════════════════════
 
-function WaitListView({ waitList, addToWaitList, removeFromWaitList }: {
-  waitList: { id: string; name: string; guests: number; addedAt: string }[];
-  addToWaitList: (name: string, guests: number) => void;
+function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occupiedTables }: {
+  waitList: Reservation[];
+  addToWaitList: (name: string, guests: number, phone?: string) => void;
   removeFromWaitList: (id: string) => void;
+  onSeat: (id: string, guests: number, table: number) => void;
+  occupiedTables: number[];
 }) {
   const [waitName, setWaitName] = useState('');
+  const [waitPhone, setWaitPhone] = useState('');
   const [waitGuests, setWaitGuests] = useState(2);
+  const [seatingId, setSeatingId] = useState<string | null>(null);
 
   return (
     <div className="space-y-6">
       <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5 space-y-4">
-        <div className="flex flex-col gap-3">
-          <input type="text" value={waitName} onChange={e => setWaitName(e.target.value)} placeholder="Nombre del cliente"
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary/50" />
+        <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 gap-2">
+            <input type="text" value={waitName} onChange={e => setWaitName(e.target.value)} placeholder="Nombre"
+              className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50" />
+            <input type="tel" value={waitPhone} onChange={e => setWaitPhone(e.target.value)} placeholder="Teléfono"
+              className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50" />
+          </div>
           
           <div className="flex gap-2">
             <select value={waitGuests} onChange={e => setWaitGuests(Number(e.target.value))}
               className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:outline-none appearance-none cursor-pointer">
               {[1,2,3,4,5,6,7,8,9,10,12].map(n => <option key={n} value={n}>{n} personas</option>)}
             </select>
-            <button onClick={() => { if (waitName) { addToWaitList(waitName, waitGuests); setWaitName(''); } }}
+            <button onClick={() => { if (waitName) { addToWaitList(waitName, waitGuests, waitPhone); setWaitName(''); setWaitPhone(''); } }}
               className="bg-primary hover:bg-primary/90 text-white rounded-xl px-6 py-3 text-sm font-bold transition-all shrink-0">
               + Añadir
             </button>
@@ -290,18 +310,50 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList }: {
                     <span className="bg-primary/20 text-primary rounded-xl w-10 h-10 flex items-center justify-center font-black text-lg">{idx + 1}</span>
                     <div>
                       <p className="font-bold text-base">{w.name}</p>
-                      <p className="text-xs text-slate-500 font-medium">👥 {w.guests} comensales · Esperando desde {new Date(w.addedAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
+                      <p className="text-xs text-slate-500 font-medium">{w.phone !== 'Walk-in' && <span>📞 {w.phone} · </span>}👥 {w.guests} comensales · Esperando desde {new Date(w.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                   </div>
-                  <button onClick={() => removeFromWaitList(w.id)} className="p-3 text-slate-500 hover:text-red-400 transition-colors">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                  </button>
+                  <div className="flex gap-2">
+                    <button onClick={() => setSeatingId(w.id)} className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-xl px-4 py-2 text-xs font-bold transition-all">
+                      🪑 Sentar
+                    </button>
+                    <button onClick={() => removeFromWaitList(w.id)} className="p-2 text-slate-500 hover:text-red-400 transition-colors">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
+
+      {/* Seating Modal */}
+      {seatingId && (
+        <div className="fixed inset-0 z-[110] bg-black/70 backdrop-blur-sm flex items-end justify-center p-4" onClick={() => setSeatingId(null)}>
+          <div className="bg-slate-900 border border-white/10 rounded-3xl p-6 w-full max-w-md space-y-5 animate-in" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold">Asignar Mesa</h2>
+                <p className="text-slate-500 text-xs">Para {waitList.find(w => w.id === seatingId)?.name}</p>
+              </div>
+              <button onClick={() => setSeatingId(null)} className="text-slate-500 hover:text-white text-sm">✕</button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Selecciona Mesa Disponible</label>
+              <TableSelector 
+                occupiedTables={occupiedTables} 
+                onSelect={(table) => {
+                  const item = waitList.find(w => w.id === seatingId);
+                  if (item) onSeat(item.id, item.guests, table);
+                  setSeatingId(null);
+                }} 
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

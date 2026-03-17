@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import {
   getReservations, updateReservation, deleteReservation, getStats,
   getOccupancyByHour, getStatusDistribution, getWeeklyComparison, getNoShowRate,
-  getClientProfiles, getOccupiedTables, generateCSV,
-  type Reservation, type ReservationStatus, type ClientProfile, type ReservationStats
+  getClientProfiles, getOccupiedTables, generateCSV, getClientMeta, saveClientMeta,
+  type Reservation, type ReservationStatus, type ClientProfile, type ReservationStats, type ClientMeta
 } from '../services/reservationStore';
 import TableSelector from '../components/TableSelector';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -17,6 +17,7 @@ const STATUS_CONFIG: Record<ReservationStatus, { label: string; color: string; b
   'completed': { label: 'Completada', color: 'text-slate-400',   bg: 'bg-slate-400/10 border-slate-400/20' },
   'cancelled': { label: 'Cancelada',  color: 'text-red-400',     bg: 'bg-red-400/10 border-red-400/20' },
   'no-show':   { label: 'No Show',    color: 'text-orange-400',  bg: 'bg-orange-400/10 border-orange-400/20' },
+  'waiting':   { label: 'En Espera', color: 'text-purple-400',  bg: 'bg-purple-400/10 border-purple-400/20' },
 };
 
 type AdminTab = 'kanban' | 'dashboard' | 'crm';
@@ -519,6 +520,30 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
   setSelectedClient: (c: ClientProfile | null) => void;
   clientProfiles: ClientProfile[];
 }) {
+  const [meta, setMeta] = useState<ClientMeta | null>(null);
+  const [loadingMeta, setLoadingMeta] = useState(false);
+  const [savingMeta, setSavingMeta] = useState(false);
+
+  useEffect(() => {
+    if (selectedClient?.phone) {
+      setLoadingMeta(true);
+      getClientMeta(selectedClient.phone).then(m => {
+        setMeta(m || { phone: selectedClient.phone });
+        setLoadingMeta(false);
+      });
+    } else {
+      setMeta(null);
+    }
+  }, [selectedClient]);
+
+  const handleSaveMeta = async () => {
+    if (meta) {
+      setSavingMeta(true);
+      await saveClientMeta(meta);
+      setSavingMeta(false);
+    }
+  };
+
   const filteredClients = useMemo(() => {
     if (!search) return clientProfiles;
     const q = search.toLowerCase();
@@ -584,12 +609,43 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
               </div>
             </div>
 
+            {/* Client Meta (Allergies/Notes) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-white/5">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Alergias / Intolerancias</label>
+                <textarea 
+                  value={meta?.allergies || ''} 
+                  onChange={e => setMeta(prev => prev ? { ...prev, allergies: e.target.value } : null)}
+                  placeholder="Ej: Gluten, marisco..."
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 h-20 resize-none"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Notas de Preferencia</label>
+                <textarea 
+                  value={meta?.customNotes || ''} 
+                  onChange={e => setMeta(prev => prev ? { ...prev, customNotes: e.target.value } : null)}
+                  placeholder="Ej: Mesa cerca de ventana, vino preferido..."
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 h-20 resize-none"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <button 
+                onClick={handleSaveMeta}
+                disabled={savingMeta || loadingMeta}
+                className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all"
+              >
+                {savingMeta ? 'Guardando...' : 'Actualizar Perfil CRM'}
+              </button>
+            </div>
+
             {selectedClient.allNotes.length > 0 && (
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Historial de notas</h3>
-                <div className="space-y-1.5 max-h-[200px] overflow-y-auto">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Historial de reservas</h3>
+                <div className="space-y-1.5 max-h-[150px] overflow-y-auto pr-2">
                   {selectedClient.allNotes.map((note, i) => (
-                    <div key={i} className="bg-white/5 rounded-lg px-3 py-2 text-xs text-amber-300/80">📝 {note}</div>
+                    <div key={i} className="bg-white/5 rounded-lg px-3 py-2 text-xs text-amber-300/80">📅 {note}</div>
                   ))}
                 </div>
               </div>
