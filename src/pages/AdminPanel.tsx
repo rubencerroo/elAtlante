@@ -848,7 +848,7 @@ function FeedbackView({ feedbacks, onReload }: { feedbacks: any[], onReload: () 
                     {f.type === 'bug' ? '🐞 Bug' : '💡 Sugerencia'}
                   </span>
                   <span className="text-[9px] text-slate-400 font-bold uppercase px-2 py-0.5 bg-white/5 rounded-full">
-                    {f.role === 'admin' ? 'Dueño' : 'Camarero'}
+                    {f.role === 'admin' ? 'Dueño' : 'Camarero'} {f.user_email ? `(${f.user_email})` : ''}
                   </span>
                 </div>
                 <span className="text-[9px] text-slate-600 font-mono italic">{new Date(f.created_at).toLocaleDateString()}</span>

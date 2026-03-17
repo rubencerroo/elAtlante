@@ -558,10 +558,10 @@ export async function getOccupiedTables(dateStr?: string): Promise<number[]> {
 export type FeedbackType = 'bug' | 'suggestion';
 export type FeedbackRole = 'admin' | 'waiter';
 
-export async function submitFeedback(type: FeedbackType, role: FeedbackRole, content: string): Promise<boolean> {
+export async function submitFeedback(type: FeedbackType, role: FeedbackRole, content: string, userEmail?: string): Promise<boolean> {
   const { error } = await supabase
     .from('feedback')
-    .insert([{ type, role, content }]);
+    .insert([{ type, role, content, user_email: userEmail }]);
 
   if (error) {
     console.error('Error submitting feedback:', error);

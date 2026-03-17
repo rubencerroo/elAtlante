@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { submitFeedback, type FeedbackType, type FeedbackRole } from '../services/reservationStore';
+import { getUser } from '../services/authStore';
 
 interface FeedbackButtonProps {
   role: FeedbackRole;
@@ -17,8 +18,17 @@ export default function FeedbackButton({ role, className }: FeedbackButtonProps)
     e.preventDefault();
     if (!content.trim()) return;
     
+    
     setIsSubmitting(true);
-    const success = await submitFeedback(type, role, content);
+    let userEmail = '';
+    try {
+      const user = await getUser();
+      userEmail = user?.email || '';
+    } catch (e) {
+      console.error('Error fetching user for feedback:', e);
+    }
+
+    const success = await submitFeedback(type, role, content, userEmail);
     setIsSubmitting(false);
     
     if (success) {
