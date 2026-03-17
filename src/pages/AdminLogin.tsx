@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signIn, getStaffRole, getSession } from '../services/authStore';
+import { signIn, getStaffRole, getSession, signOut } from '../services/authStore';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -9,6 +9,7 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [showRoleSelector, setShowRoleSelector] = useState(false);
 
   // Check if already logged in
   useEffect(() => {
@@ -18,7 +19,7 @@ export default function AdminLogin() {
         if (session) {
           const role = await getStaffRole();
           if (role === 'owner') {
-            navigate('/admin/owner', { replace: true });
+            setShowRoleSelector(true);
           } else if (role === 'waiter') {
             navigate('/admin/waiter', { replace: true });
           }
@@ -47,7 +48,8 @@ export default function AdminLogin() {
       }
 
       if (role === 'owner') {
-        navigate('/admin/owner');
+        setShowRoleSelector(true);
+        setLoading(false);
       } else {
         navigate('/admin/waiter');
       }
@@ -63,10 +65,74 @@ export default function AdminLogin() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      setShowRoleSelector(false);
+      setEmail('');
+      setPassword('');
+      setError('');
+    } catch (err: any) {
+      setError('Error al cerrar sesión');
+    }
+  };
+
   if (checkingSession) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (showRoleSelector) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        {/* BG glow */}
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[150px]" />
+        
+        <div className="relative z-10 w-full max-w-md space-y-8 text-center">
+          <div>
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 mb-4">
+              <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h1 className="text-white text-3xl font-bold tracking-tight mb-2">Bienvenido</h1>
+            <p className="text-slate-400">¿A qué panel deseas acceder?</p>
+          </div>
+          
+          <div className="grid grid-cols-1 gap-4 mt-8">
+            <button
+              onClick={() => navigate('/admin/owner')}
+              className="group relative bg-white/5 border border-white/10 hover:border-primary/50 focus:border-primary/50 hover:bg-white/10 text-white font-bold text-lg py-6 rounded-2xl transition-all duration-300 shadow-lg overflow-hidden flex flex-col items-center gap-3"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <svg className="w-8 h-8 text-primary group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              <span>Panel Administrador</span>
+            </button>
+
+            <button
+              onClick={() => navigate('/admin/waiter')}
+              className="group relative bg-white/5 border border-white/10 hover:border-[#10b981]/50 focus:border-[#10b981]/50 hover:bg-white/10 text-white font-bold text-lg py-6 rounded-2xl transition-all duration-300 shadow-lg overflow-hidden flex flex-col items-center gap-3"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-[#10b981]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <svg className="w-8 h-8 text-[#10b981] group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Panel Camarero</span>
+            </button>
+          </div>
+          
+          <button
+            onClick={handleLogout}
+            className="text-slate-500 hover:text-white underline mt-8 text-sm transition-colors"
+          >
+            Cerrar sesión
+          </button>
+        </div>
       </div>
     );
   }
