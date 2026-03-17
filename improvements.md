@@ -6,19 +6,6 @@ Auditoría completa del proyecto: código fuente, base de datos Supabase, seguri
 
 ## 🔴 CRÍTICOS — Seguridad
 
-### 1. PINs de acceso admin hardcodeados y visibles en el código fuente
-**Archivo:** `AdminLogin.tsx:4`
-```ts
-const PINS = { owner: '1234', waiter: '0000' };
-```
-Además, **se muestran en pantalla** al usuario en la línea 92:
-```html
-<p>PIN Dueño: 1234 · PIN Camarero: 0000</p>
-```
-**Impacto:** Cualquiera que acceda a `/admin` puede ver los PINs directamente. Y al estar en el código fuente del frontend, están expuestos en el bundle de producción.
-
-**Solución:** Mover la autenticación a servidor (Supabase Auth o edge function). Al mínimo, eliminar la línea que muestra los PINs y sacarlos del código cliente.
-
 ---
 
 ### 2. Archivo `.env` NO incluido en `.gitignore`

@@ -828,8 +828,9 @@ function StaffView() {
   const [loadingStaff, setLoadingStaff] = useState(true);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<StaffRole>('waiter');
+  const [invitePassword, setInvitePassword] = useState('');
   const [inviting, setInviting] = useState(false);
-  const [inviteResult, setInviteResult] = useState<{ type: 'success' | 'error'; message: string; link?: string } | null>(null);
+  const [inviteResult, setInviteResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const loadStaff = useCallback(async () => {
     setLoadingStaff(true);
@@ -851,13 +852,13 @@ function StaffView() {
     setInviting(true);
     setInviteResult(null);
     try {
-      const result = await inviteStaff(inviteEmail, inviteRole);
+      const result = await inviteStaff(inviteEmail, inviteRole, invitePassword);
       setInviteResult({
         type: 'success',
         message: result.message,
-        link: result.recovery_link || undefined,
       });
       setInviteEmail('');
+      setInvitePassword('');
       loadStaff();
     } catch (err: any) {
       setInviteResult({ type: 'error', message: err.message });
@@ -866,6 +867,10 @@ function StaffView() {
   };
 
   const handleDelete = async (id: string, email: string) => {
+    if (email === 'dev@elatlantedesancristobal.com') {
+      alert('Esta cuenta de desarrollador no puede ser eliminada desde el panel.');
+      return;
+    }
     if (!confirm(`¿Eliminar a ${email} del equipo?`)) return;
     try {
       await deleteStaff(id);
@@ -903,10 +908,22 @@ function StaffView() {
               <option value="owner">⭐ Dueño</option>
             </select>
           </div>
+          <div className="flex-1 space-y-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Contraseña inicial</label>
+            <input
+              type="text"
+              required
+              minLength={6}
+              value={invitePassword}
+              onChange={e => setInvitePassword(e.target.value)}
+              placeholder="Min. 6 caracteres"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
+            />
+          </div>
           <div className="flex items-end">
             <button
               type="submit"
-              disabled={inviting || !inviteEmail}
+              disabled={inviting || !inviteEmail || invitePassword.length < 6}
               className="bg-primary hover:bg-primary/90 disabled:opacity-30 text-white rounded-xl px-6 py-2.5 text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap"
             >
               {inviting ? (
@@ -925,25 +942,6 @@ function StaffView() {
             <p className={`text-sm ${inviteResult.type === 'success' ? 'text-emerald-400' : 'text-red-400'}`}>
               {inviteResult.message}
             </p>
-            {inviteResult.link && (
-              <div className="mt-2">
-                <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Enlace para establecer contraseña:</p>
-                <div className="flex gap-2 items-center">
-                  <input
-                    type="text"
-                    readOnly
-                    value={inviteResult.link}
-                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-slate-300 font-mono"
-                  />
-                  <button
-                    onClick={() => { navigator.clipboard.writeText(inviteResult.link!); }}
-                    className="bg-white/10 hover:bg-white/20 rounded-lg px-3 py-1.5 text-xs text-white font-medium transition-colors whitespace-nowrap"
-                  >
-                    📋 Copiar
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -970,17 +968,21 @@ function StaffView() {
                   <div>
                     <p className="text-sm font-semibold">{s.email}</p>
                     <p className="text-xs text-slate-500">
-                      {s.role === 'owner' ? 'Dueño' : 'Camarero'} · Creado el {new Date(s.created_at).toLocaleDateString('es-ES')}
+                      {s.email === 'dev@elatlantedesancristobal.com' ? 'Desarrollador' : (s.role === 'owner' ? 'Dueño' : 'Camarero')} · Creado el {new Date(s.created_at).toLocaleDateString('es-ES')}
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleDelete(s.id, s.email)}
-                  className="text-slate-600 hover:text-red-400 transition-colors p-2"
-                  title="Eliminar del equipo"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                </button>
+                {s.email !== 'dev@elatlantedesancristobal.com' ? (
+                  <button
+                    onClick={() => handleDelete(s.id, s.email)}
+                    className="text-slate-600 hover:text-red-400 transition-colors p-2"
+                    title="Eliminar del equipo"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  </button>
+                ) : (
+                  <div className="w-9 h-9"></div> /* Placeholder for alignment */
+                )}
               </div>
             ))}
           </div>

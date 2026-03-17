@@ -62,12 +62,12 @@ export async function getStaffProfiles(): Promise<StaffProfile[]> {
 
 // ── Invite Staff (calls Edge Function) ──
 
-export async function inviteStaff(email: string, role: StaffRole): Promise<{ recovery_link: string | null; message: string }> {
+export async function inviteStaff(email: string, role: StaffRole, password?: string): Promise<{ message: string }> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error('No hay sesión activa');
 
   const response = await supabase.functions.invoke('invite-staff', {
-    body: { email, role },
+    body: { email, role, password },
   });
 
   if (response.error) {
@@ -80,7 +80,6 @@ export async function inviteStaff(email: string, role: StaffRole): Promise<{ rec
   }
 
   return {
-    recovery_link: result.recovery_link,
     message: result.message,
   };
 }
