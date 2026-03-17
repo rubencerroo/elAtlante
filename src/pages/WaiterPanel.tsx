@@ -138,7 +138,16 @@ export default function WaiterPanel() {
   };
 
   const handleSeatFromWaitlist = async (waitlistId: string, _guests: number, tableNumber: number) => {
-    await updateReservation(waitlistId, { status: 'seated', tableNumber });
+    const now = new Date();
+    const walkInName = `Walk-in ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+    await updateReservation(waitlistId, { 
+      status: 'seated', 
+      tableNumber,
+      name: walkInName,
+      phone: 'Walk-in',
+      email: '',
+      isWalkIn: true
+    });
     reload();
   };
 
@@ -271,7 +280,6 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
   occupiedTables: number[];
 }) {
   const [waitName, setWaitName] = useState('');
-  const [waitPhone, setWaitPhone] = useState('');
   const [waitGuests, setWaitGuests] = useState(2);
   const [seatingId, setSeatingId] = useState<string | null>(null);
 
@@ -279,11 +287,9 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
     <div className="space-y-6">
       <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5 space-y-4">
         <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-2">
-            <input type="text" value={waitName} onChange={e => setWaitName(e.target.value)} placeholder="Nombre"
-              className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50" />
-            <input type="tel" value={waitPhone} onChange={e => setWaitPhone(e.target.value)} placeholder="Teléfono"
-              className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50" />
+          <div className="flex gap-2">
+            <input type="text" value={waitName} onChange={e => setWaitName(e.target.value)} placeholder="Nombre del cliente"
+              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50" />
           </div>
           
           <div className="flex gap-2">
@@ -291,9 +297,9 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
               className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:outline-none appearance-none cursor-pointer">
               {[1,2,3,4,5,6,7,8,9,10,12].map(n => <option key={n} value={n}>{n} personas</option>)}
             </select>
-            <button onClick={() => { if (waitName) { addToWaitList(waitName, waitGuests, waitPhone); setWaitName(''); setWaitPhone(''); } }}
+            <button onClick={() => { if (waitName) { addToWaitList(waitName, waitGuests); setWaitName(''); } }}
               className="bg-primary hover:bg-primary/90 text-white rounded-xl px-6 py-3 text-sm font-bold transition-all shrink-0">
-              + Añadir
+              + Añadir a la fila
             </button>
           </div>
         </div>
@@ -313,7 +319,7 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
                     <span className="bg-primary/20 text-primary rounded-xl w-10 h-10 flex items-center justify-center font-black text-lg">{idx + 1}</span>
                     <div>
                       <p className="font-bold text-base">{w.name}</p>
-                      <p className="text-xs text-slate-500 font-medium">{w.phone !== 'Walk-in' && <span>📞 {w.phone} · </span>}👥 {w.guests} comensales · Esperando desde {new Date(w.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
+                      <p className="text-xs text-slate-500 font-medium">👥 {w.guests} comensales · Esperando desde {new Date(w.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                   </div>
                   <div className="flex gap-2">

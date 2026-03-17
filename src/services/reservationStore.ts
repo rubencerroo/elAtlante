@@ -41,7 +41,8 @@ export interface ClientProfile {
 }
 
 export interface ClientMeta {
-  phone: string;
+  email: string;
+  phone?: string;
   allergies?: string;
   favoriteWine?: string;
   customNotes?: string;
@@ -153,10 +154,11 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
   const reservation = mapToReservation(data);
 
   // Auto-create client meta if phone exists but meta doesn't
-  if (reservation.phone && reservation.phone !== 'Walk-in') {
-    const existingMeta = await getClientMeta(reservation.phone);
+  // Auto-create client meta if email exists but meta doesn't
+  if (reservation.email && reservation.email !== 'Walk-in') {
+    const existingMeta = await getClientMeta(reservation.email);
     if (!existingMeta) {
-      await saveClientMeta({ phone: reservation.phone });
+      await saveClientMeta({ email: reservation.email, phone: reservation.phone });
     }
   }
 
@@ -231,9 +233,10 @@ export async function addToWaitList(name: string, guests: number, phone?: string
     return null;
   }
 
-  if (phone && phone !== 'Walk-in') {
-    const existingMeta = await getClientMeta(phone);
-    if (!existingMeta) await saveClientMeta({ phone });
+  if (phone && phone !== 'Walk-in' && !newR.is_walk_in) {
+    // If we have a phone but no email in waitlist (since phone is no longer asked), 
+    // we can't really do email-based CRM meta-matching easily without email.
+    // However, waitlist entries currently don't ask for email either.
   }
 
   return mapToReservation(data);
@@ -428,7 +431,8 @@ export async function getClientProfiles(): Promise<ClientProfile[]> {
 
   const map = new Map<string, any[]>();
   data.forEach(r => {
-    const key = r.phone || r.name.toLowerCase();
+    // Use email as primary key, fallback to phone then name
+    const key = r.email || r.phone || r.name.toLowerCase();
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(r);
   });
@@ -478,15 +482,16 @@ export async function getClientHistory(nameOrPhone: string): Promise<Reservation
 
 // ── Client Metadata ──
 
-export async function getClientMeta(phone: string): Promise<ClientMeta | null> {
+export async function getClientMeta(email: string): Promise<ClientMeta | null> {
   const { data, error } = await supabase
     .from('client_meta')
     .select('*')
-    .eq('phone', phone)
+    .eq('email', email)
     .single();
 
   if (error) return null;
   return {
+    email: data.email,
     phone: data.phone,
     allergies: data.allergies,
     favoriteWine: data.favorite_wine,
@@ -498,6 +503,7 @@ export async function saveClientMeta(meta: ClientMeta): Promise<void> {
   const { error } = await supabase
     .from('client_meta')
     .upsert({
+      email: meta.email,
       phone: meta.phone,
       allergies: meta.allergies,
       favorite_wine: meta.favoriteWine,

@@ -537,10 +537,10 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
   const [savingMeta, setSavingMeta] = useState(false);
 
   useEffect(() => {
-    if (selectedClient?.phone) {
+    if (selectedClient?.email) {
       setLoadingMeta(true);
-      getClientMeta(selectedClient.phone).then(m => {
-        setMeta(m || { phone: selectedClient.phone });
+      getClientMeta(selectedClient.email).then(m => {
+        setMeta(m || { email: selectedClient.email, phone: selectedClient.phone });
         setLoadingMeta(false);
       });
     } else {
@@ -570,8 +570,8 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
           className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary/50" />
         <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
           {filteredClients.map(c => (
-            <button key={c.phone || c.name} onClick={() => setSelectedClient(c)}
-              className={`w-full text-left bg-white/[0.03] hover:bg-white/[0.06] border rounded-xl px-4 py-3 transition-all ${selectedClient?.phone === c.phone ? 'border-primary/30 bg-primary/5' : 'border-white/5'}`}>
+            <button key={c.email || c.phone || c.name} onClick={() => setSelectedClient(c)}
+              className={`w-full text-left bg-white/[0.03] hover:bg-white/[0.06] border rounded-xl px-4 py-3 transition-all ${selectedClient?.email === c.email && c.email ? 'border-primary/30 bg-primary/5' : 'border-white/5'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-sm">{c.name}</span>
@@ -725,15 +725,15 @@ function ManualReservationModal({ onClose, onSave }: { onClose: () => void; onSa
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary/50" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Teléfono</label>
-              <input required type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })}
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Teléfono (opcional)</label>
+              <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary/50" />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Email (opcional)</label>
-            <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })}
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Email</label>
+            <input required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary/50" />
           </div>
 
