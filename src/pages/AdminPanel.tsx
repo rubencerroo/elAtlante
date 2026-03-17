@@ -6,6 +6,7 @@ import {
   getClientProfiles, getOccupiedTables, generateCSV, getClientMeta, saveClientMeta,
   type Reservation, type ReservationStatus, type ClientProfile, type ReservationStats, type ClientMeta
 } from '../services/reservationStore';
+import { signOut, getStaffRole, getSession, inviteStaff, getStaffProfiles, deleteStaff, type StaffProfile, type StaffRole } from '../services/authStore';
 import TableSelector from '../components/TableSelector';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import FeedbackButton from '../components/FeedbackButton';
@@ -22,7 +23,7 @@ const STATUS_CONFIG: Record<ReservationStatus, { label: string; color: string; b
   'waiting':   { label: 'En Espera', color: 'text-purple-400',  bg: 'bg-purple-400/10 border-purple-400/20' },
 };
 
-type AdminTab = 'kanban' | 'dashboard' | 'crm';
+type AdminTab = 'kanban' | 'dashboard' | 'crm' | 'staff';
 
 const KANBAN_COLUMNS: { status: ReservationStatus; label: string; icon: string; color: string }[] = [
   { status: 'waiting', label: 'En Espera', icon: '⏳', color: 'border-t-purple-400' },
@@ -56,9 +57,20 @@ export default function AdminPanel() {
   const [crmSearch, setCrmSearch] = useState('');
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   
   useEffect(() => {
-    if (sessionStorage.getItem('admin_role') !== 'owner') navigate('/admin');
+    (async () => {
+      try {
+        const session = await getSession();
+        if (!session) { navigate('/admin', { replace: true }); return; }
+        const role = await getStaffRole();
+        if (role !== 'owner') { navigate('/admin', { replace: true }); return; }
+        setAuthChecked(true);
+      } catch {
+        navigate('/admin', { replace: true });
+      }
+    })();
   }, [navigate]);
 
   const fetchDashboardData = useCallback(async () => {
@@ -179,13 +191,22 @@ export default function AdminPanel() {
     }
   };
 
-  const logout = () => { sessionStorage.removeItem('admin_role'); navigate('/admin'); };
+  const logout = async () => { await signOut(); navigate('/admin'); };
 
   const tabs: { key: AdminTab; label: string; icon: string }[] = [
     { key: 'kanban', label: 'Reservas', icon: '📋' },
     { key: 'dashboard', label: 'Dashboard', icon: '📊' },
     { key: 'crm', label: 'Clientes', icon: '👥' },
+    { key: 'staff', label: 'Equipo', icon: '🔑' },
   ];
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -273,6 +294,7 @@ export default function AdminPanel() {
         {activeTab === 'kanban' && <KanbanView filtered={filtered} handleStatus={handleStatus} handleDelete={handleDelete} handleAssignTable={handleAssignTable} showTableSelector={showTableSelector} setShowTableSelector={setShowTableSelector} occupiedTables={occupiedTables} draggedId={draggedId} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} />}
         {activeTab === 'dashboard' && <DashboardView reservations={reservations} occupancyData={occupancyData} statusData={statusData} weeklyComp={weeklyComp} noShowRate={noShowRate} />}
         {activeTab === 'crm' && <CRMView search={crmSearch} setSearch={setCrmSearch} selectedClient={selectedClient} setSelectedClient={setSelectedClient} clientProfiles={clientProfiles} />}
+        {activeTab === 'staff' && <StaffView />}
 
         {loading && (
           <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center z-[100]">
@@ -797,3 +819,173 @@ function ManualReservationModal({ onClose, onSave }: { onClose: () => void; onSa
   );
 }
 
+// ═══════════════════════════════════════════════
+// STAFF VIEW
+// ═══════════════════════════════════════════════
+
+function StaffView() {
+  const [staff, setStaff] = useState<StaffProfile[]>([]);
+  const [loadingStaff, setLoadingStaff] = useState(true);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<StaffRole>('waiter');
+  const [inviting, setInviting] = useState(false);
+  const [inviteResult, setInviteResult] = useState<{ type: 'success' | 'error'; message: string; link?: string } | null>(null);
+
+  const loadStaff = useCallback(async () => {
+    setLoadingStaff(true);
+    try {
+      const profiles = await getStaffProfiles();
+      setStaff(profiles);
+    } catch (e) {
+      console.error('Error loading staff:', e);
+    }
+    setLoadingStaff(false);
+  }, []);
+
+  useEffect(() => {
+    loadStaff();
+  }, [loadStaff]);
+
+  const handleInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setInviting(true);
+    setInviteResult(null);
+    try {
+      const result = await inviteStaff(inviteEmail, inviteRole);
+      setInviteResult({
+        type: 'success',
+        message: result.message,
+        link: result.recovery_link || undefined,
+      });
+      setInviteEmail('');
+      loadStaff();
+    } catch (err: any) {
+      setInviteResult({ type: 'error', message: err.message });
+    }
+    setInviting(false);
+  };
+
+  const handleDelete = async (id: string, email: string) => {
+    if (!confirm(`¿Eliminar a ${email} del equipo?`)) return;
+    try {
+      await deleteStaff(id);
+      loadStaff();
+    } catch (err: any) {
+      alert('Error: ' + err.message);
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Invite Form */}
+      <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-6">
+        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">➕ Invitar nuevo miembro</h3>
+        <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 space-y-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Email</label>
+            <input
+              type="email"
+              required
+              value={inviteEmail}
+              onChange={e => setInviteEmail(e.target.value)}
+              placeholder="email@ejemplo.com"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Rol</label>
+            <select
+              value={inviteRole}
+              onChange={e => setInviteRole(e.target.value as StaffRole)}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50 appearance-none min-w-[140px]"
+            >
+              <option value="waiter">🍽 Camarero</option>
+              <option value="owner">⭐ Dueño</option>
+            </select>
+          </div>
+          <div className="flex items-end">
+            <button
+              type="submit"
+              disabled={inviting || !inviteEmail}
+              className="bg-primary hover:bg-primary/90 disabled:opacity-30 text-white rounded-xl px-6 py-2.5 text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap"
+            >
+              {inviting ? (
+                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Creando...</>
+              ) : 'Crear Usuario'}
+            </button>
+          </div>
+        </form>
+
+        {inviteResult && (
+          <div className={`mt-4 rounded-xl px-4 py-3 border ${
+            inviteResult.type === 'success'
+              ? 'bg-emerald-500/10 border-emerald-500/20'
+              : 'bg-red-500/10 border-red-500/20'
+          }`}>
+            <p className={`text-sm ${inviteResult.type === 'success' ? 'text-emerald-400' : 'text-red-400'}`}>
+              {inviteResult.message}
+            </p>
+            {inviteResult.link && (
+              <div className="mt-2">
+                <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Enlace para establecer contraseña:</p>
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    readOnly
+                    value={inviteResult.link}
+                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-slate-300 font-mono"
+                  />
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(inviteResult.link!); }}
+                    className="bg-white/10 hover:bg-white/20 rounded-lg px-3 py-1.5 text-xs text-white font-medium transition-colors whitespace-nowrap"
+                  >
+                    📋 Copiar
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Staff List */}
+      <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-6">
+        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">👥 Equipo actual</h3>
+        {loadingStaff ? (
+          <div className="flex justify-center py-8">
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : staff.length === 0 ? (
+          <p className="text-center text-slate-500 text-sm py-8">No hay miembros del equipo</p>
+        ) : (
+          <div className="space-y-2">
+            {staff.map(s => (
+              <div key={s.id} className="flex items-center justify-between bg-white/[0.04] border border-white/5 rounded-xl px-5 py-4">
+                <div className="flex items-center gap-4">
+                  <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold ${
+                    s.role === 'owner' ? 'bg-amber-500/10 text-amber-400' : 'bg-emerald-500/10 text-emerald-400'
+                  }`}>
+                    {s.role === 'owner' ? '⭐' : '🍽'}
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold">{s.email}</p>
+                    <p className="text-xs text-slate-500">
+                      {s.role === 'owner' ? 'Dueño' : 'Camarero'} · Creado el {new Date(s.created_at).toLocaleDateString('es-ES')}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleDelete(s.id, s.email)}
+                  className="text-slate-600 hover:text-red-400 transition-colors p-2"
+                  title="Eliminar del equipo"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

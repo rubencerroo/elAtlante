@@ -1,25 +1,75 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const PINS = { owner: '1234', waiter: '0000' };
+import { signIn, getStaffRole, getSession } from '../services/authStore';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
-  const [role, setRole] = useState<'owner' | 'waiter' | null>(null);
-  const [pin, setPin] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Check if already logged in
+  useEffect(() => {
+    (async () => {
+      try {
+        const session = await getSession();
+        if (session) {
+          const role = await getStaffRole();
+          if (role === 'owner') {
+            navigate('/admin/owner', { replace: true });
+          } else if (role === 'waiter') {
+            navigate('/admin/waiter', { replace: true });
+          }
+        }
+      } catch {
+        // Not logged in
+      } finally {
+        setCheckingSession(false);
+      }
+    })();
+  }, [navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!role) return;
-    if (pin === PINS[role]) {
-      sessionStorage.setItem('admin_role', role);
-      navigate(role === 'owner' ? '/admin/owner' : '/admin/waiter');
-    } else {
-      setError('PIN incorrecto');
-      setPin('');
+    setError('');
+    setLoading(true);
+
+    try {
+      await signIn(email, password);
+      const role = await getStaffRole();
+
+      if (!role) {
+        setError('No tienes permisos para acceder al panel.');
+        setLoading(false);
+        return;
+      }
+
+      if (role === 'owner') {
+        navigate('/admin/owner');
+      } else {
+        navigate('/admin/waiter');
+      }
+    } catch (err: any) {
+      if (err.message?.includes('Invalid login credentials')) {
+        setError('Email o contraseña incorrectos');
+      } else if (err.message?.includes('Email not confirmed')) {
+        setError('Email no confirmado. Revisa tu bandeja de entrada.');
+      } else {
+        setError(err.message || 'Error al iniciar sesión');
+      }
+      setLoading(false);
     }
   };
+
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
@@ -37,61 +87,56 @@ export default function AdminLogin() {
           <p className="text-slate-400 text-sm">El Atlante · Acceso restringido</p>
         </div>
 
-        {/* Role Selection */}
-        {!role ? (
-          <div className="space-y-4">
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.3em] text-center">Selecciona tu rol</p>
-            <div className="grid grid-cols-2 gap-4">
-              <button onClick={() => setRole('owner')}
-                className="group relative bg-white/5 hover:bg-primary/10 border border-white/10 hover:border-primary/30 rounded-2xl p-6 text-center transition-all duration-300">
-                <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <svg className="w-6 h-6 text-amber-400" fill="currentColor" viewBox="0 -960 960 960"><path d="m354-287 126-76 126 77-33-144 111-96-146-13-58-136-58 135-146 13 111 97-33 143ZM233-120l65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-350Z"/></svg>
-                </div>
-                <p className="text-white font-semibold text-sm">Dueño</p>
-                <p className="text-slate-500 text-xs mt-1">Gestión completa</p>
-              </button>
-              <button onClick={() => setRole('waiter')}
-                className="group relative bg-white/5 hover:bg-primary/10 border border-white/10 hover:border-primary/30 rounded-2xl p-6 text-center transition-all duration-300">
-                <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <svg className="w-6 h-6 text-emerald-400" fill="currentColor" viewBox="0 -960 960 960"><path d="M160-80q-33 0-56.5-23.5T80-160v-440q0-33 23.5-56.5T160-680h200v-120q0-33 23.5-56.5T440-880h80q33 0 56.5 23.5T600-800v120h200q33 0 56.5 23.5T880-600v440q0 33-23.5 56.5T800-80H160Zm280-600h80v-120h-80v120ZM160-160h640v-440H160v440Zm320-220Z"/></svg>
-                </div>
-                <p className="text-white font-semibold text-sm">Camarero</p>
-                <p className="text-slate-500 text-xs mt-1">Operación diaria</p>
-              </button>
-            </div>
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => { setEmail(e.target.value); setError(''); }}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white text-sm focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
+              placeholder="tu@email.com"
+              autoFocus
+              required
+              autoComplete="email"
+            />
           </div>
-        ) : (
-          /* PIN Entry */
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <button type="button" onClick={() => { setRole(null); setPin(''); setError(''); }}
-              className="text-slate-400 hover:text-white text-sm flex items-center gap-2 transition-colors">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 -960 960 960"><path d="M640-80 240-480l400-400 71 71-329 329 329 329-71 71Z"/></svg>
-              Cambiar rol
-            </button>
-            <div className="text-center">
-              <p className="text-slate-400 text-sm">Acceso como <span className="text-primary font-semibold">{role === 'owner' ? 'Dueño' : 'Camarero'}</span></p>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Contraseña</label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => { setPassword(e.target.value); setError(''); }}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white text-sm focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
+              placeholder="••••••••"
+              required
+              autoComplete="current-password"
+            />
+          </div>
+
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+              <p className="text-red-400 text-sm text-center">{error}</p>
             </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">PIN de acceso</label>
-              <input
-                type="password"
-                inputMode="numeric"
-                maxLength={4}
-                value={pin}
-                onChange={e => { setPin(e.target.value.replace(/\D/g, '')); setError(''); }}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white text-2xl tracking-[1em] text-center font-mono focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
-                placeholder="····"
-                autoFocus
-              />
-              {error && <p className="text-red-400 text-sm text-center animate-pulse">{error}</p>}
-            </div>
-            <button type="submit" disabled={pin.length < 4}
-              className="w-full bg-primary hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold uppercase tracking-[0.2em] text-sm py-4 rounded-xl transition-all duration-300 shadow-lg shadow-primary/20">
-              Acceder
-            </button>
-            <p className="text-slate-600 text-xs text-center">PIN Dueño: 1234 · PIN Camarero: 0000</p>
-          </form>
-        )}
+          )}
+
+          <button
+            type="submit"
+            disabled={loading || !email || !password}
+            className="w-full bg-primary hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold uppercase tracking-[0.2em] text-sm py-4 rounded-xl transition-all duration-300 shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Iniciando sesión...
+              </>
+            ) : (
+              'Acceder'
+            )}
+          </button>
+        </form>
       </div>
     </div>
   );

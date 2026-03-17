@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getReservationsForDate, updateReservation, addWalkIn, getOccupiedTables, type Reservation, type ReservationStatus } from '../services/reservationStore';
+import { signOut, getStaffRole, getSession } from '../services/authStore';
 import TableSelector from '../components/TableSelector';
 import FeedbackButton from '../components/FeedbackButton';
 import logoWhite from '../assets/logowhite.png';
@@ -67,9 +68,20 @@ export default function WaiterPanel() {
   const [occupiedTables, setOccupiedTables] = useState<number[]>([]);
   const today = new Date().toISOString().split('T')[0];
   const prevCountRef = useRef(0);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem('admin_role') !== 'waiter') navigate('/admin');
+    (async () => {
+      try {
+        const session = await getSession();
+        if (!session) { navigate('/admin', { replace: true }); return; }
+        const role = await getStaffRole();
+        if (role !== 'waiter' && role !== 'owner') { navigate('/admin', { replace: true }); return; }
+        setAuthChecked(true);
+      } catch {
+        navigate('/admin', { replace: true });
+      }
+    })();
   }, [navigate]);
 
   const reload = useCallback(async () => {
@@ -152,7 +164,7 @@ export default function WaiterPanel() {
     reload();
   };
 
-  const logout = () => { sessionStorage.removeItem('admin_role'); navigate('/admin'); };
+  const logout = async () => { await signOut(); navigate('/admin'); };
 
   const now = new Date();
   const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
@@ -163,6 +175,14 @@ export default function WaiterPanel() {
     { key: 'waitlist', label: 'Espera', count: grouped.waitlist.length, color: 'text-purple-400' },
     { key: 'done', label: 'Finalizadas', count: grouped.done.length, color: 'text-slate-400' },
   ];
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
