@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   getReservations, updateReservation, deleteReservation, getStats,
   getOccupancyByHour, getStatusDistribution, getWeeklyComparison, getNoShowRate,
-  getClientProfiles, addWalkIn, getOccupiedTables, generateCSV,
+  getClientProfiles, getOccupiedTables, generateCSV,
   type Reservation, type ReservationStatus, type ClientProfile, type ReservationStats
 } from '../services/reservationStore';
 import TableSelector from '../components/TableSelector';
