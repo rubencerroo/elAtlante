@@ -60,6 +60,7 @@ export default function WaiterPanel() {
   const [showWalkIn, setShowWalkIn] = useState(false);
   const [walkInGuests, setWalkInGuests] = useState(2);
   const [walkInTable, setWalkInTable] = useState<number | null>(null);
+  const [occupiedTables, setOccupiedTables] = useState<number[]>([]);
   const today = new Date().toISOString().split('T')[0];
   const prevCountRef = useRef(0);
 
@@ -67,9 +68,13 @@ export default function WaiterPanel() {
     if (sessionStorage.getItem('admin_role') !== 'waiter') navigate('/admin');
   }, [navigate]);
 
-  const reload = useCallback(() => {
-    const data = getReservationsForDate(today);
+  const reload = useCallback(async () => {
+    const data = await getReservationsForDate(today);
+    const occTables = await getOccupiedTables(today);
+    
     setReservations(data);
+    setOccupiedTables(occTables);
+
     // Sound notification if new reservations appeared
     const activeCount = data.filter(r => r.status !== 'cancelled' && r.status !== 'completed').length;
     if (prevCountRef.current > 0 && activeCount > prevCountRef.current) {
@@ -78,7 +83,9 @@ export default function WaiterPanel() {
     prevCountRef.current = activeCount;
   }, [today]);
 
-  useEffect(reload, [reload]);
+  useEffect(() => {
+    reload();
+  }, [reload]);
 
   // Auto-reload every 30s
   useEffect(() => {
@@ -93,8 +100,6 @@ export default function WaiterPanel() {
     return () => clearInterval(timer);
   }, []);
 
-  const occupiedTables = useMemo(() => getOccupiedTables(today), [reservations, today]);
-
   const grouped = useMemo(() => ({
     upcoming: reservations.filter(r => r.status === 'pending' || r.status === 'confirmed').sort((a, b) => a.time.localeCompare(b.time)),
     seated: reservations.filter(r => r.status === 'seated').sort((a, b) => a.time.localeCompare(b.time)),
@@ -103,14 +108,14 @@ export default function WaiterPanel() {
 
   const currentList = grouped[tab];
 
-  const handleStatus = (id: string, status: ReservationStatus, tableNumber?: number) => {
-    updateReservation(id, { status, ...(tableNumber ? { tableNumber } : {}) });
+  const handleStatus = async (id: string, status: ReservationStatus, tableNumber?: number) => {
+    await updateReservation(id, { status, ...(tableNumber ? { tableNumber } : {}) });
     reload();
   };
 
-  const handleWalkIn = () => {
+  const handleWalkIn = async () => {
     if (walkInTable && walkInGuests > 0) {
-      addWalkIn(walkInGuests, walkInTable);
+      await addWalkIn(walkInGuests, walkInTable);
       setWalkInGuests(2);
       setWalkInTable(null);
       setShowWalkIn(false);

@@ -17,14 +17,14 @@ export default function Reservations() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (phone.length < 9) {
       alert('Por favor, introduce un número de teléfono válido.');
       return;
     }
     const guestMap: Record<string, number> = { '2 Personas': 2, '3 Personas': 3, '4 Personas': 4, 'Más de 4': 5 };
-    const reservation = addReservation({
+    const reservation = await addReservation({
       name: formData.name,
       email: formData.email,
       phone,
@@ -35,8 +35,12 @@ export default function Reservations() {
       hasPet: formData.hasPet,
       notes: formData.notes,
     });
-    setLastReservation(reservation);
-    setSubmitted(true);
+    if (reservation) {
+      setLastReservation(reservation);
+      setSubmitted(true);
+    } else {
+      alert('Hubo un error al procesar tu reserva. Por favor, inténtalo de nuevo o contáctanos por teléfono.');
+    }
   };
 
   const formatDate = (dateStr: string) => {

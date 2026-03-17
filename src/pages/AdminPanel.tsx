@@ -4,7 +4,7 @@ import {
   getReservations, updateReservation, deleteReservation, getStats,
   getOccupancyByHour, getStatusDistribution, getWeeklyComparison, getNoShowRate,
   getClientProfiles, addWalkIn, getOccupiedTables, generateCSV,
-  type Reservation, type ReservationStatus, type ClientProfile
+  type Reservation, type ReservationStatus, type ClientProfile, type ReservationStats
 } from '../services/reservationStore';
 import TableSelector from '../components/TableSelector';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -31,12 +31,22 @@ const KANBAN_COLUMNS: { status: ReservationStatus; label: string; icon: string; 
 export default function AdminPanel() {
   const navigate = useNavigate();
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<AdminTab>('kanban');
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
   const [search, setSearch] = useState('');
   const [showTableSelector, setShowTableSelector] = useState<string | null>(null);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   
+  // Stats and data states
+  const [stats, setStats] = useState<ReservationStats | null>(null);
+  const [occupancyData, setOccupancyData] = useState<{ hour: string; guests: number }[]>([]);
+  const [statusData, setStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
+  const [weeklyComp, setWeeklyComp] = useState<{ thisWeek: number; lastWeek: number; change: number }>({ thisWeek: 0, lastWeek: 0, change: 0 });
+  const [noShowRate, setNoShowRate] = useState(0);
+  const [clientProfiles, setClientProfiles] = useState<ClientProfile[]>([]);
+  const [occupiedTables, setOccupiedTables] = useState<number[]>([]);
+
   // Walk-in state
   const [walkInGuests, setWalkInGuests] = useState(2);
   const [walkInName, setWalkInName] = useState('');
@@ -54,11 +64,35 @@ export default function AdminPanel() {
     if (sessionStorage.getItem('admin_role') !== 'owner') navigate('/admin');
   }, [navigate]);
 
-  const reload = useCallback(() => setReservations(getReservations()), []);
-  useEffect(reload, [reload]);
+  const fetchDashboardData = useCallback(async () => {
+    setLoading(true);
+    const [resData, statsData, occData, distData, weeklyData, nsRate, profiles, occTables] = await Promise.all([
+      getReservations(),
+      getStats(filterDate),
+      getOccupancyByHour(filterDate === 'all' ? new Date().toISOString().split('T')[0] : filterDate),
+      getStatusDistribution(filterDate === 'all' ? new Date().toISOString().split('T')[0] : filterDate),
+      getWeeklyComparison(),
+      getNoShowRate(),
+      getClientProfiles(),
+      getOccupiedTables(filterDate === 'all' ? new Date().toISOString().split('T')[0] : filterDate)
+    ]);
 
-  const stats = useMemo(() => getStats(filterDate), [reservations, filterDate]);
-  const occupiedTables = useMemo(() => getOccupiedTables(filterDate), [reservations, filterDate]);
+    setReservations(resData);
+    setStats(statsData);
+    setOccupancyData(occData);
+    setStatusData(distData);
+    setWeeklyComp(weeklyData);
+    setNoShowRate(nsRate);
+    setClientProfiles(profiles);
+    setOccupiedTables(occTables);
+    setLoading(false);
+  }, [filterDate]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  const reload = useCallback(() => fetchDashboardData(), [fetchDashboardData]);
 
   const filtered = useMemo(() => {
     return reservations
@@ -67,25 +101,25 @@ export default function AdminPanel() {
       .sort((a, b) => a.time.localeCompare(b.time));
   }, [reservations, filterDate, search]);
 
-  const handleStatus = (id: string, status: ReservationStatus) => {
-    updateReservation(id, { status });
+  const handleStatus = async (id: string, status: ReservationStatus) => {
+    await updateReservation(id, { status });
     reload();
   };
 
-  const handleDelete = (id: string) => {
-    deleteReservation(id);
+  const handleDelete = async (id: string) => {
+    await deleteReservation(id);
     reload();
   };
 
-  const handleAssignTable = (id: string, tableNumber: number) => {
-    updateReservation(id, { tableNumber });
+  const handleAssignTable = async (id: string, tableNumber: number) => {
+    await updateReservation(id, { tableNumber });
     setShowTableSelector(null);
     reload();
   };
 
-  const handleWalkIn = () => {
+  const handleWalkIn = async () => {
     if (walkInTable && walkInGuests > 0) {
-      addWalkIn(walkInGuests, walkInTable, walkInName || undefined);
+      await addWalkIn(walkInGuests, walkInTable, walkInName || undefined);
       setWalkInGuests(2);
       setWalkInName('');
       setWalkInTable(null);
@@ -102,8 +136,8 @@ export default function AdminPanel() {
     setWaitList(prev => prev.filter(w => w.id !== id));
   };
 
-  const exportCSV = () => {
-    const csv = generateCSV(filterDate);
+  const exportCSV = async () => {
+    const csv = await generateCSV(filterDate);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -221,10 +255,10 @@ export default function AdminPanel() {
         {/* KPI Cards - always visible */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
-            { label: 'Total Hoy', value: stats.totalToday, accent: 'text-white' },
-            { label: 'Confirmadas', value: stats.confirmed, accent: 'text-emerald-400' },
-            { label: 'Pendientes', value: stats.pending, accent: 'text-amber-400' },
-            { label: 'Invitados', value: stats.totalGuestsToday, accent: 'text-blue-400' },
+            { label: 'Total Hoy', value: stats?.totalToday || 0, accent: 'text-white' },
+            { label: 'Confirmadas', value: stats?.confirmed || 0, accent: 'text-emerald-400' },
+            { label: 'Pendientes', value: stats?.pending || 0, accent: 'text-amber-400' },
+            { label: 'Invitados', value: stats?.totalGuestsToday || 0, accent: 'text-blue-400' },
           ].map(kpi => (
             <div key={kpi.label} className="bg-white/5 border border-white/5 rounded-2xl p-5 space-y-2">
               <p className="text-slate-500 text-xs font-medium uppercase tracking-wider">{kpi.label}</p>
@@ -252,9 +286,18 @@ export default function AdminPanel() {
 
         {/* Tab Content */}
         {activeTab === 'kanban' && <KanbanView filtered={filtered} handleStatus={handleStatus} handleDelete={handleDelete} handleAssignTable={handleAssignTable} showTableSelector={showTableSelector} setShowTableSelector={setShowTableSelector} occupiedTables={occupiedTables} draggedId={draggedId} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} />}
-        {activeTab === 'dashboard' && <DashboardView filterDate={filterDate} reservations={reservations} />}
-        {activeTab === 'crm' && <CRMView search={crmSearch} setSearch={setCrmSearch} selectedClient={selectedClient} setSelectedClient={setSelectedClient} />}
+        {activeTab === 'dashboard' && <DashboardView reservations={reservations} occupancyData={occupancyData} statusData={statusData} weeklyComp={weeklyComp} noShowRate={noShowRate} />}
+        {activeTab === 'crm' && <CRMView search={crmSearch} setSearch={setCrmSearch} selectedClient={selectedClient} setSelectedClient={setSelectedClient} clientProfiles={clientProfiles} />}
         {activeTab === 'walkins' && <WalkInsView showForm={showWalkInForm} setShowForm={setShowWalkInForm} guests={walkInGuests} setGuests={setWalkInGuests} name={walkInName} setName={setWalkInName} table={walkInTable} setTable={setWalkInTable} occupiedTables={occupiedTables} onSubmit={handleWalkIn} waitList={waitList} addToWaitList={addToWaitList} removeFromWaitList={removeFromWaitList} />}
+
+        {loading && (
+          <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center z-[100]">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-xs font-bold uppercase tracking-widest text-primary">Actualizando datos...</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -399,15 +442,13 @@ function KanbanCard({ reservation: r, handleStatus, handleDelete, handleAssignTa
 // DASHBOARD VIEW
 // ═══════════════════════════════════════════════
 
-function DashboardView({ filterDate, reservations }: { filterDate: string; reservations: Reservation[] }) {
-  const occupancyData = useMemo(() => getOccupancyByHour(filterDate === 'all' ? new Date().toISOString().split('T')[0] : filterDate), [filterDate, reservations]);
-  const statusData = useMemo(() => getStatusDistribution(filterDate === 'all' ? new Date().toISOString().split('T')[0] : filterDate), [filterDate, reservations]);
-  const weeklyComp = useMemo(() => getWeeklyComparison(), [reservations]);
-  const noShowRate = useMemo(() => getNoShowRate(), [reservations]);
-  const avgParty = useMemo(() => {
-    const active = reservations.filter(r => r.status !== 'cancelled' && r.status !== 'no-show');
-    return active.length ? (active.reduce((s, r) => s + r.guests, 0) / active.length).toFixed(1) : '0';
-  }, [reservations]);
+function DashboardView({ reservations, occupancyData, statusData, weeklyComp, noShowRate }: { 
+  reservations: Reservation[];
+  occupancyData: { hour: string; guests: number }[];
+  statusData: { name: string; value: number; color: string }[];
+  weeklyComp: { thisWeek: number; lastWeek: number; change: number };
+  noShowRate: number;
+}) {
 
   return (
     <div className="space-y-8">
@@ -432,7 +473,12 @@ function DashboardView({ filterDate, reservations }: { filterDate: string; reser
         </div>
         <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
           <p className="text-slate-500 text-xs uppercase tracking-wider">Media comensales</p>
-          <p className="text-3xl font-black text-blue-400">{avgParty}</p>
+          <p className="text-3xl font-black text-blue-400">
+            {reservations.filter(r => r.status !== 'cancelled' && r.status !== 'no-show').length 
+              ? (reservations.filter(r => r.status !== 'cancelled' && r.status !== 'no-show').reduce((s, r) => s + r.guests, 0) / 
+                 reservations.filter(r => r.status !== 'cancelled' && r.status !== 'no-show').length).toFixed(1) 
+              : '0'}
+          </p>
         </div>
       </div>
 
@@ -496,18 +542,18 @@ function DashboardView({ filterDate, reservations }: { filterDate: string; reser
 // CRM VIEW
 // ═══════════════════════════════════════════════
 
-function CRMView({ search, setSearch, selectedClient, setSelectedClient }: {
+function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientProfiles }: {
   search: string;
   setSearch: (s: string) => void;
   selectedClient: ClientProfile | null;
   setSelectedClient: (c: ClientProfile | null) => void;
+  clientProfiles: ClientProfile[];
 }) {
-  const clients = useMemo(() => getClientProfiles(), []);
   const filteredClients = useMemo(() => {
-    if (!search) return clients;
+    if (!search) return clientProfiles;
     const q = search.toLowerCase();
-    return clients.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q) || c.email.toLowerCase().includes(q));
-  }, [clients, search]);
+    return clientProfiles.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q) || c.email.toLowerCase().includes(q));
+  }, [clientProfiles, search]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
