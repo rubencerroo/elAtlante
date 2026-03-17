@@ -10,6 +10,8 @@ import WaiterPanel from './pages/WaiterPanel';
 import LegalNotice from './pages/LegalNotice';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import CookiePolicy from './pages/CookiePolicy';
+import ComingSoon from './pages/ComingSoon';
+import { useState } from 'react';
 
 // Scroll to top component to reset scroll on route change
 function ScrollToTop() {
@@ -33,6 +35,20 @@ function ScrollToTop() {
 function AppLayout() {
   const { pathname } = useLocation();
   const isAdmin = pathname.startsWith('/admin');
+  
+  // Protection logic
+  const [isUnlocked, setIsUnlocked] = useState(() => {
+    return localStorage.getItem('el_atlante_unlocked') === 'true';
+  });
+
+  const handleUnlock = () => {
+    localStorage.setItem('el_atlante_unlocked', 'true');
+    setIsUnlocked(true);
+  };
+
+  if (!isUnlocked) {
+    return <ComingSoon onUnlock={handleUnlock} />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background-dark font-['Work_Sans',sans-serif] selection:bg-primary selection:text-white">
