@@ -11,11 +11,14 @@ export const onRequestGet = async (context: any) => {
 	if (!id) return new Response('Missing reservation ID', { status: 400 });
 
 	try {
+		const supabaseUrl = env.VITE_SUPABASE_URL || env.SUPABASE_URL || 'https://sftdoiuqacbenefqewcr.supabase.co';
+		const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY || env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+		
 		// Get reservation details from Supabase using SERVICE ROLE
-		const sbResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/reservations?id=eq.${id}`, {
+		const sbResponse = await fetch(`${supabaseUrl}/rest/v1/reservations?id=eq.${id}`, {
 			headers: {
-				'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
-				'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+				'apikey': serviceRoleKey,
+				'Authorization': `Bearer ${serviceRoleKey}`,
 			}
 		});
 
@@ -30,11 +33,11 @@ export const onRequestGet = async (context: any) => {
 		}
 
 		// Update status in Supabase
-		const updateResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/reservations?id=eq.${id}`, {
+		const updateResponse = await fetch(`${supabaseUrl}/rest/v1/reservations?id=eq.${id}`, {
 			method: 'PATCH',
 			headers: {
-				'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
-				'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+				'apikey': serviceRoleKey,
+				'Authorization': `Bearer ${serviceRoleKey}`,
 				'Content-Type': 'application/json',
 				'Prefer': 'return=representation',
 			},
@@ -47,7 +50,7 @@ export const onRequestGet = async (context: any) => {
 		await fetch('https://api.brevo.com/v3/smtp/email', {
 			method: 'POST',
 			headers: {
-				'api-key': env.BREVO_API_KEY,
+				'api-key': env.BREVO_API_KEY || env.VITE_BREVO_API_KEY,
 				'content-type': 'application/json',
 			},
 			body: JSON.stringify({
