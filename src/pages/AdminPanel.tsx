@@ -8,6 +8,7 @@ import {
 } from '../services/reservationStore';
 import TableSelector from '../components/TableSelector';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import FeedbackButton from '../components/FeedbackButton';
 
 // ── Status config ──
 const STATUS_CONFIG: Record<ReservationStatus, { label: string; color: string; bg: string }> = {
@@ -208,10 +209,13 @@ export default function AdminPanel() {
             ))}
           </nav>
 
-          <button onClick={logout} className="text-slate-400 hover:text-red-400 text-sm flex items-center gap-2 transition-colors">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 -960 960 960"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>
-            Salir
-          </button>
+          <div className="flex items-center gap-6">
+            <FeedbackButton role="admin" />
+            <button onClick={logout} className="text-slate-400 hover:text-red-400 text-sm flex items-center gap-2 transition-colors">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 -960 960 960"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>
+              Salir
+            </button>
+          </div>
         </div>
 
         {/* Mobile tabs */}

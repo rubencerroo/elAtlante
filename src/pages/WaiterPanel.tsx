@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getReservationsForDate, updateReservation, addWalkIn, getOccupiedTables, type Reservation, type ReservationStatus } from '../services/reservationStore';
 import TableSelector from '../components/TableSelector';
+import FeedbackButton from '../components/FeedbackButton';
 
 const STATUS_COLORS: Record<ReservationStatus, string> = {
   'pending': 'border-l-amber-400 bg-amber-400/5',
@@ -167,7 +168,10 @@ export default function WaiterPanel() {
               <p className="text-slate-500 text-[10px]">{today} · {currentTimeStr}</p>
             </div>
           </div>
-          <button onClick={logout} className="text-slate-500 hover:text-red-400 text-xs transition-colors">Salir</button>
+          <div className="flex items-center gap-4">
+            <FeedbackButton role="waiter" className="text-slate-500 hover:text-amber-400 text-xs flex items-center gap-1.5 transition-colors" />
+            <button onClick={logout} className="text-slate-500 hover:text-red-400 text-xs transition-colors">Salir</button>
+          </div>
         </div>
       </header>
 

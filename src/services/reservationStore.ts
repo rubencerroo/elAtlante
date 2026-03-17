@@ -523,6 +523,23 @@ export async function getOccupiedTables(dateStr?: string): Promise<number[]> {
   return data.map(r => r.table_number as number);
 }
 
+// ── Feedback ──
+
+export type FeedbackType = 'bug' | 'suggestion';
+export type FeedbackRole = 'admin' | 'waiter';
+
+export async function submitFeedback(type: FeedbackType, role: FeedbackRole, content: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('feedback')
+    .insert([{ type, role, content }]);
+
+  if (error) {
+    console.error('Error submitting feedback:', error);
+    return false;
+  }
+  return true;
+}
+
 // ── CSV Export ──
 
 export async function generateCSV(dateStr: string): Promise<string> {
