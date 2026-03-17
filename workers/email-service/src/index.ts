@@ -14,8 +14,12 @@ export default {
 		const url = new URL(request.url);
 
 		// Helper to handle CORS
+		const origin = request.headers.get('Origin') || '';
+		const allowedOrigins = ['https://elatlantedesancristobal.com', 'https://www.elatlantedesancristobal.com', 'http://localhost:5173'];
+		const corsOrigin = allowedOrigins.includes(origin) ? origin : 'https://elatlantedesancristobal.com';
+
 		const corsHeaders = {
-			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Origin': corsOrigin,
 			'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 			'Access-Control-Allow-Headers': 'Content-Type',
 		};

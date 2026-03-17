@@ -12,6 +12,7 @@ import LegalNotice from './pages/LegalNotice';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import CookiePolicy from './pages/CookiePolicy';
 import ComingSoon from './pages/ComingSoon';
+import NotFound from './pages/NotFound';
 import { registerSW } from 'virtual:pwa-register';
 
 function PWASetup() {
@@ -121,6 +122,7 @@ function AppLayout() {
           <Route path="/aviso-legal" element={<LegalNotice />} />
           <Route path="/privacidad" element={<PrivacyPolicy />} />
           <Route path="/cookies" element={<CookiePolicy />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
 

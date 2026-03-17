@@ -7,6 +7,7 @@ export default function Header() {
   const [isVisible, setIsVisible] = useState(true);
   const [isAtTop, setIsAtTop] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
 
   const [theme, setTheme] = useState(() => {
@@ -71,7 +72,23 @@ export default function Header() {
   return (
     <div className={`fixed top-0 left-0 right-0 z-[100] flex justify-center px-4 pt-6 transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 fill-mode-forwards'}`}>
       <header className={`glass flex items-center justify-between w-full max-w-5xl rounded-full px-6 py-3 transition-all duration-300 ${isAtTop ? 'bg-white/10' : 'bg-white/40 shadow-2xl shadow-black/10'}`}>
-        <Link to="/" className="flex items-center gap-3 text-primary group">
+        <div className="flex items-center gap-4">
+          <button 
+            className="md:hidden text-slate-800 dark:text-slate-200"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle Menu"
+          >
+            {isMobileMenuOpen ? (
+              <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
+          <Link to="/" className="flex items-center gap-3 text-primary group" onClick={() => setIsMobileMenuOpen(false)}>
           <div className="h-10 transition-transform group-hover:scale-105">
             <img 
               src={theme === 'dark' ? logoWhite : logoBlack} 
@@ -80,6 +97,7 @@ export default function Header() {
             />
           </div>
         </Link>
+        </div>
         
         <nav className="hidden md:flex items-center gap-10">
           <Link className="text-slate-900 dark:text-slate-100 text-[10px] font-black uppercase tracking-[0.3em] hover:text-primary transition-colors" to="/">Inicio</Link>
@@ -108,6 +126,35 @@ export default function Header() {
           </Link>
         </div>
       </header>
+
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="absolute top-[80px] left-4 right-4 md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden border border-slate-200 dark:border-white/10 z-[90]">
+          <nav className="flex flex-col py-6 px-8 gap-6">
+            <Link 
+              className="text-slate-900 dark:text-white text-sm font-black uppercase tracking-[0.2em] w-full border-b border-slate-200 dark:border-white/10 pb-4" 
+              to="/" 
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Inicio
+            </Link>
+            <a 
+              className="text-slate-900 dark:text-white text-sm font-black uppercase tracking-[0.2em] w-full border-b border-slate-200 dark:border-white/10 pb-4" 
+              href="/#carta" 
+              onClick={(e) => { setIsMobileMenuOpen(false); handleAnchorClick(e, '/#carta'); }}
+            >
+              Carta
+            </a>
+            <a 
+              className="text-slate-900 dark:text-white text-sm font-black uppercase tracking-[0.2em] w-full pb-2" 
+              href="/#nosotros" 
+              onClick={(e) => { setIsMobileMenuOpen(false); handleAnchorClick(e, '/#nosotros'); }}
+            >
+              Nosotros
+            </a>
+          </nav>
+        </div>
+      )}
     </div>
   );
 }

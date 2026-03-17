@@ -181,6 +181,7 @@ export async function addWalkIn(guests: number, tableNumber: number, name?: stri
     booking_number: generateBookingNumber(),
     name: name || `Walk-in ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`,
     phone: 'Walk-in',
+    email: '',
     date: now.toISOString().split('T')[0],
     time: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
     guests,
@@ -231,12 +232,6 @@ export async function addToWaitList(name: string, guests: number, phone?: string
   if (error) {
     console.error('Error adding to waitlist:', error);
     return null;
-  }
-
-  if (phone && phone !== 'Walk-in' && !newR.is_walk_in) {
-    // If we have a phone but no email in waitlist (since phone is no longer asked), 
-    // we can't really do email-based CRM meta-matching easily without email.
-    // However, waitlist entries currently don't ask for email either.
   }
 
   return mapToReservation(data);
@@ -381,12 +376,6 @@ export async function getStatusDistribution(dateStr: string): Promise<{ name: st
 }
 
 export async function getWeeklyComparison(): Promise<{ thisWeek: number; lastWeek: number; change: number }> {
-  const { data, error } = await supabase
-    .from('reservations')
-    .select('date, status');
-
-  if (error) return { thisWeek: 0, lastWeek: 0, change: 0 };
-
   const now = new Date();
   const startOfThisWeek = new Date(now);
   startOfThisWeek.setDate(now.getDate() - now.getDay());
@@ -394,6 +383,15 @@ export async function getWeeklyComparison(): Promise<{ thisWeek: number; lastWee
 
   const startOfLastWeek = new Date(startOfThisWeek);
   startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+
+  const startOfLastWeekStr = startOfLastWeek.toISOString().split('T')[0];
+
+  const { data, error } = await supabase
+    .from('reservations')
+    .select('date, status')
+    .gte('date', startOfLastWeekStr);
+
+  if (error) return { thisWeek: 0, lastWeek: 0, change: 0 };
 
   const thisWeek = data.filter(r => {
     const d = new Date(r.date);
@@ -410,9 +408,14 @@ export async function getWeeklyComparison(): Promise<{ thisWeek: number; lastWee
 }
 
 export async function getNoShowRate(): Promise<number> {
+  const lastMonth = new Date();
+  lastMonth.setDate(lastMonth.getDate() - 30);
+  const lastMonthStr = lastMonth.toISOString().split('T')[0];
+
   const { data, error } = await supabase
     .from('reservations')
-    .select('status');
+    .select('status')
+    .gte('date', lastMonthStr);
 
   if (error || !data.length) return 0;
   const noShows = data.filter(r => r.status === 'no-show').length;
@@ -425,7 +428,8 @@ export async function getClientProfiles(): Promise<ClientProfile[]> {
   const { data, error } = await supabase
     .from('reservations')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(1000);
 
   if (error) return [];
 

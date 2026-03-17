@@ -6,8 +6,6 @@ Auditoría completa del proyecto: código fuente, base de datos Supabase, seguri
 
 ## 🔴 CRÍTICOS — Seguridad
 
----
-
 ### 2. Archivo `.env` NO incluido en `.gitignore`
 **Archivo:** `.gitignore`
 

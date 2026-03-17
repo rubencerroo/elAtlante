@@ -35,7 +35,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] text-slate-600 uppercase tracking-[0.4em] font-bold">
-        <p>© 2024 El Atlante de San Cristóbal</p>
+        <p>© {new Date().getFullYear()} El Atlante de San Cristóbal</p>
         <div className="flex gap-10">
           <a 
             className="hover:text-primary transition-colors flex items-center gap-2" 

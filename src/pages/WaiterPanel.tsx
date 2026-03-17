@@ -151,15 +151,9 @@ export default function WaiterPanel() {
   };
 
   const handleSeatFromWaitlist = async (waitlistId: string, _guests: number, tableNumber: number) => {
-    const now = new Date();
-    const walkInName = `Walk-in ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
     await updateReservation(waitlistId, { 
       status: 'seated', 
-      tableNumber,
-      name: walkInName,
-      phone: 'Walk-in',
-      email: '',
-      isWalkIn: true
+      tableNumber
     });
     reload();
   };
@@ -480,7 +474,7 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables }: {
               <div className="flex items-center gap-3 mt-1 text-sm text-slate-500">
                 <span className="font-mono text-base">{r.time}</span>
                 <span>👥 {r.guests}</span>
-                <span>{r.preference === 'Terraza exterior' ? '☀️ Terraza' : r.preference === 'Interior' ? '🏠 Interior' : '🔄'}</span>
+                <span>{r.preference === 'Terraza exterior' ? '☀️ Terraza' : r.preference === 'Interior' ? '🏠 Interior' : r.preference === 'Mesas altas' ? '🪑 Mesas Altas' : '🔄'}</span>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">

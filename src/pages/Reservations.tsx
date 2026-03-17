@@ -8,10 +8,11 @@ export default function Reservations() {
   const [searchParams] = useSearchParams();
   const [phone, setPhone] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastReservation, setLastReservation] = useState<Reservation | null>(null);
   const [formData, setFormData] = useState({
     name: '', email: '', date: '', time: '13:00',
-    guests: '2 Personas', preference: 'Indiferente' as const,
+    guests: '2', preference: 'Indiferente' as const,
     hasPet: false, notes: '',
   });
 
@@ -40,6 +41,20 @@ export default function Reservations() {
 
   const handleChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const getAvailableTimes = (dateStr: string) => {
+    if (!dateStr) return ['13:00'];
+    const date = new Date(dateStr + 'T12:00:00'); 
+    const day = date.toLocaleDateString('es-ES', { weekday: 'long', timeZone: 'Atlantic/Canary' }).toLowerCase();
+    const normalizedDay = day.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (['lunes', 'jueves', 'viernes', 'sabado'].includes(normalizedDay)) {
+      return ['13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '20:00', '20:30', '21:00', '21:30', '22:00', '22:30'];
+    }
+    if (normalizedDay === 'domingo') {
+      return ['13:00', '13:30', '14:00', '14:30', '15:00', '15:30'];
+    }
+    return [];
   };
 
   const isDateValid = (dateStr: string, timeStr: string) => {
@@ -80,6 +95,13 @@ export default function Reservations() {
       return;
     }
 
+    setIsSubmitting(true);
+
+    if (!isDateValid(formData.date, formData.time)) {
+      alert('Lo sentimos, el restaurante está cerrado en el horario seleccionado. Por favor, revisa nuestros horarios.');
+      return;
+    }
+
     try {
       const guestCount = parseInt(formData.guests);
       const reservation = await addReservation({
@@ -105,6 +127,8 @@ export default function Reservations() {
       } else {
         alert('Hubo un error al procesar tu reserva. Por favor, inténtalo de nuevo.');
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -261,15 +285,33 @@ export default function Reservations() {
                 <div className="flex flex-col gap-3 border-b border-slate-100 dark:border-white/5 pb-5">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-600 dark:text-slate-300">Fecha <span className="text-primary">*</span></label>
                   <input className="bg-transparent text-lg font-light text-slate-900 dark:text-white border-none focus:ring-0 p-0"
-                    type="date" required min={new Date().toISOString().split('T')[0]} value={formData.date} onChange={e => handleChange('date', e.target.value)} />
+                    type="date" required min={new Date().toLocaleDateString('en-CA', { timeZone: 'Atlantic/Canary' })} value={formData.date} onChange={e => {
+                      const newDate = e.target.value;
+                      handleChange('date', newDate);
+                      const times = getAvailableTimes(newDate);
+                      if (times.length > 0 && !times.includes(formData.time)) {
+                        handleChange('time', times[0]);
+                      }
+                    }} />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                 <div className="flex flex-col gap-3 border-b border-slate-100 dark:border-white/5 pb-5">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-600 dark:text-slate-300">Hora <span className="text-primary">*</span></label>
-                  <input className="bg-transparent text-lg font-light text-slate-900 dark:text-white border-none focus:ring-0 p-0"
-                    type="time" required value={formData.time} onChange={e => handleChange('time', e.target.value)} />
+                  <div className="relative">
+                    <select className="bg-transparent w-full text-lg font-light text-slate-900 dark:text-white border-none focus:ring-0 p-0 appearance-none cursor-pointer"
+                      required value={formData.time} onChange={e => handleChange('time', e.target.value)}>
+                      {getAvailableTimes(formData.date).length > 0 ? (
+                        getAvailableTimes(formData.date).map(t => <option key={t} value={t}>{t} h</option>)
+                      ) : (
+                        <option value="">Cerrado este día</option>
+                      )}
+                    </select>
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 text-primary">
+                      <svg className="size-5" fill="currentColor" viewBox="0 -960 960 960"><path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z" /></svg>
+                    </div>
+                  </div>
                 </div>
                 <div className="flex flex-col gap-3 border-b border-slate-100 dark:border-white/5 pb-5">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-600 dark:text-slate-300">Invitados</label>
@@ -341,9 +383,11 @@ export default function Reservations() {
                     </div>
                   </div>
                 ) : (
-                  <button type="submit" className="relative w-full h-16 overflow-hidden group rounded-2xl shadow-2xl shadow-primary/30">
+                  <button type="submit" disabled={isSubmitting} className="relative w-full h-16 overflow-hidden group rounded-2xl shadow-2xl shadow-primary/30 disabled:opacity-70 disabled:cursor-not-allowed">
                     <div className="absolute inset-0 bg-primary transition-transform duration-500 group-hover:scale-110"></div>
-                    <span className="relative z-10 text-white font-bold uppercase tracking-[0.3em] text-sm">Realizar Reserva</span>
+                    <span className="relative z-10 text-white font-bold uppercase tracking-[0.3em] text-sm">
+                      {isSubmitting ? 'Procesando...' : 'Realizar Reserva'}
+                    </span>
                   </button>
                 )}
               </div>
