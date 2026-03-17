@@ -9,7 +9,6 @@ export default function Reservations() {
   const [phone, setPhone] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [lastReservation, setLastReservation] = useState<Reservation | null>(null);
-  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '', email: '', date: '', time: '13:00',
     guests: '2 Personas', preference: 'Indiferente' as const,
@@ -21,13 +20,11 @@ export default function Reservations() {
     const reservationId = searchParams.get('id');
 
     if (isConfirmed && reservationId && !submitted) {
-      setLoading(true);
       getReservationById(reservationId).then(res => {
         if (res) {
           setLastReservation(res);
           setSubmitted(true);
         }
-        setLoading(false);
       });
     }
   }, [searchParams, submitted]);
