@@ -280,7 +280,7 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables }: {
         else if (r.status === 'confirmed') setShowTableSelector(true);
       } else {
         // Swipe left → Cancel or No Show
-        if (r.status !== 'completed' && r.status !== 'cancelled' && r.status !== 'no-show') {
+        if (r.status !== 'completed' && r.status !== 'cancelled' && r.status !== 'no-show' && r.status !== 'seated') {
           handleStatus(r.id, 'no-show');
         }
       }
@@ -295,8 +295,8 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables }: {
         <div className={`flex-1 flex items-center justify-start pl-6 ${swipeX > 40 ? 'bg-emerald-500/20' : 'bg-transparent'} transition-colors rounded-l-2xl`}>
           {swipeX > 40 && <span className="text-emerald-400 font-bold text-sm">{r.status === 'pending' ? '✓ Confirmar' : '🪑 Sentar'}</span>}
         </div>
-        <div className={`flex-1 flex items-center justify-end pr-6 ${swipeX < -40 ? 'bg-orange-500/20' : 'bg-transparent'} transition-colors rounded-r-2xl`}>
-          {swipeX < -40 && <span className="text-orange-400 font-bold text-sm">👻 No Show</span>}
+        <div className={`flex-1 flex items-center justify-end pr-6 ${swipeX < -40 && r.status !== 'seated' ? 'bg-orange-500/20' : 'bg-transparent'} transition-colors rounded-r-2xl`}>
+          {swipeX < -40 && r.status !== 'seated' && <span className="text-orange-400 font-bold text-sm">👻 No Show</span>}
         </div>
       </div>
 
@@ -382,7 +382,7 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables }: {
                 ✓ Servicio completado
               </button>
             )}
-            {r.status !== 'completed' && r.status !== 'cancelled' && r.status !== 'no-show' && (
+            {r.status !== 'completed' && r.status !== 'cancelled' && r.status !== 'no-show' && r.status !== 'seated' && (
               <button onClick={() => handleStatus(r.id, 'no-show')}
                 className="bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/20 rounded-xl py-3 px-5 text-sm font-medium transition-all active:scale-95">
                 No Show
