@@ -1,5 +1,8 @@
 import { supabase } from './supabase';
 
+const WORKER_URL = import.meta.env.VITE_WORKER_URL || '';
+
+
 export type ReservationStatus = 'pending' | 'confirmed' | 'seated' | 'completed' | 'cancelled' | 'no-show';
 
 export interface Reservation {
@@ -117,7 +120,19 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
     console.error('Error adding reservation:', error);
     return null;
   }
-  return mapToReservation(data);
+
+  const reservation = mapToReservation(data);
+
+  // Trigger email confirmation flow if worker URL is configured
+  if (WORKER_URL && !reservation.isWalkIn) {
+    fetch(`${WORKER_URL}/send-confirmation`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(reservation),
+    }).catch(err => console.error('Error triggering confirmation email:', err));
+  }
+
+  return reservation;
 }
 
 export async function addWalkIn(guests: number, tableNumber: number, name?: string): Promise<Reservation | null> {

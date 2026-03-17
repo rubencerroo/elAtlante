@@ -61,9 +61,14 @@ export default function Reservations() {
               <svg className="w-10 h-10 text-emerald-500" fill="currentColor" viewBox="0 -960 960 960"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg>
             </div>
             <h2 className="text-slate-900 dark:text-white text-2xl font-bold">¡Reserva registrada!</h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-              Te contactaremos para confirmar tu mesa. Guarda tu número de reserva.
-            </p>
+            <div className="space-y-2">
+              <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                Hemos enviado un correo a <span className="text-primary font-semibold">{lastReservation.email}</span> para confirmar tu asistencia.
+              </p>
+              <p className="text-primary font-bold text-sm bg-primary/5 py-2 px-4 rounded-full inline-block">
+                Por favor, revisa tu bandeja de entrada y pulsa el botón de confirmar.
+              </p>
+            </div>
           </div>
 
           {/* Booking Number Card */}
