@@ -96,9 +96,11 @@ export default {
 
 				const reservation = reservations[0];
 
-				if (reservation.status !== 'pending') {
-					// Already confirmed or cancelled
-					return Response.redirect(env.CLIENT_REDIRECT_URL, 302);
+				if (reservation.status === 'confirmed') {
+					return Response.redirect(`${env.CLIENT_REDIRECT_URL}&id=${id}`, 302);
+				}
+				if (reservation.status === 'cancelled' || reservation.status === 'no-show') {
+					return Response.redirect(`${env.CLIENT_REDIRECT_URL.replace('confirmed=true', 'confirmed=false')}&error=reservation_cancelled`, 302);
 				}
 
 				// Update status in Supabase
@@ -146,10 +148,11 @@ export default {
 					}),
 				});
 
-				// Redirect to website
-				return Response.redirect(env.CLIENT_REDIRECT_URL, 302);
+				// Redirect to website with ID
+				return Response.redirect(`${env.CLIENT_REDIRECT_URL}&id=${id}`, 302);
 			} catch (error: any) {
-				return new Response(`Error: ${error.message}`, { status: 500 });
+				console.error('Confirmation error:', error);
+				return Response.redirect(`${env.CLIENT_REDIRECT_URL.replace('confirmed=true', 'confirmed=false')}&error=failed_to_confirm`, 302);
 			}
 		}
 

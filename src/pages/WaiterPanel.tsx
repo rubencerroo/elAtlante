@@ -136,9 +136,8 @@ export default function WaiterPanel() {
     reload();
   };
 
-  const handleSeatFromWaitlist = async (waitlistId: string, guests: number, tableNumber: number) => {
-    await addWalkIn(guests, tableNumber);
-    removeFromWaitList(waitlistId);
+  const handleSeatFromWaitlist = async (waitlistId: string, _guests: number, tableNumber: number) => {
+    await updateReservation(waitlistId, { status: 'seated', tableNumber });
     reload();
   };
 
@@ -208,10 +207,10 @@ export default function WaiterPanel() {
 
       {/* Walk-in Modal */}
       {showWalkIn && (
-        <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-end justify-center p-4" onClick={() => setShowWalkIn(false)}>
-          <div className="bg-slate-900 border border-white/10 rounded-3xl p-6 w-full max-w-md space-y-5 animate-in" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold">+ Mesa Rápida</h2>
+        <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-end justify-center p-4 sm:items-center" onClick={() => setShowWalkIn(false)}>
+          <div className="bg-slate-900 border border-white/10 rounded-3xl p-6 w-full max-w-md space-y-5 animate-in max-h-[90vh] overflow-y-auto custom-scrollbar" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between sticky top-0 bg-slate-900 py-1 z-10 font-bold">
+              <h2 className="text-lg">+ Mesa Rápida</h2>
               <button onClick={() => setShowWalkIn(false)} className="text-slate-500 hover:text-white text-sm">✕</button>
             </div>
 
@@ -330,9 +329,9 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
 
       {/* Seating Modal */}
       {seatingId && (
-        <div className="fixed inset-0 z-[110] bg-black/70 backdrop-blur-sm flex items-end justify-center p-4" onClick={() => setSeatingId(null)}>
-          <div className="bg-slate-900 border border-white/10 rounded-3xl p-6 w-full max-w-md space-y-5 animate-in" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
+        <div className="fixed inset-0 z-[110] bg-black/70 backdrop-blur-sm flex items-end justify-center p-4 sm:items-center" onClick={() => setSeatingId(null)}>
+          <div className="bg-slate-900 border border-white/10 rounded-3xl p-6 w-full max-w-md space-y-5 animate-in max-h-[90vh] overflow-y-auto custom-scrollbar" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between sticky top-0 bg-slate-900 py-1 z-10">
               <div>
                 <h2 className="text-lg font-bold">Asignar Mesa</h2>
                 <p className="text-slate-500 text-xs">Para {waitList.find(w => w.id === seatingId)?.name}</p>

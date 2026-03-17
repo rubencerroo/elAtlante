@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  getReservations, updateReservation, deleteReservation, getStats,
+  getReservations, addReservation, updateReservation, deleteReservation, getStats,
   getOccupancyByHour, getStatusDistribution, getWeeklyComparison, getNoShowRate,
   getClientProfiles, getOccupiedTables, generateCSV, getClientMeta, saveClientMeta,
   type Reservation, type ReservationStatus, type ClientProfile, type ReservationStats, type ClientMeta
@@ -23,7 +23,8 @@ const STATUS_CONFIG: Record<ReservationStatus, { label: string; color: string; b
 type AdminTab = 'kanban' | 'dashboard' | 'crm';
 
 const KANBAN_COLUMNS: { status: ReservationStatus; label: string; icon: string; color: string }[] = [
-  { status: 'pending', label: 'Pendientes', icon: '⏳', color: 'border-t-amber-400' },
+  { status: 'waiting', label: 'En Espera', icon: '⏳', color: 'border-t-purple-400' },
+  { status: 'pending', label: 'Pendientes', icon: '❓', color: 'border-t-amber-400' },
   { status: 'confirmed', label: 'Confirmadas', icon: '✅', color: 'border-t-emerald-400' },
   { status: 'seated', label: 'Sentados', icon: '🪑', color: 'border-t-blue-400' },
   { status: 'completed', label: 'Completadas', icon: '✓', color: 'border-t-slate-500' },
@@ -52,6 +53,8 @@ export default function AdminPanel() {
   const [selectedClient, setSelectedClient] = useState<ClientProfile | null>(null);
   const [crmSearch, setCrmSearch] = useState('');
 
+  const [showAddModal, setShowAddModal] = useState(false);
+  
   useEffect(() => {
     if (sessionStorage.getItem('admin_role') !== 'owner') navigate('/admin');
   }, [navigate]);
@@ -247,10 +250,13 @@ export default function AdminPanel() {
             className="flex-1 min-w-[200px] bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary/50" />
           <button onClick={() => setFilterDate('all' as string)} className="text-xs text-primary hover:text-primary/80 font-medium transition-colors">Ver todo</button>
           <div className="ml-auto flex gap-2">
-            <button onClick={exportPDF} className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2">
+            <button onClick={() => setShowAddModal(true)} className="bg-primary hover:bg-primary/90 text-white rounded-xl px-4 py-2.5 text-sm font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary/20">
+              ➕ Nueva Reserva
+            </button>
+            <button onClick={exportPDF} className="bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2">
               📄 PDF
             </button>
-            <button onClick={exportCSV} className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2">
+            <button onClick={exportCSV} className="bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2">
               📊 CSV
             </button>
           </div>
@@ -269,6 +275,8 @@ export default function AdminPanel() {
             </div>
           </div>
         )}
+
+        {showAddModal && <ManualReservationModal onClose={() => setShowAddModal(false)} onSave={() => { setShowAddModal(false); reload(); }} />}
       </div>
     </div>
   );
@@ -656,6 +664,127 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
             Selecciona un cliente para ver su perfil
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// MANUAL RESERVATION MODAL
+// ═══════════════════════════════════════════════
+
+function ManualReservationModal({ onClose, onSave }: { onClose: () => void; onSave: () => void }) {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    date: new Date().toISOString().split('T')[0],
+    time: '20:00',
+    guests: 2,
+    preference: 'Indiferente' as any,
+    hasPet: false,
+    notes: ''
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await addReservation({
+        ...formData,
+        status: 'confirmed'
+      });
+      onSave();
+    } catch (err: any) {
+      alert(err.message === 'DUPLICATE_RESERVATION' 
+        ? 'Ya existe una reserva para ese cliente en esa fecha/hora.' 
+        : 'Error al crear la reserva.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+      <div className="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl">
+        <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+          <h2 className="font-bold">Nueva Reserva Manual</h2>
+          <button onClick={onClose} className="text-slate-500 hover:text-white">✕</button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Nombre</label>
+              <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary/50" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Teléfono</label>
+              <input required type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary/50" />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Email (opcional)</label>
+            <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary/50" />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Fecha</label>
+              <input required type="date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary/50" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Hora</label>
+              <input required type="time" value={formData.time} onChange={e => setFormData({ ...formData, time: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary/50" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Comensales</label>
+              <input required type="number" min="1" value={formData.guests} onChange={e => setFormData({ ...formData, guests: parseInt(e.target.value) })}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary/50" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Preferencia</label>
+              <select value={formData.preference} onChange={e => setFormData({ ...formData, preference: e.target.value as any })}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary/50 appearance-none">
+                <option value="Indiferente">Indiferente</option>
+                <option value="Interior">Interior</option>
+                <option value="Mesas altas">Mesas altas</option>
+                <option value="Terraza exterior">Terraza exterior</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-3 pt-6">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" checked={formData.hasPet} onChange={e => setFormData({ ...formData, hasPet: e.target.checked })} className="sr-only peer" />
+                <div className="w-11 h-6 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+              </label>
+              <span className="text-xs font-semibold text-slate-400">¿Trae mascota? 🐾</span>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Notas internas</label>
+            <textarea value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })}
+              placeholder="Ej: Cliente VIP, aniversario..."
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary/50 h-20 resize-none" />
+          </div>
+
+          <div className="pt-4 flex gap-3">
+            <button type="button" onClick={onClose} className="flex-1 px-4 py-3 rounded-xl border border-white/10 text-sm font-bold hover:bg-white/5 transition-colors">Cancelar</button>
+            <button type="submit" disabled={loading} className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-primary/20 disabled:opacity-50">
+              {loading ? 'Creando...' : 'Crear Reserva'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

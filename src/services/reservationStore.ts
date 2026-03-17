@@ -14,7 +14,7 @@ export interface Reservation {
   date: string; // YYYY-MM-DD
   time: string; // HH:MM
   guests: number;
-  preference: 'Indiferente' | 'Interior' | 'Terraza exterior';
+  preference: 'Indiferente' | 'Interior' | 'Mesas altas' | 'Terraza exterior';
   hasPet: boolean;
   notes: string;
   status: ReservationStatus;
@@ -107,7 +107,7 @@ export async function getReservationById(id: string): Promise<Reservation | null
   return mapToReservation(data);
 }
 
-export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber' | 'status' | 'createdAt'>): Promise<Reservation | null> {
+export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber' | 'status' | 'createdAt'> & { status?: ReservationStatus }): Promise<Reservation | null> {
   const newR = {
     booking_number: generateBookingNumber(),
     name: r.name,
@@ -119,10 +119,25 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
     preference: r.preference,
     has_pet: r.hasPet,
     notes: r.notes,
-    status: 'pending',
+    status: r.status || 'pending',
     table_number: r.tableNumber,
     is_walk_in: r.isWalkIn || false,
   };
+
+  // Check for duplicate reservation (same person, same time, not cancelled)
+  const { data: existing, error: checkError } = await supabase
+    .from('reservations')
+    .select('id')
+    .eq('date', r.date)
+    .eq('time', r.time)
+    .or(`phone.eq.${r.phone},email.eq.${r.email}`)
+    .not('status', 'eq', 'cancelled');
+
+  if (checkError) {
+    console.error('Error checking for duplicate reservation:', checkError);
+  } else if (existing && existing.length > 0) {
+    throw new Error('DUPLICATE_RESERVATION');
+  }
 
   const { data, error } = await supabase
     .from('reservations')
