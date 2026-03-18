@@ -180,11 +180,21 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
     }
   }
 
-  // Trigger email confirmation flow
-  if (!reservation.isWalkIn) {
-    supabase.functions.invoke('send-confirmation', {
-      body: reservation,
-    }).catch(err => console.error('Error triggering confirmation email:', err));
+  // Trigger email confirmation flow via Cloudflare Worker (Brevo)
+  if (!reservation.isWalkIn && reservation.email) {
+    const workerUrl = import.meta.env.VITE_WORKER_URL;
+    if (workerUrl) {
+      fetch(`${workerUrl}/send-confirmation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reservation),
+      }).catch(err => console.error('Error triggering confirmation email:', err));
+    } else {
+      // Fallback to Supabase Edge Function
+      supabase.functions.invoke('send-confirmation', {
+        body: reservation,
+      }).catch(err => console.error('Error triggering confirmation email:', err));
+    }
   }
 
   return reservation;
