@@ -1072,6 +1072,35 @@ function StaffView({ showAlert }: {
     );
   };
 
+  const [editingStaff, setEditingStaff] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ display_name: '', pin: '' });
+
+  const startEdit = (s: StaffProfile) => {
+    setEditingStaff(s.id);
+    setEditForm({ display_name: s.display_name || '', pin: '' });
+  };
+
+  const saveEdit = async (staffId: string) => {
+    try {
+      const updates: any = { display_name: editForm.display_name };
+      if (editForm.pin) {
+        if (!/^[0-9]{4}$/.test(editForm.pin)) {
+          showAlert('Error', 'El PIN debe ser de 4 dígitos.', 'error');
+          return;
+        }
+        updates.pin = editForm.pin;
+      }
+      
+      const { updateStaffProfile } = await import('../services/authStore');
+      await updateStaffProfile(staffId, updates);
+      showAlert('Éxito', 'Perfil actualizado correctamente.', 'success');
+      setEditingStaff(null);
+      loadStaff();
+    } catch (err: any) {
+      showAlert('Error', 'No se pudo actualizar: ' + err.message, 'error');
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Invite Form */}
@@ -1137,7 +1166,6 @@ function StaffView({ showAlert }: {
           </div>
         )}
       </div>
-
       {/* Staff List */}
       <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-6">
         <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">👥 Equipo actual</h3>
@@ -1148,32 +1176,71 @@ function StaffView({ showAlert }: {
         ) : staff.length === 0 ? (
           <p className="text-center text-slate-500 text-sm py-8">No hay miembros del equipo</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-4">
             {staff.map(s => (
-              <div key={s.id} className="flex items-center justify-between bg-white/[0.04] border border-white/5 rounded-xl px-5 py-4">
-                <div className="flex items-center gap-4">
-                  <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold ${
-                    s.role === 'owner' ? 'bg-amber-500/10 text-amber-400' : 'bg-emerald-500/10 text-emerald-400'
-                  }`}>
-                    {s.role === 'owner' ? '⭐' : '🍽'}
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold">{s.email}</p>
-                    <p className="text-xs text-slate-500">
-                      {s.email === 'dev@elatlantedesancristobal.com' ? 'Desarrollador' : (s.role === 'owner' ? 'Dueño' : 'Camarero')} · Creado el {new Date(s.created_at).toLocaleDateString('es-ES')}
-                    </p>
+              <div key={s.id} className="flex flex-col bg-white/[0.04] border border-white/5 rounded-xl overflow-hidden">
+                <div className="flex items-center justify-between px-5 py-4">
+                  <div className="flex items-center gap-4">
+                    <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold ${
+                      s.role === 'owner' ? 'bg-amber-500/10 text-amber-400' : 'bg-emerald-500/10 text-emerald-400'
+                    }`}>
+                      {s.role === 'owner' ? '⭐' : '🍽'}
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold">{s.email}</p>
+                      <p className="text-xs text-slate-500">
+                        {s.display_name || 'Sin nombre'} · {s.email === 'dev@elatlantedesancristobal.com' ? 'Desarrollador' : (s.role === 'owner' ? 'Dueño' : 'Camarero')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => startEdit(s)}
+                      className="text-slate-400 hover:text-white transition-colors p-2"
+                      title="Editar perfil"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    </button>
+                    {s.email !== 'dev@elatlantedesancristobal.com' && (
+                      <button
+                        onClick={() => handleDelete(s.id, s.email)}
+                        className="text-slate-600 hover:text-red-400 transition-colors p-2"
+                        title="Eliminar del equipo"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                    )}
                   </div>
                 </div>
-                {s.email !== 'dev@elatlantedesancristobal.com' ? (
-                  <button
-                    onClick={() => handleDelete(s.id, s.email)}
-                    className="text-slate-600 hover:text-red-400 transition-colors p-2"
-                    title="Eliminar del equipo"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                  </button>
-                ) : (
-                  <div className="w-9 h-9"></div> /* Placeholder for alignment */
+
+                {editingStaff === s.id && (
+                  <div className="px-5 pb-5 pt-2 border-t border-white/5 bg-white/[0.02] grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in slide-in-from-top-2">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Nombre Display</label>
+                      <input
+                        type="text"
+                        value={editForm.display_name}
+                        onChange={e => setEditForm({ ...editForm, display_name: e.target.value })}
+                        className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2 text-sm text-white"
+                        placeholder="Ej: Juan C."
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">PIN (4 dígitos)</label>
+                      <input
+                        type="password"
+                        maxLength={4}
+                        value={editForm.pin}
+                        onChange={e => setEditForm({ ...editForm, pin: e.target.value.replace(/\D/g, '') })}
+                        className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2 text-sm text-white"
+                        placeholder="••••"
+                      />
+                    </div>
+                    <div className="sm:col-span-2 flex justify-end gap-2">
+                      <button onClick={() => setEditingStaff(null)} className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-white">Cancelar</button>
+                      <button onClick={() => saveEdit(s.id)} className="bg-primary hover:bg-primary/90 text-white rounded-lg px-4 py-2 text-xs font-bold transition-all">Guardar Cambios</button>
+                    </div>
+                  </div>
                 )}
               </div>
             ))}

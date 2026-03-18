@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -15,6 +15,9 @@ import ComingSoon from './pages/ComingSoon';
 import NotFound from './pages/NotFound';
 import { registerSW } from 'virtual:pwa-register';
 import CookieBanner from './components/CookieBanner';
+import { useIdleTimer } from './hooks/useIdleTimer';
+import { isTabletAuthorized, setActiveStaffId, getActiveStaffId } from './services/authStore';
+import { useNavigate } from 'react-router-dom';
 
 function PWASetup() {
   const { pathname } = useLocation();
@@ -85,7 +88,22 @@ function ScrollToTop() {
 
 function AppLayout() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const isAdmin = pathname.startsWith('/admin');
+  
+  // Auto-lock logic for tablet mode
+  const handleAutoLock = useCallback(() => {
+    if (isTabletAuthorized() && getActiveStaffId()) {
+      setActiveStaffId(null);
+      navigate('/admin');
+    }
+  }, [navigate]);
+
+  useIdleTimer({
+    timeout: 15 * 60 * 1000, // 15 minutes
+    onIdle: handleAutoLock,
+    enabled: isAdmin && isTabletAuthorized() && pathname !== '/admin'
+  });
   
   // Protection logic
   const [isUnlocked, setIsUnlocked] = useState(() => {

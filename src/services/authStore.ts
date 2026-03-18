@@ -7,6 +7,8 @@ export interface StaffProfile {
   email: string;
   role: StaffRole;
   created_at: string;
+  display_name?: string;
+  pin?: string;
 }
 
 // ── Auth Functions ──
@@ -52,7 +54,7 @@ export async function getStaffRole(): Promise<StaffRole | null> {
 
 export async function getStaffProfiles(): Promise<StaffProfile[]> {
   const { data, error } = await supabase
-    .from('staff_profiles')
+    .from('staff_public')
     .select('*')
     .order('created_at', { ascending: true });
 
@@ -91,6 +93,51 @@ export async function deleteStaff(staffId: string) {
   const { error } = await supabase
     .from('staff_profiles')
     .delete()
+    .eq('id', staffId);
+
+  if (error) throw error;
+}
+
+// ── PIN & Tablet Logic ──
+
+export function isTabletAuthorized(): boolean {
+  return localStorage.getItem('is_trusted_tablet') === 'true';
+}
+
+export function authorizeTablet() {
+  localStorage.setItem('is_trusted_tablet', 'true');
+}
+
+export function deauthorizeTablet() {
+  localStorage.removeItem('is_trusted_tablet');
+}
+
+export function getActiveStaffId(): string | null {
+  return localStorage.getItem('active_staff_id');
+}
+
+export function setActiveStaffId(id: string | null) {
+  if (id) {
+    localStorage.setItem('active_staff_id', id);
+  } else {
+    localStorage.removeItem('active_staff_id');
+  }
+}
+
+export async function verifyStaffPin(staffId: string, pin: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc('verify_staff_pin', {
+    p_staff_id: staffId,
+    p_pin: pin
+  });
+
+  if (error) throw error;
+  return !!data;
+}
+
+export async function updateStaffProfile(staffId: string, updates: Partial<Pick<StaffProfile, 'display_name' | 'pin'>>) {
+  const { error } = await supabase
+    .from('staff_profiles')
+    .update(updates)
     .eq('id', staffId);
 
   if (error) throw error;

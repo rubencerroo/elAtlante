@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signIn, getStaffRole, getSession, signOut } from '../services/authStore';
+import { signIn, getStaffRole, getSession, signOut, isTabletAuthorized, authorizeTablet, deauthorizeTablet } from '../services/authStore';
+import PinLoginView from '../components/admin/PinLoginView';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -10,6 +11,8 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [showRoleSelector, setShowRoleSelector] = useState(false);
+  const [usePinLogin, setUsePinLogin] = useState(isTabletAuthorized());
+  const [isAuthorized, setIsAuthorized] = useState(isTabletAuthorized());
 
   // Check if already logged in
   useEffect(() => {
@@ -23,6 +26,12 @@ export default function AdminLogin() {
           } else if (role === 'waiter') {
             navigate('/admin/waiter', { replace: true });
           }
+        } else {
+          // No session - if device is authorized, we'll suggest PIN login
+          // but PinLoginView itself will handle the case where it needs to fetch staff
+          if (isAuthorized) {
+            setUsePinLogin(true);
+          }
         }
       } catch {
         // Not logged in
@@ -30,7 +39,7 @@ export default function AdminLogin() {
         setCheckingSession(false);
       }
     })();
-  }, [navigate]);
+  }, [navigate, isAuthorized]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +83,24 @@ export default function AdminLogin() {
       setError('');
     } catch (err: any) {
       setError('Error al cerrar sesión');
+    }
+  };
+
+  const toggleDeviceAuth = () => {
+    if (isAuthorized) {
+      deauthorizeTablet();
+      setIsAuthorized(false);
+    } else {
+      authorizeTablet();
+      setIsAuthorized(true);
+    }
+  };
+
+  const handlePinLoginSuccess = (role: string) => {
+    if (role === 'owner') {
+      navigate('/admin/owner');
+    } else {
+      navigate('/admin/waiter');
     }
   };
 
@@ -126,12 +153,50 @@ export default function AdminLogin() {
             </button>
           </div>
           
-          <button
-            onClick={handleLogout}
-            className="text-slate-500 hover:text-white underline mt-8 text-sm transition-colors"
-          >
-            Cerrar sesión
-          </button>
+          <div className="pt-8 border-t border-white/10 space-y-4">
+            <div className="flex items-center justify-between px-4 py-3 bg-white/5 rounded-xl border border-white/10">
+              <div className="text-left">
+                <p className="text-white text-sm font-medium">Modo Tablet</p>
+                <p className="text-slate-400 text-xs">Permite inicio de sesión con PIN</p>
+              </div>
+              <button
+                onClick={toggleDeviceAuth}
+                className={`w-12 h-6 rounded-full transition-colors relative ${isAuthorized ? 'bg-primary' : 'bg-slate-700'}`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isAuthorized ? 'left-7' : 'left-1'}`} />
+              </button>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              className="text-slate-500 hover:text-white underline text-sm transition-colors w-full"
+            >
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (usePinLogin) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[150px]" />
+        
+        <div className="relative z-10 w-full max-w-md space-y-8">
+          <div className="text-center space-y-3">
+             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 mb-2">
+              <svg className="w-8 h-8 text-primary" fill="currentColor" viewBox="0 -960 960 960"><path d="M480-440q-59 0-99.5-40.5T340-580q0-59 40.5-99.5T480-720q59 0 99.5 40.5T620-580q0 59-40.5 99.5T480-440Zm0-80q26 0 43-17t17-43q0-26-17-43t-43-17q-26 0-43 17t-17 43q0 26 17 43t43 17Zm0 440q-139-35-229.5-159.5T160-516v-244l320-120 320 120v244q0 152-90.5 276.5T480-80Zm0-400Z"/></svg>
+            </div>
+            <h1 className="text-white text-2xl font-bold tracking-tight">Acceso Rápido</h1>
+            <p className="text-slate-400 text-sm">Dispositivo Autorizado · El Atlante</p>
+          </div>
+
+          <PinLoginView 
+            onSuccess={handlePinLoginSuccess} 
+            onCancel={() => setUsePinLogin(false)} 
+          />
         </div>
       </div>
     );
