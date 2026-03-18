@@ -180,21 +180,21 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
     }
   }
 
-  // Trigger email confirmation flow via Cloudflare Worker (Brevo)
+  // Trigger email confirmation flow via Cloudflare Pages Function (Brevo)
   if (!reservation.isWalkIn && reservation.email) {
     const workerUrl = import.meta.env.VITE_WORKER_URL;
-    if (workerUrl) {
-      fetch(`${workerUrl}/send-confirmation`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(reservation),
-      }).catch(err => console.error('Error triggering confirmation email:', err));
-    } else {
-      // Fallback to Supabase Edge Function
-      supabase.functions.invoke('send-confirmation', {
-        body: reservation,
-      }).catch(err => console.error('Error triggering confirmation email:', err));
-    }
+    
+    // Al estar en Cloudflare Pages, la function en /functions/send-confirmation.ts 
+    // se monta en la misma raíz de la app web.
+    // Usamos el path relativo por defecto, ignorando los URLs estáticos absolutos si fallan por DNS,
+    // a menos que explícitamente se necesite workerUrl en local.
+    const endpoint = workerUrl && workerUrl !== 'https://elatlantedesancristobal.com' ? `${workerUrl}/send-confirmation` : '/send-confirmation';
+    
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(reservation),
+    }).catch(err => console.error('Error triggering confirmation email:', err));
   }
 
   return reservation;
