@@ -1,6 +1,5 @@
 import { supabase } from './supabase';
 
-const WORKER_URL = import.meta.env.VITE_WORKER_URL || '';
 
 
 export type ReservationStatus = 'pending' | 'confirmed' | 'seated' | 'completed' | 'cancelled' | 'no-show' | 'waiting';
@@ -183,11 +182,8 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
 
   // Trigger email confirmation flow
   if (!reservation.isWalkIn) {
-    const endpoint = WORKER_URL ? `${WORKER_URL}/send-confirmation` : '/send-confirmation';
-    fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(reservation),
+    supabase.functions.invoke('send-confirmation', {
+      body: reservation,
     }).catch(err => console.error('Error triggering confirmation email:', err));
   }
 

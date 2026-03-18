@@ -6,7 +6,7 @@ import {
   getClientProfiles, getClientMeta, saveClientMeta, generateCSV, getOccupiedTables, getShiftNote, saveShiftNote, getFeedbacks, updateFeedbackStatus, deleteFeedback,
   type Reservation, type ReservationStatus, type ReservationStats, type ClientProfile, type ClientMeta
 } from '../services/reservationStore';
-import { signOut, getStaffRole, getSession, getStaffProfiles, inviteStaff, deleteStaff, isTabletAuthorized, getActiveStaffId, type StaffProfile, type StaffRole } from '../services/authStore';
+import { signOut, getStaffRole, getSession, getStaffProfiles, inviteStaff, deleteStaff, isTabletAuthorized, authorizeTablet, deauthorizeTablet, getActiveStaffId, type StaffProfile, type StaffRole } from '../services/authStore';
 import StatsCards from './admin/StatsCards';
 import StatusKanban from './admin/StatusKanban';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -114,6 +114,11 @@ export default function AdminPanel() {
         setAuthChecked(true);
       } catch (error: any) {
         console.error("Authentication error:", error);
+        // Important: check if we are in authorized tablet mode before redirecting
+        if (isTabletAuthorized() && getActiveStaffId()) {
+            setAuthChecked(true);
+            return;
+        }
         showAlert('Error de Autenticación', error.message || 'Ocurrió un error inesperado durante la autenticación.', 'error', () => {
           navigate('/admin', { replace: true });
         });
@@ -312,11 +317,11 @@ export default function AdminPanel() {
         </div>
 
         {/* Mobile tabs */}
-        <div className="md:hidden flex border-t border-white/5">
+        <div className="md:hidden flex border-t border-white/5 overflow-x-auto no-scrollbar">
           {tabs.map(t => (
             <button key={t.key} onClick={() => setActiveTab(t.key)}
-              className={`flex-1 py-3 text-center text-xs font-medium transition-all ${activeTab === t.key ? 'text-primary border-b-2 border-primary' : 'text-slate-500'}`}>
-              <span className="block text-lg">{t.icon}</span>
+              className={`flex-1 py-3 px-2 text-center text-[10px] font-medium transition-all whitespace-nowrap ${activeTab === t.key ? 'text-primary border-b-2 border-primary bg-white/5' : 'text-slate-500'}`}>
+              <span className="block text-lg mb-1">{t.icon}</span>
               {t.label}
             </button>
           ))}
@@ -1116,6 +1121,37 @@ function StaffView({ showAlert }: {
 
   return (
     <div className="space-y-8">
+      {/* Tablet Mode Toggle for Owners */}
+      <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+            <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 -960 960 960"><path d="M480-440q-59 0-99.5-40.5T340-580q0-59 40.5-99.5T480-720q59 0 99.5 40.5T620-580q0 59-40.5 99.5T480-440Zm0-80q26 0 43-17t17-43q0-26-17-43t-43-17q-26 0-43 17t-17 43q0 26 17 43t43 17Zm0 440q-139-35-229.5-159.5T160-516v-244l320-120 320 120v244q0 152-90.5 276.5T480-80Zm0-400Z"/></svg>
+            Modo Tablet (Acceso PIN)
+          </h3>
+          <p className="text-xs text-slate-400 mt-1">Autoriza este dispositivo para que el equipo pueda entrar con su PIN personal sin cerrar la sesión de administrador.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className={`text-[10px] font-bold uppercase tracking-widest ${isTabletAuthorized() ? 'text-primary' : 'text-slate-500'}`}>
+            {isTabletAuthorized() ? 'Activado' : 'Desactivado'}
+          </span>
+          <button
+            onClick={() => {
+              if (isTabletAuthorized()) {
+                deauthorizeTablet();
+              } else {
+                authorizeTablet();
+              }
+              loadStaff(); // Force re-render to reflect state change
+            }}
+            className={`w-14 h-7 rounded-full transition-all relative p-1 ${isTabletAuthorized() ? 'bg-primary shadow-lg shadow-primary/20' : 'bg-slate-800'}`}
+          >
+            <div className={`w-5 h-5 bg-white rounded-full transition-all flex items-center justify-center shadow-sm ${isTabletAuthorized() ? 'translate-x-7' : 'translate-x-0'}`}>
+                {isTabletAuthorized() && <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>}
+            </div>
+          </button>
+        </div>
+      </div>
+
       {/* Invite Form */}
       <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-6">
         <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">➕ Invitar nuevo miembro</h3>
