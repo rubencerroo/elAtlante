@@ -99,8 +99,11 @@ export default function AdminPanel() {
         const role = await getStaffRole();
         if (role !== 'owner') { navigate('/admin', { replace: true }); return; }
         setAuthChecked(true);
-      } catch {
-        navigate('/admin', { replace: true });
+      } catch (error: any) {
+        console.error("Authentication error:", error);
+        showAlert('Error de Autenticación', error.message || 'Ocurrió un error inesperado durante la autenticación.', 'error', () => {
+          navigate('/admin', { replace: true });
+        });
       }
     })();
   }, [navigate]);
@@ -1037,15 +1040,12 @@ function StaffView({ showAlert }: {
     setInviteResult(null);
     try {
       const result = await inviteStaff(inviteEmail, inviteRole, invitePassword);
-      setInviteResult({
-        type: 'success',
-        message: result.message,
-      });
+      showAlert('Éxito', result.message, 'success');
       setInviteEmail('');
       setInvitePassword('');
       loadStaff();
     } catch (err: any) {
-      setInviteResult({ type: 'error', message: err.message });
+      showAlert('Error', err.message, 'error');
     }
     setInviting(false);
   };

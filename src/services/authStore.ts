@@ -71,7 +71,8 @@ export async function inviteStaff(email: string, role: StaffRole, password?: str
   });
 
   if (response.error) {
-    throw new Error(response.error.message || 'Error al invitar al usuario');
+    const errorMsg = (response.error as any).message || 'Error al invitar al usuario';
+    throw new Error(errorMsg);
   }
 
   const result = response.data;
