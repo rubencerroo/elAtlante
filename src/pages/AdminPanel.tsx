@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   getReservations, addReservation, updateReservation, getStats, deleteReservation,
   getOccupancyByHour, getStatusDistribution, getWeeklyComparison, getNoShowRate,
-  getClientProfiles, getClientMeta, saveClientMeta, generateCSV, getOccupiedTables, getShiftNote, saveShiftNote, getFeedbacks,
+  getClientProfiles, getClientMeta, saveClientMeta, generateCSV, getOccupiedTables, getShiftNote, saveShiftNote, getFeedbacks, updateFeedbackStatus, deleteFeedback,
   type Reservation, type ReservationStatus, type ReservationStats, type ClientProfile, type ClientMeta
 } from '../services/reservationStore';
 import { signOut, getStaffRole, getSession, getStaffProfiles, inviteStaff, deleteStaff, type StaffProfile, type StaffRole } from '../services/authStore';
@@ -12,6 +12,7 @@ import StatusKanban from './admin/StatusKanban';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import FeedbackButton from '../components/FeedbackButton';
 import logoWhite from '../assets/logowhite.png';
+import { AlertModal } from '../components/AlertModal';
 
 // ── Status config ──
 const STATUS_CONFIG: Record<ReservationStatus, { label: string; color: string; bg: string }> = {
@@ -49,6 +50,7 @@ export default function AdminPanel() {
   const [shiftNote, setShiftNote] = useState('');
   const [savingNote, setSavingNote] = useState(false);
   const [feedbacks, setFeedbacks] = useState<any[]>([]);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
 
   // CRM state
   const [selectedClient, setSelectedClient] = useState<ClientProfile | null>(null);
@@ -56,12 +58,44 @@ export default function AdminPanel() {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'info' | 'error' | 'success' | 'confirm';
+    onConfirm: () => void;
+    onCancel?: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info',
+    onConfirm: () => {},
+  });
+
+  const showAlert = (title: string, message: string, type: 'info' | 'error' | 'success' | 'confirm' = 'info', onConfirm?: () => void, onCancel?: () => void) => {
+    setAlertConfig({
+      isOpen: true,
+      title,
+      message,
+      type,
+      onConfirm: () => {
+        onConfirm?.();
+        setAlertConfig(prev => ({ ...prev, isOpen: false }));
+      },
+      onCancel: onCancel ? () => {
+        onCancel?.();
+        setAlertConfig(prev => ({ ...prev, isOpen: false }));
+      } : undefined
+    });
+  };
   
   useEffect(() => {
     (async () => {
       try {
         const session = await getSession();
         if (!session) { navigate('/admin', { replace: true }); return; }
+        setCurrentUserEmail(session.user.email || null);
         const role = await getStaffRole();
         if (role !== 'owner') { navigate('/admin', { replace: true }); return; }
         setAuthChecked(true);
@@ -301,8 +335,8 @@ export default function AdminPanel() {
         {activeTab === 'kanban' && <StatusKanban filtered={filtered} handleStatus={handleStatus} handleDelete={handleDelete} handleAssignTable={handleAssignTable} showTableSelector={showTableSelector} setShowTableSelector={setShowTableSelector} occupiedTables={occupiedTables} draggedId={draggedId} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} />}
         {activeTab === 'dashboard' && <DashboardView filterDate={filterDate} reservations={reservations} occupancyData={occupancyData} statusData={statusData} weeklyComp={weeklyComp} noShowRate={noShowRate} shiftNote={shiftNote} setShiftNote={setShiftNote} handleSaveNote={handleSaveNote} savingNote={savingNote} />}
         {activeTab === 'crm' && <CRMView search={crmSearch} setSearch={setCrmSearch} selectedClient={selectedClient} setSelectedClient={setSelectedClient} clientProfiles={clientProfiles} />}
-        {activeTab === 'staff' && <StaffView />}
-        {activeTab === 'feedback' && <FeedbackView feedbacks={feedbacks} onReload={fetchDashboardData} />}
+        {activeTab === 'staff' && <StaffView showAlert={showAlert} />}
+        {activeTab === 'feedback' && <FeedbackView feedbacks={feedbacks} onReload={fetchDashboardData} currentUserEmail={currentUserEmail} showAlert={showAlert} />}
 
         {loading && (
           <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center z-[100]">
@@ -314,6 +348,15 @@ export default function AdminPanel() {
         )}
 
         {showAddModal && <ManualReservationModal onClose={() => setShowAddModal(false)} onSave={() => { setShowAddModal(false); reload(); }} />}
+
+        <AlertModal 
+          isOpen={alertConfig.isOpen}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          type={alertConfig.type}
+          onConfirm={alertConfig.onConfirm}
+          onCancel={alertConfig.onCancel}
+        />
       </div>
     </div>
   );
@@ -817,7 +860,51 @@ function ManualReservationModal({ onClose, onSave }: { onClose: () => void; onSa
 // FEEDBACK VIEW
 // ═══════════════════════════════════════════════
 
-function FeedbackView({ feedbacks, onReload }: { feedbacks: any[], onReload: () => void }) {
+function FeedbackView({ feedbacks, onReload, currentUserEmail, showAlert }: { 
+  feedbacks: any[], 
+  onReload: () => void, 
+  currentUserEmail: string | null,
+  showAlert: (title: string, message: string, type?: 'info' | 'error' | 'success' | 'confirm', onConfirm?: () => void, onCancel?: () => void) => void
+}) {
+  const isDev = currentUserEmail === 'dev@elatlantedesancristobal.com';
+
+  const sortedFeedbacks = useMemo(() => {
+    return [...feedbacks].sort((a, b) => {
+      // Unresolved first (resolved is boolean, false < true)
+      if (a.resolved !== b.resolved) {
+        return a.resolved ? 1 : -1;
+      }
+      // Then by date desc
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [feedbacks]);
+
+  const handleToggleStatus = async (id: string, currentStatus: boolean) => {
+    const success = await updateFeedbackStatus(id, !currentStatus);
+    if (success) {
+      onReload();
+    } else {
+      showAlert('Error', 'No se pudo actualizar el estado del feedback.', 'error');
+    }
+  };
+
+  const handleDeleteFeedback = async (id: string) => {
+    showAlert(
+      '¿Eliminar feedback?', 
+      '¿Estás seguro de que quieres eliminar este feedback? Esta acción no se puede deshacer.', 
+      'confirm',
+      async () => {
+        const success = await deleteFeedback(id);
+        if (success) {
+          onReload();
+        } else {
+          showAlert('Error', 'No se pudo eliminar el feedback.', 'error');
+        }
+      },
+      () => {} // Cancel
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-white/[0.03] border border-white/5 rounded-2xl px-6 py-4">
@@ -830,35 +917,84 @@ function FeedbackView({ feedbacks, onReload }: { feedbacks: any[], onReload: () 
         </button>
       </div>
       
-      {feedbacks.length === 0 ? (
+      {sortedFeedbacks.length === 0 ? (
         <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-12 text-center">
           <span className="text-4xl block mb-4">🔇</span>
           <p className="text-slate-500 text-sm italic">No hay feedback registrado aún en el sistema.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {feedbacks.map((f, i) => (
-            <div key={i} className="bg-white/[0.03] border border-white/5 rounded-2xl p-5 space-y-4 relative overflow-hidden group">
-              <div className={`absolute top-0 left-0 w-1 h-full ${f.type === 'bug' ? 'bg-red-500' : 'bg-blue-500'}`}></div>
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-2">
-                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter ${
-                    f.type === 'bug' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'
-                  }`}>
-                    {f.type === 'bug' ? '🐞 Bug' : '💡 Sugerencia'}
-                  </span>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase px-2 py-0.5 bg-white/5 rounded-full">
-                    {f.role === 'admin' ? 'Dueño' : 'Camarero'} {f.user_email ? `(${f.user_email})` : ''}
-                  </span>
-                </div>
-                <span className="text-[9px] text-slate-600 font-mono italic">{new Date(f.created_at).toLocaleDateString()}</span>
-              </div>
-              <p className="text-sm text-slate-300 leading-relaxed italic">"{f.content}"</p>
-              <div className="flex justify-end gap-2 pt-2 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
-                 <span className="text-[9px] text-slate-600">ID: {f.id.slice(0,8)}</span>
-              </div>
-            </div>
-          ))}
+        <div className="bg-white/[0.03] border border-white/5 rounded-2xl overflow-hidden">
+          <table className="w-full text-left text-sm border-collapse">
+            <thead>
+              <tr className="border-b border-white/5 bg-white/[0.02]">
+                <th className="px-6 py-4 font-bold text-slate-500 text-[10px] uppercase tracking-wider">Estado</th>
+                <th className="px-6 py-4 font-bold text-slate-500 text-[10px] uppercase tracking-wider">Tipo</th>
+                <th className="px-6 py-4 font-bold text-slate-500 text-[10px] uppercase tracking-wider">Mensaje</th>
+                <th className="px-6 py-4 font-bold text-slate-500 text-[10px] uppercase tracking-wider">Usuario / Fecha</th>
+                {isDev && <th className="px-6 py-4 font-bold text-slate-500 text-[10px] uppercase tracking-wider text-right">Acción</th>}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {sortedFeedbacks.map((f) => (
+                <tr key={f.id} className={`group hover:bg-white/[0.02] transition-colors ${f.resolved ? 'opacity-60' : ''}`}>
+                  <td className="px-6 py-4">
+                    {f.resolved ? (
+                      <span className="flex items-center gap-1.5 text-emerald-400 font-bold text-[10px] uppercase">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                        Resuelto
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 text-amber-400 font-bold text-[10px] uppercase animate-pulse">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                        Pendiente
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter ${
+                      f.type === 'bug' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'
+                    }`}>
+                      {f.type === 'bug' ? '🐞 Bug' : '💡 Sugerencia'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-slate-300 max-w-md">
+                    <p className="line-clamp-2 italic">"{f.content}"</p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="space-y-0.5">
+                      <p className="text-[10px] text-slate-400 font-bold">{f.user_email || 'Anónimo'}</p>
+                      <p className="text-[10px] text-slate-500 font-mono italic">{new Date(f.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </td>
+                  {isDev && (
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleToggleStatus(f.id, f.resolved)}
+                          className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border ${
+                            f.resolved 
+                              ? 'bg-slate-500/10 border-slate-500/20 text-slate-400 hover:bg-slate-500/20' 
+                              : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
+                          }`}
+                        >
+                          {f.resolved ? 'Reabrir' : 'Resolver'}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteFeedback(f.id)}
+                          className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 transition-all"
+                          title="Eliminar feedback"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
@@ -869,7 +1005,9 @@ function FeedbackView({ feedbacks, onReload }: { feedbacks: any[], onReload: () 
 // STAFF VIEW
 // ═══════════════════════════════════════════════
 
-function StaffView() {
+function StaffView({ showAlert }: { 
+  showAlert: (title: string, message: string, type?: 'info' | 'error' | 'success' | 'confirm', onConfirm?: () => void, onCancel?: () => void) => void 
+}) {
   const [staff, setStaff] = useState<StaffProfile[]>([]);
   const [loadingStaff, setLoadingStaff] = useState(true);
   const [inviteEmail, setInviteEmail] = useState('');
@@ -914,16 +1052,24 @@ function StaffView() {
 
   const handleDelete = async (id: string, email: string) => {
     if (email === 'dev@elatlantedesancristobal.com') {
-      alert('Esta cuenta de desarrollador no puede ser eliminada desde el panel.');
+      showAlert('Acción no permitida', 'Esta cuenta de desarrollador no puede ser eliminada desde el panel.', 'error');
       return;
     }
-    if (!confirm(`¿Eliminar a ${email} del equipo?`)) return;
-    try {
-      await deleteStaff(id);
-      loadStaff();
-    } catch (err: any) {
-      alert('Error: ' + err.message);
-    }
+    
+    showAlert(
+      '¿Eliminar miembro?', 
+      `¿Estás seguro de que quieres eliminar a ${email} del equipo?`, 
+      'confirm',
+      async () => {
+        try {
+          await deleteStaff(id);
+          loadStaff();
+        } catch (err: any) {
+          showAlert('Error', 'No se pudo eliminar al miembro: ' + err.message, 'error');
+        }
+      },
+      () => {} // Cancel
+    );
   };
 
   return (

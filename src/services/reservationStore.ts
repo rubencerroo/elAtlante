@@ -367,7 +367,7 @@ export async function getOccupancyByHour(dateStr: string): Promise<{ hour: strin
     .from('reservations')
     .select('time, guests')
     .eq('date', dateStr)
-    .not('status', 'in', '("cancelled", "no-show")');
+    .not('status', 'in', '(cancelled,no-show)');
 
   if (error) return [];
 
@@ -511,7 +511,7 @@ export async function getClientMeta(email: string): Promise<ClientMeta | null> {
     .from('client_meta')
     .select('*')
     .eq('email', email)
-    .single();
+    .maybeSingle();
 
   if (error) return null;
   return {
@@ -583,7 +583,31 @@ export async function getFeedbacks(): Promise<any[]> {
   return data;
 }
 
-// ── CSV Export ──
+export async function updateFeedbackStatus(id: string, resolved: boolean): Promise<boolean> {
+  const { error } = await supabase
+    .from('feedback')
+    .update({ resolved })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating feedback status:', error);
+    return false;
+  }
+  return true;
+}
+
+export async function deleteFeedback(id: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('feedback')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting feedback:', error);
+    return false;
+  }
+  return true;
+}
 
 export async function generateCSV(dateStr: string): Promise<string> {
   const list = await getReservationsForDate(dateStr);
@@ -607,7 +631,7 @@ export async function getShiftNote(dateStr: string): Promise<string | null> {
     .from('shift_notes')
     .select('content')
     .eq('date', dateStr)
-    .single();
+    .maybeSingle();
 
   if (error) return null;
   return data?.content || null;

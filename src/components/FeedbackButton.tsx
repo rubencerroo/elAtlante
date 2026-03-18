@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { submitFeedback, type FeedbackType, type FeedbackRole } from '../services/reservationStore';
 import { getUser } from '../services/authStore';
 
@@ -56,15 +57,15 @@ export default function FeedbackButton({ role, className }: FeedbackButtonProps)
         <span>Feedback</span>
       </button>
 
-      {isOpen && (
-        <div className="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
-            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+      {isOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02] shrink-0">
               <h2 className="font-bold text-white">Errores / Sugerencias</h2>
               <button onClick={() => setIsOpen(false)} className="text-slate-500 hover:text-white transition-colors">✕</button>
             </div>
 
-            <div className="p-6">
+            <div className="p-6 overflow-y-auto custom-scrollbar">
               {submitted ? (
                 <div className="py-8 text-center space-y-4">
                   <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
@@ -101,6 +102,7 @@ export default function FeedbackButton({ role, className }: FeedbackButtonProps)
                     <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Tu mensaje</label>
                     <textarea
                       required
+                      autoFocus
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
                       placeholder={type === 'bug' ? "Describe qué ha fallado..." : "Cuéntanos tu idea para mejorar..."}
@@ -128,7 +130,8 @@ export default function FeedbackButton({ role, className }: FeedbackButtonProps)
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
