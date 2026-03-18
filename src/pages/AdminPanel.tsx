@@ -6,7 +6,7 @@ import {
   getClientProfiles, getClientMeta, saveClientMeta, generateCSV, getOccupiedTables, getShiftNote, saveShiftNote, getFeedbacks, updateFeedbackStatus, deleteFeedback,
   type Reservation, type ReservationStatus, type ReservationStats, type ClientProfile, type ClientMeta
 } from '../services/reservationStore';
-import { signOut, getStaffRole, getSession, getStaffProfiles, inviteStaff, deleteStaff, isTabletAuthorized, authorizeTablet, deauthorizeTablet, getActiveStaffId, type StaffProfile, type StaffRole } from '../services/authStore';
+import { signOut, getStaffRole, getSession, getStaffProfiles, inviteStaff, deleteStaff, updateStaffProfile, isTabletAuthorized, authorizeTablet, deauthorizeTablet, getActiveStaffId, type StaffProfile, type StaffRole } from '../services/authStore';
 import StatsCards from './admin/StatsCards';
 import StatusKanban from './admin/StatusKanban';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -1109,7 +1109,6 @@ function StaffView({ showAlert }: {
         updates.pin = editForm.pin;
       }
       
-      const { updateStaffProfile } = await import('../services/authStore');
       await updateStaffProfile(staffId, updates);
       showAlert('Éxito', 'Perfil actualizado correctamente.', 'success');
       setEditingStaff(null);

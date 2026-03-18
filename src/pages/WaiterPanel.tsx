@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getReservationsForDate, updateReservation, addWalkIn, getOccupiedTables, getShiftNote, getClientProfiles, type Reservation, type ReservationStatus, type ClientProfile } from '../services/reservationStore';
+import { getReservationsForDate, updateReservation, addWalkIn, getOccupiedTables, getShiftNote, getClientProfiles, addToWaitList, type Reservation, type ReservationStatus, type ClientProfile } from '../services/reservationStore';
 import { signOut, getStaffRole, getSession, isTabletAuthorized, getActiveStaffId } from '../services/authStore';
 import TableSelector from '../components/TableSelector';
 import FeedbackButton from '../components/FeedbackButton';
@@ -162,8 +162,8 @@ export default function WaiterPanel() {
     }
   };
 
-  const addToWaitList = async (name: string, guests: number, phone?: string) => {
-    await import('../services/reservationStore').then(s => s.addToWaitList(name, guests, phone));
+  const handleAddToWaitList = async (name: string, guests: number, phone?: string) => {
+    await addToWaitList(name, guests, phone);
     reload();
   };
 
@@ -248,7 +248,7 @@ export default function WaiterPanel() {
         {tab === 'waitlist' ? (
           <WaitListView 
             waitList={grouped.waitlist} 
-            addToWaitList={addToWaitList} 
+            addToWaitList={handleAddToWaitList} 
             removeFromWaitList={removeFromWaitList}
             onSeat={handleSeatFromWaitlist}
             occupiedTables={occupiedTables}
