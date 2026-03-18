@@ -53,10 +53,7 @@ export async function getStaffRole(): Promise<StaffRole | null> {
 }
 
 export async function getStaffProfiles(): Promise<StaffProfile[]> {
-  const { data, error } = await supabase
-    .from('staff_public')
-    .select('*')
-    .order('created_at', { ascending: true });
+  const { data, error } = await supabase.rpc('get_staff_public_safe');
 
   if (error) throw error;
   return (data || []) as StaffProfile[];

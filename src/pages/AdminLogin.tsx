@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signIn, getStaffRole, getSession, signOut, isTabletAuthorized, authorizeTablet, deauthorizeTablet } from '../services/authStore';
+import { signIn, getStaffRole, getSession, signOut, isTabletAuthorized, authorizeTablet, deauthorizeTablet, setActiveStaffId } from '../services/authStore';
 import PinLoginView from '../components/admin/PinLoginView';
 
 export default function AdminLogin() {
@@ -77,6 +77,7 @@ export default function AdminLogin() {
   const handleLogout = async () => {
     try {
       await signOut();
+      setActiveStaffId(null);
       setShowRoleSelector(false);
       setEmail('');
       setPassword('');
@@ -98,7 +99,8 @@ export default function AdminLogin() {
 
   const handlePinLoginSuccess = (role: string) => {
     if (role === 'owner') {
-      navigate('/admin/owner');
+      setShowRoleSelector(true);
+      setUsePinLogin(false);
     } else {
       navigate('/admin/waiter');
     }

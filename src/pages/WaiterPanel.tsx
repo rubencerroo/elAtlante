@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getReservationsForDate, updateReservation, addWalkIn, getOccupiedTables, getShiftNote, getClientProfiles, type Reservation, type ReservationStatus, type ClientProfile } from '../services/reservationStore';
-import { signOut, getStaffRole, getSession } from '../services/authStore';
+import { signOut, getStaffRole, getSession, isTabletAuthorized, getActiveStaffId } from '../services/authStore';
 import TableSelector from '../components/TableSelector';
 import FeedbackButton from '../components/FeedbackButton';
 import logoWhite from '../assets/logowhite.png';
@@ -76,9 +76,23 @@ export default function WaiterPanel() {
     (async () => {
       try {
         const session = await getSession();
-        if (!session) { navigate('/admin', { replace: true }); return; }
-        const role = await getStaffRole();
-        if (role !== 'waiter' && role !== 'owner') { navigate('/admin', { replace: true }); return; }
+        const activeStaffId = getActiveStaffId();
+        const isAuthorized = isTabletAuthorized();
+
+        if (!session && !(isAuthorized && activeStaffId)) {
+          navigate('/admin', { replace: true });
+          return;
+        }
+
+        // If we have a session, verify the role
+        if (session) {
+          const role = await getStaffRole();
+          if (role !== 'waiter' && role !== 'owner') {
+            navigate('/admin', { replace: true });
+            return;
+          }
+        }
+        
         setAuthChecked(true);
       } catch {
         navigate('/admin', { replace: true });

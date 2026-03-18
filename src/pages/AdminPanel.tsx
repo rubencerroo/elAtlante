@@ -6,7 +6,7 @@ import {
   getClientProfiles, getClientMeta, saveClientMeta, generateCSV, getOccupiedTables, getShiftNote, saveShiftNote, getFeedbacks, updateFeedbackStatus, deleteFeedback,
   type Reservation, type ReservationStatus, type ReservationStats, type ClientProfile, type ClientMeta
 } from '../services/reservationStore';
-import { signOut, getStaffRole, getSession, getStaffProfiles, inviteStaff, deleteStaff, type StaffProfile, type StaffRole } from '../services/authStore';
+import { signOut, getStaffRole, getSession, getStaffProfiles, inviteStaff, deleteStaff, isTabletAuthorized, getActiveStaffId, type StaffProfile, type StaffRole } from '../services/authStore';
 import StatsCards from './admin/StatsCards';
 import StatusKanban from './admin/StatusKanban';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -94,10 +94,23 @@ export default function AdminPanel() {
     (async () => {
       try {
         const session = await getSession();
-        if (!session) { navigate('/admin', { replace: true }); return; }
-        setCurrentUserEmail(session.user.email || null);
-        const role = await getStaffRole();
-        if (role !== 'owner') { navigate('/admin', { replace: true }); return; }
+        const activeStaffId = getActiveStaffId();
+        const isAuthorized = isTabletAuthorized();
+
+        if (!session && !(isAuthorized && activeStaffId)) {
+          navigate('/admin', { replace: true });
+          return;
+        }
+
+        if (session) {
+          setCurrentUserEmail(session.user.email || null);
+          const role = await getStaffRole();
+          if (role !== 'owner') {
+            navigate('/admin', { replace: true });
+            return;
+          }
+        }
+        
         setAuthChecked(true);
       } catch (error: any) {
         console.error("Authentication error:", error);
