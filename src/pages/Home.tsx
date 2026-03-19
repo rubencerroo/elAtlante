@@ -217,76 +217,50 @@ export default function Home() {
         </div>
       </section>
 
-      {/* About Us Section */}
-      <section className="px-6 lg:px-28 py-24 @container overflow-hidden" id="nosotros">
-        <div className="flex flex-col lg:flex-row gap-16 items-center">
-          <div className="flex-1 w-full relative">
-            <div className="aspect-[16/10] rounded-2xl md:rounded-[2.5rem] bg-cover bg-center shadow-[0_30px_80px_-15px_rgba(0,0,0,0.25)] border-2 border-white dark:border-slate-800" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDHN_4hnzs64uVTD9pNvyjzMd0gmF4u7d9jlcgGRfAeXVF6xYmg615NSyZS8rGp-W024Q6a7_VHAgETZykcP6iOmw5Q_bM7W4ySND3PfvJ0dKZeFEnZF7doKn5ut9QjDorkWL-tX8aPlHIukSpo6etujfLfe3dPBQuh8rfJoeS4UG_U9KSG3Y8sWtncAfSc0vaVFDKhnSKbOSMbQEx7lxCR4ub3_jIV_J89xZN_YklPuNB5zQlixYXbykzNRiO5ihIRGpKeVAtcraQ')"}}></div>
-          </div>
-          <div className="flex flex-col gap-8 flex-1">
-            <div className="flex flex-col gap-3">
-              <span className="text-primary font-bold tracking-[0.3em] uppercase text-xs">Sobre Nosotros</span>
-              <h2 className="text-slate-900 dark:text-slate-100 text-3xl md:text-4xl font-black leading-tight tracking-tight">
-                Felicidad <span className="text-primary italic">frente</span> al mar.
-              </h2>
+      {/*
+        About Us Section
+        <section className="px-6 lg:px-28 py-24 @container overflow-hidden" id="nosotros">
+          <div className="flex flex-col lg:flex-row gap-16 items-center">
+            <div className="flex-1 w-full relative">
+              <div className="aspect-[16/10] rounded-2xl md:rounded-[2.5rem] bg-cover bg-center shadow-[0_30px_80px_-15px_rgba(0,0,0,0.25)] border-2 border-white dark:border-slate-800" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDHN_4hnzs64uVTD9pNvyjzMd0gmF4u7d9jlcgGRfAeXVF6xYmg615NSyZS8rGp-W024Q6a7_VHAgETZykcP6iOmw5Q_bM7W4ySND3PfvJ0dKZeFEnZF7doKn5ut9QjDorkWL-tX8aPlHIukSpo6etujfLfe3dPBQuh8rfJoeS4UG_U9KSG3Y8sWtncAfSc0vaVFDKhnSKbOSMbQEx7lxCR4ub3_jIV_J89xZN_YklPuNB5zQlixYXbykzNRiO5ihIRGpKeVAtcraQ')"}}></div>
             </div>
-            <p className="text-slate-700 dark:text-slate-300 text-base md:text-lg leading-relaxed font-light">
-              Desde hace generaciones, nuestra familia ha vivido del y para el mar. En El Atlante, trasladamos esa pasión a cada plato, utilizando técnicas tradicionales y el producto más fresco de la lonja de San Cristóbal.
-            </p>
-            <div className="space-y-8 mt-2">
-              <div className="flex items-start gap-5 group">
-                <div className="size-14 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/5 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-inner flex-shrink-0">
-                  <svg className="size-7" fill="currentColor" viewBox="0 -960 960 960"><path d="M440-160v-487L216-431l-56-57 280-280 280 280-56 57-224-216v487h-80Z"/></svg>
-                </div>
-                <div>
-                  <h4 className="font-bold text-base text-slate-900 dark:text-slate-100 uppercase tracking-tight mb-1">Producto Directo</h4>
-                  <p className="text-slate-500 dark:text-slate-400 font-light text-sm max-w-sm">Sin intermediarios, de la lonja a tu mesa. Frescura en menos de 24h.</p>
-                </div>
+            <div className="flex flex-col gap-8 flex-1">
+              <div className="flex flex-col gap-3">
+                <span className="text-primary font-bold tracking-[0.3em] uppercase text-xs">Sobre Nosotros</span>
+                <h2 className="text-slate-900 dark:text-slate-100 text-3xl md:text-4xl font-black leading-tight tracking-tight">
+                  Felicidad <span className="text-primary italic">frente</span> al mar.
+                </h2>
               </div>
-              <div className="flex items-start gap-5 group">
-                <div className="size-14 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/5 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-inner flex-shrink-0">
-                  <svg className="size-7" fill="currentColor" viewBox="0 -960 960 960"><path d="M280-80v-366q-51-14-85.5-56.5T160-600v-280h80v280h40v-280h80v280h40v-280h80v280q0 55-34.5 97.5T360-446v366h-80Zm400 0v-320H560v-280q0-83 58.5-141.5T760-880v800h-80Z"/></svg>
+              <p className="text-slate-700 dark:text-slate-300 text-base md:text-lg leading-relaxed font-light">
+                Desde hace generaciones, nuestra familia ha vivido del y para el mar. En El Atlante, trasladamos esa pasión a cada plato, utilizando técnicas tradicionales y el producto más fresco de la lonja de San Cristóbal.
+              </p>
+              <div className="space-y-8 mt-2">
+                <div className="flex items-start gap-5 group">
+                  <div className="size-14 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/5 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-inner flex-shrink-0">
+                    <svg className="size-7" fill="currentColor" viewBox="0 -960 960 960"><path d="M440-160v-487L216-431l-56-57 280-280 280 280-56 57-224-216v487h-80Z"/></svg>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-base text-slate-900 dark:text-slate-100 uppercase tracking-tight mb-1">Producto Directo</h4>
+                    <p className="text-slate-500 dark:text-slate-400 font-light text-sm max-w-sm">Sin intermediarios, de la lonja a tu mesa. Frescura en menos de 24h.</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-bold text-base text-slate-900 dark:text-slate-100 uppercase tracking-tight mb-1">Cocina Brava</h4>
-                  <p className="text-slate-500 dark:text-slate-400 font-light text-sm max-w-sm">Recetas con alma y potencia marina heredadas por décadas.</p>
+                <div className="flex items-start gap-5 group">
+                  <div className="size-14 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/5 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-inner flex-shrink-0">
+                    <svg className="size-7" fill="currentColor" viewBox="0 -960 960 960"><path d="M280-80v-366q-51-14-85.5-56.5T160-600v-280h80v280h40v-280h80v280h40v-280h80v280q0 55-34.5 97.5T360-446v366h-80Zm400 0v-320H560v-280q0-83 58.5-141.5T760-880v800h-80Z"/></svg>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-base text-slate-900 dark:text-slate-100 uppercase tracking-tight mb-1">Cocina Brava</h4>
+                    <p className="text-slate-500 dark:text-slate-400 font-light text-sm max-w-sm">Recetas con alma y potencia marina heredadas por décadas.</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </section>
+      */}
 
-      {/* Specialties - Animated Grid */}
-      <section className="relative bg-slate-950 py-24 lg:py-32 px-6 lg:px-28 overflow-hidden" id="carta">
-        {/* Ambient Glow */}
-        <div className="absolute top-1/4 -left-20 w-[400px] h-[400px] bg-primary/15 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-1/4 -right-20 w-[300px] h-[300px] bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
-
-        <div className="relative z-10 max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-14 gap-6">
-            <div className="max-w-lg">
-              <span className="text-primary font-bold tracking-[0.3em] uppercase text-xs">Exclusividad</span>
-              <motion.h2
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="text-3xl md:text-4xl lg:text-5xl font-black mt-3 tracking-tight leading-tight text-white"
-              >
-                Joyas <br/><span className="text-primary italic underline decoration-2 underline-offset-4">del Atlante</span>
-              </motion.h2>
-            </div>
-            <p className="text-slate-300 font-light text-sm md:text-base max-w-xs">Platos icónicos que definen nuestra identidad gastronómica sin artificios.</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 md:gap-12">
-            {dishes.map((dish, idx) => (
-              <DishCard key={dish.id} dish={dish} idx={idx} />
-            ))}
-          </div>
-        </div>
-      </section>
+      {/*
 
 
 
@@ -295,23 +269,31 @@ export default function Home() {
       <section className="py-24 lg:py-32 px-6 lg:px-28 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-white/5">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
           <div className="space-y-10">
-            <div>
-              <span className="text-primary font-bold tracking-[0.4em] uppercase text-[10px]">Cuándo Venir</span>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 dark:text-slate-100 mt-4 tracking-tight leading-tight">Horarios <br/><span className="text-primary italic">Atlánticos</span></h2>
+            <div className="mb-8">
+              <h1 className="text-primary font-bold tracking-[0.4em] uppercase text-[10px]">Horario de Apertura</h1>
             </div>
-            
-            <div className="space-y-0 divide-y divide-slate-100 dark:divide-white/5">
-              {[
-                { day: 'Lunes', hours: '12:30 - 23:00' },
-                { day: 'Martes & Miércoles', hours: 'Cerrado', highlight: true },
-                { day: 'Jueves - Sábado', hours: '12:30 - 23:00' },
-                { day: 'Domingo', hours: '12:30 - 16:30' }
-              ].map((item, idx) => (
-                <div key={idx} className="flex justify-between items-center py-5 first:pt-0">
-                  <span className={`font-bold uppercase tracking-wider text-sm ${item.highlight ? 'text-primary' : 'text-slate-900 dark:text-slate-100'}`}>{item.day}</span>
-                  <span className={`font-light text-lg ${item.highlight ? 'text-primary' : 'text-slate-500 dark:text-slate-400'}`}>{item.hours}</span>
-                </div>
-              ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+              {/* Card Horarios */}
+              <div className="rounded-2xl bg-white dark:bg-slate-800 shadow-lg p-6 flex flex-col items-center border border-slate-100 dark:border-white/10">
+                <svg className="mb-2 text-primary" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M16 2v2M8 2v2M3 10h18"/><circle cx="8.5" cy="14.5" r="1.5"/><circle cx="15.5" cy="14.5" r="1.5"/></svg>
+                <span className="font-bold text-lg text-slate-900 dark:text-slate-100">Lunes</span>
+                <span className="text-primary font-semibold text-xl mt-1">12:30 - 23:00</span>
+              </div>
+              <div className="rounded-2xl bg-white dark:bg-slate-800 shadow-lg p-6 flex flex-col items-center border border-slate-100 dark:border-white/10">
+                <svg className="mb-2 text-primary" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M16 2v2M8 2v2M3 10h18"/><circle cx="8.5" cy="14.5" r="1.5"/><circle cx="15.5" cy="14.5" r="1.5"/></svg>
+                <span className="font-bold text-lg text-primary">Martes & Miércoles</span>
+                <span className="text-red-500 font-semibold text-xl mt-1">Cerrado</span>
+              </div>
+              <div className="rounded-2xl bg-white dark:bg-slate-800 shadow-lg p-6 flex flex-col items-center border border-slate-100 dark:border-white/10">
+                <svg className="mb-2 text-primary" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M16 2v2M8 2v2M3 10h18"/><circle cx="8.5" cy="14.5" r="1.5"/><circle cx="15.5" cy="14.5" r="1.5"/></svg>
+                <span className="font-bold text-lg text-slate-900 dark:text-slate-100">Jueves - Sábado</span>
+                <span className="text-primary font-semibold text-xl mt-1">12:30 - 23:00</span>
+              </div>
+              <div className="rounded-2xl bg-white dark:bg-slate-800 shadow-lg p-6 flex flex-col items-center border border-slate-100 dark:border-white/10">
+                <svg className="mb-2 text-primary" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M16 2v2M8 2v2M3 10h18"/><circle cx="8.5" cy="14.5" r="1.5"/><circle cx="15.5" cy="14.5" r="1.5"/></svg>
+                <span className="font-bold text-lg text-slate-900 dark:text-slate-100">Domingo</span>
+                <span className="text-primary font-semibold text-xl mt-1">12:30 - 16:30</span>
+              </div>
             </div>
           </div>
 
