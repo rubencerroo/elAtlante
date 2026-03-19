@@ -174,7 +174,7 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
     .select()
     .single();
 
-  if (error) {
+  if (error || !data) {
     console.error('Error adding reservation:', error);
     return null;
   }

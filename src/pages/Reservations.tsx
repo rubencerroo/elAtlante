@@ -84,10 +84,11 @@ export default function Reservations() {
         alert('Hubo un error al procesar tu reserva. Por favor, inténtalo de nuevo o contáctanos por teléfono.');
       }
     } catch (err: any) {
+      console.error('Reservation submission error:', err);
       if (err.message === 'DUPLICATE_RESERVATION') {
         alert('Ya tienes una reserva para esta misma fecha y hora. Si necesitas modificarla, por favor contáctanos por teléfono.');
       } else {
-        alert('Hubo un error al procesar tu reserva. Por favor, inténtalo de nuevo.');
+        alert(`Hubo un error al procesar tu reserva: ${err.message || 'Error desconocido'}. Por favor, inténtalo de nuevo.`);
       }
     } finally {
       setIsSubmitting(false);
