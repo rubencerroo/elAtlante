@@ -3,7 +3,9 @@ import { useSearchParams } from 'react-router-dom';
 import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
 import { addReservation, getReservationById, type Reservation } from '../services/reservationStore';
+import GuestCounter from '../components/GuestCounter';
 import SEO from '../components/SEO';
+import { getAvailableTimes, isDateValid, getTodayDateString } from '../utils/reservationUtils';
 
 export default function Reservations() {
   const [searchParams] = useSearchParams();
@@ -13,7 +15,7 @@ export default function Reservations() {
   const [lastReservation, setLastReservation] = useState<Reservation | null>(null);
   const [formData, setFormData] = useState({
     name: '', email: '', date: '', time: '13:00',
-    guests: '2', preference: 'Indiferente' as const,
+    guests: 2, preference: 'Indiferente' as const,
     hasPet: false, notes: '', acceptPolicies: false,
   });
 
@@ -40,48 +42,8 @@ export default function Reservations() {
     }
   }, [searchParams, submitted]);
 
-  const handleChange = (field: string, value: string | boolean) => {
+  const handleChange = (field: string, value: string | boolean | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const getAvailableTimes = (dateStr: string) => {
-    if (!dateStr) return ['13:00'];
-    const date = new Date(dateStr + 'T12:00:00'); 
-    const day = date.toLocaleDateString('es-ES', { weekday: 'long', timeZone: 'Atlantic/Canary' }).toLowerCase();
-    const normalizedDay = day.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    if (['lunes', 'jueves', 'viernes', 'sabado'].includes(normalizedDay)) {
-      return ['13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '20:00', '20:30', '21:00', '21:30', '22:00', '22:30'];
-    }
-    if (normalizedDay === 'domingo') {
-      return ['13:00', '13:30', '14:00', '14:30', '15:00', '15:30'];
-    }
-    return [];
-  };
-
-  const isDateValid = (dateStr: string, timeStr: string) => {
-    const date = new Date(dateStr + 'T' + timeStr);
-    const day = date.toLocaleDateString('es-ES', { weekday: 'long', timeZone: 'Atlantic/Canary' }).toLowerCase();
-    const normalizedDay = day.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const timeToMinutes = (t: string) => {
-      const [h, m] = t.split(':').map(Number);
-      return h * 60 + m;
-    };
-    const currentMinutes = timeToMinutes(timeStr);
-
-    switch (normalizedDay) {
-      case 'lunes':
-      case 'jueves':
-      case 'viernes':
-      case 'sabado':
-        return currentMinutes >= timeToMinutes('12:30') && currentMinutes <= timeToMinutes('23:00');
-      case 'domingo':
-        return currentMinutes >= timeToMinutes('12:30') && currentMinutes <= timeToMinutes('16:30');
-      case 'martes':
-      case 'miercoles':
-        return false;
-      default:
-        return false;
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -98,20 +60,15 @@ export default function Reservations() {
 
     setIsSubmitting(true);
 
-    if (!isDateValid(formData.date, formData.time)) {
-      alert('Lo sentimos, el restaurante está cerrado en el horario seleccionado. Por favor, revisa nuestros horarios.');
-      return;
-    }
 
     try {
-      const guestCount = parseInt(formData.guests);
       const reservation = await addReservation({
         name: formData.name,
         email: formData.email,
         phone,
         date: formData.date,
         time: formData.time,
-        guests: isNaN(guestCount) ? 5 : guestCount,
+        guests: formData.guests,
         preference: formData.preference as 'Indiferente' | 'Interior' | 'Mesas altas' | 'Terraza exterior',
         hasPet: formData.hasPet,
         notes: formData.notes,
@@ -220,7 +177,7 @@ export default function Reservations() {
 
           {/* Actions */}
           <div className="flex flex-col items-center gap-4">
-            <button onClick={() => { setSubmitted(false); setLastReservation(null); setFormData({ name: '', email: '', date: '', time: '13:00', guests: '2 Personas', preference: 'Indiferente', hasPet: false, notes: '', acceptPolicies: false }); setPhone(''); }}
+            <button onClick={() => { setSubmitted(false); setLastReservation(null); setFormData({ name: '', email: '', date: '', time: '13:00', guests: 2, preference: 'Indiferente', hasPet: false, notes: '', acceptPolicies: false }); setPhone(''); }}
               className="text-primary font-semibold text-sm hover:underline">
               Hacer otra reserva
             </button>
@@ -295,10 +252,10 @@ export default function Reservations() {
                 <div className="flex flex-col gap-3 border-b border-slate-100 dark:border-white/5 pb-5">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-600 dark:text-slate-300">Fecha <span className="text-primary">*</span></label>
                   <input className="bg-transparent text-lg font-light text-slate-900 dark:text-white border-none focus:ring-0 p-0"
-                    type="date" required min={new Date().toLocaleDateString('en-CA', { timeZone: 'Atlantic/Canary' })} value={formData.date} onChange={e => {
+                    type="date" required min={getTodayDateString()} value={formData.date} onChange={e => {
                       const newDate = e.target.value;
                       handleChange('date', newDate);
-                      const times = getAvailableTimes(newDate);
+                      const times = getAvailableTimes(newDate, 15);
                       if (times.length > 0 && !times.includes(formData.time)) {
                         handleChange('time', times[0]);
                       }
@@ -312,8 +269,8 @@ export default function Reservations() {
                   <div className="relative">
                     <select className="bg-transparent w-full text-lg font-light text-slate-900 dark:text-white border-none focus:ring-0 p-0 appearance-none cursor-pointer"
                       required value={formData.time} onChange={e => handleChange('time', e.target.value)}>
-                      {getAvailableTimes(formData.date).length > 0 ? (
-                        getAvailableTimes(formData.date).map(t => <option key={t} value={t}>{t} h</option>)
+                      {getAvailableTimes(formData.date, 15).length > 0 ? (
+                        getAvailableTimes(formData.date, 15).map(t => <option key={t} value={t}>{t} h</option>)
                       ) : (
                         <option value="">Cerrado este día</option>
                       )}
@@ -325,23 +282,17 @@ export default function Reservations() {
                 </div>
                 <div className="flex flex-col gap-3 border-b border-slate-100 dark:border-white/5 pb-5">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-600 dark:text-slate-300">Invitados</label>
-                  <div className="relative">
-                    <select className="bg-transparent w-full text-lg font-light text-slate-900 dark:text-white border-none focus:ring-0 p-0 appearance-none cursor-pointer"
-                      value={formData.guests} onChange={e => handleChange('guests', e.target.value)}>
-                      <option value="1">1 Persona</option>
-                      <option value="2">2 Personas</option>
-                      <option value="3">3 Personas</option>
-                      <option value="4">4 Personas</option>
-                      <option value="5">5 Personas</option>
-                      <option value="6">6 Personas</option>
-                      <option value="7">7 Personas</option>
-                      <option value="8">8 Personas</option>
-                      <option value="9">Más de 8 (contactar)</option>
-                    </select>
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 text-primary">
-                      <svg className="size-5" fill="currentColor" viewBox="0 -960 960 960"><path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z" /></svg>
-                    </div>
-                  </div>
+                  <GuestCounter 
+                    value={formData.guests} 
+                    onChange={n => handleChange('guests', n)} 
+                    max={15}
+                    className="py-2"
+                  />
+                  {formData.guests >= 8 && (
+                    <p className="text-[10px] text-amber-500 font-medium mt-1">
+                      Para más de 8 personas contacta con nosotros directamente.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -384,7 +335,7 @@ export default function Reservations() {
               </div>
 
               <div className="pt-6">
-                {formData.guests === '9' ? (
+                {formData.guests >= 9 ? (
                   <div className="space-y-4">
                     <p className="text-amber-500 dark:text-amber-400 text-sm font-medium text-center mb-4">
                       Para grupos de más de 8 personas, por favor contacta directamente con nosotros:

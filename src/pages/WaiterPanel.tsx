@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { getReservationsForDate, updateReservation, addWalkIn, getOccupiedTables, getShiftNote, getClientProfiles, addToWaitList, type Reservation, type ReservationStatus, type ClientProfile } from '../services/reservationStore';
 import { signOut, getStaffRole, getSession, isTabletAuthorized, getActiveStaffId } from '../services/authStore';
 import TableSelector from '../components/TableSelector';
+import GuestCounter from '../components/GuestCounter';
 import FeedbackButton from '../components/FeedbackButton';
 import logoWhite from '../assets/logowhite.png';
+import ManualReservationModal from '../components/ManualReservationModal';
 
 const STATUS_COLORS: Record<ReservationStatus, string> = {
   'pending': 'border-l-amber-400 bg-amber-400/5',
@@ -63,6 +65,7 @@ export default function WaiterPanel() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [tab, setTab] = useState<Tab>('upcoming');
   const [showWalkIn, setShowWalkIn] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [walkInGuests, setWalkInGuests] = useState(2);
   const [walkInTable, setWalkInTable] = useState<number | null>(null);
   const [occupiedTables, setOccupiedTables] = useState<number[]>([]);
@@ -73,31 +76,29 @@ export default function WaiterPanel() {
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const session = await getSession();
-        const activeStaffId = getActiveStaffId();
-        const isAuthorized = isTabletAuthorized();
+    try {
+      const session = getSession();
+      const activeStaffId = getActiveStaffId();
+      const isAuthorized = isTabletAuthorized();
 
-        if (!session && !(isAuthorized && activeStaffId)) {
+      if (!session && !(isAuthorized && activeStaffId)) {
+        navigate('/admin', { replace: true });
+        return;
+      }
+
+      // If we have a session, verify the role
+      if (session) {
+        const role = getStaffRole();
+        if (role !== 'waiter' && role !== 'owner') {
           navigate('/admin', { replace: true });
           return;
         }
-
-        // If we have a session, verify the role
-        if (session) {
-          const role = await getStaffRole();
-          if (role !== 'waiter' && role !== 'owner') {
-            navigate('/admin', { replace: true });
-            return;
-          }
-        }
-        
-        setAuthChecked(true);
-      } catch {
-        navigate('/admin', { replace: true });
       }
-    })();
+      
+      setAuthChecked(true);
+    } catch {
+      navigate('/admin', { replace: true });
+    }
   }, [navigate]);
 
   const reload = useCallback(async () => {
@@ -125,10 +126,19 @@ export default function WaiterPanel() {
     reload();
   }, [reload]);
 
-  // Auto-reload every 30s
+  // Auto-reload every 20s
   useEffect(() => {
-    const interval = setInterval(reload, 30000);
+    const interval = setInterval(reload, 20000);
     return () => clearInterval(interval);
+  }, [reload]);
+
+  // Reload on tab focus / device wake
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') reload();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [reload]);
 
   // Re-render every minute for time alerts
@@ -216,7 +226,10 @@ export default function WaiterPanel() {
           </div>
           <div className="flex items-center gap-4">
             <FeedbackButton role="waiter" className="text-slate-500 hover:text-amber-400 text-xs flex items-center gap-1.5 transition-colors" />
-            <button onClick={logout} className="text-slate-500 hover:text-red-400 text-xs transition-colors">Salir</button>
+            <button onClick={logout} className="text-slate-500 hover:text-red-400 text-xs flex items-center gap-2 transition-colors">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 -960 960 960"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>
+              Salir
+            </button>
           </div>
         </div>
       </header>
@@ -276,14 +289,12 @@ export default function WaiterPanel() {
 
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Comensales</label>
-              <div className="grid grid-cols-4 gap-2">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
-                  <button key={n} onClick={() => setWalkInGuests(n)}
-                    className={`h-14 rounded-xl font-bold text-lg transition-all ${walkInGuests === n ? 'bg-primary text-white scale-105' : 'bg-white/5 border border-white/10 text-slate-400'}`}>
-                    {n}
-                  </button>
-                ))}
-              </div>
+              <GuestCounter 
+                value={walkInGuests} 
+                onChange={setWalkInGuests} 
+                max={20}
+                className="justify-center py-2"
+              />
             </div>
 
             <div className="space-y-2">
@@ -299,18 +310,23 @@ export default function WaiterPanel() {
         </div>
       )}
 
-      {/* FAB - Walk-in button */}
+      {/* FAB Left - Mesa Rápida */}
       <button onClick={() => setShowWalkIn(true)}
         className="fixed bottom-6 left-6 h-16 bg-emerald-500 hover:bg-emerald-400 rounded-2xl shadow-2xl shadow-emerald-500/30 flex items-center gap-3 px-5 transition-all active:scale-95 z-50">
         <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 -960 960 960"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
         <span className="text-white font-bold text-sm">Mesa Rápida</span>
       </button>
 
-      {/* Floating refresh */}
-      <button onClick={reload}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-primary rounded-2xl shadow-2xl shadow-primary/30 flex items-center justify-center hover:scale-110 transition-transform active:scale-95 z-50">
-        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 -960 960 960"><path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"/></svg>
-      </button>
+      {/* FAB Right - Nueva Reserva */}
+      <div className="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-50">
+        <button onClick={() => setShowAddModal(true)}
+          className="h-16 bg-primary hover:bg-primary/90 rounded-2xl shadow-2xl shadow-primary/30 flex items-center gap-3 px-5 transition-all active:scale-95">
+          <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 -960 960 960"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
+          <span className="text-white font-bold text-sm">Nueva Reserva</span>
+        </button>
+      </div>
+
+      {showAddModal && <ManualReservationModal onClose={() => setShowAddModal(false)} onSave={() => { setShowAddModal(false); reload(); }} />}
     </div>
   );
 }
@@ -341,10 +357,12 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
           </div>
           
           <div className="flex gap-2">
-            <select value={waitGuests} onChange={e => setWaitGuests(Number(e.target.value))}
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:outline-none appearance-none cursor-pointer">
-              {[1,2,3,4,5,6,7,8,9,10,12].map(n => <option key={n} value={n}>{n} personas</option>)}
-            </select>
+            <GuestCounter 
+              value={waitGuests} 
+              onChange={setWaitGuests} 
+              max={20}
+              className="bg-white/5 border border-white/10 rounded-xl px-4 py-2"
+            />
             <button onClick={() => { if (waitName) { addToWaitList(waitName, waitGuests); setWaitName(''); } }}
               className="bg-primary hover:bg-primary/90 text-white rounded-xl px-6 py-3 text-sm font-bold transition-all shrink-0">
               + Añadir a la fila
@@ -445,6 +463,9 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, profile }
   const isTimeCritical = r.status === 'seated' && seatedMinutes > 150;
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    // Only allow swipe for pending or confirmed reservations
+    if (r.status !== 'pending' && r.status !== 'confirmed') return;
+    
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
     isHorizontalSwipe.current = false;
@@ -486,14 +507,16 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, profile }
   return (
     <div className="relative overflow-hidden rounded-2xl ">
       {/* Swipe background hints */}
-      <div className="absolute inset-0 flex">
-        <div className={`flex-1 flex items-center justify-start pl-6 ${swipeX > 40 ? 'bg-emerald-500/20' : 'bg-transparent'} transition-colors rounded-l-2xl`}>
-          {swipeX > 40 && <span className="text-emerald-400 font-bold text-sm">{r.status === 'pending' ? '✓ Confirmar' : '🪑 Sentar'}</span>}
+      {swiping && (r.status === 'pending' || r.status === 'confirmed') && (
+        <div className="absolute inset-0 flex">
+          <div className={`flex-1 flex items-center justify-start pl-6 ${swipeX > 40 ? 'bg-emerald-500/20' : 'bg-transparent'} transition-colors rounded-l-2xl`}>
+            {swipeX > 40 && <span className="text-emerald-400 font-bold text-sm">{r.status === 'pending' ? '✓ Confirmar' : '🪑 Sentar'}</span>}
+          </div>
+          <div className={`flex-1 flex items-center justify-end pr-6 ${swipeX < -40 ? 'bg-orange-500/20' : 'bg-transparent'} transition-colors rounded-r-2xl`}>
+            {swipeX < -40 && <span className="text-orange-400 font-bold text-sm">👻 No Show</span>}
+          </div>
         </div>
-        <div className={`flex-1 flex items-center justify-end pr-6 ${swipeX < -40 && r.status !== 'seated' ? 'bg-orange-500/20' : 'bg-transparent'} transition-colors rounded-r-2xl`}>
-          {swipeX < -40 && r.status !== 'seated' && <span className="text-orange-400 font-bold text-sm">👻 No Show</span>}
-        </div>
-      </div>
+      )}
 
       {/* Card */}
       <div

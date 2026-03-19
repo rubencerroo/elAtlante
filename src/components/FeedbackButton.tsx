@@ -22,12 +22,8 @@ export default function FeedbackButton({ role, className }: FeedbackButtonProps)
     
     setIsSubmitting(true);
     let userEmail = '';
-    try {
-      const user = await getUser();
-      userEmail = user?.email || '';
-    } catch (e) {
-      console.error('Error fetching user for feedback:', e);
-    }
+    const user = getUser();
+    userEmail = user?.email || '';
 
     const success = await submitFeedback(type, role, content, userEmail);
     setIsSubmitting(false);

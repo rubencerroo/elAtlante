@@ -16,29 +16,25 @@ export default function AdminLogin() {
 
   // Check if already logged in
   useEffect(() => {
-    (async () => {
-      try {
-        const session = await getSession();
-        if (session) {
-          const role = await getStaffRole();
-          if (role === 'owner') {
-            setShowRoleSelector(true);
-          } else if (role === 'waiter') {
-            navigate('/admin/waiter', { replace: true });
-          }
-        } else {
+    try {
+      const session = getSession();
+      if (session) {
+        const role = getStaffRole();
+        if (role === 'owner') {
+          setShowRoleSelector(true);
+        } else if (role === 'waiter') {
+          navigate('/admin/waiter', { replace: true });
+        }
+      } else {
           // No session - if device is authorized, we'll suggest PIN login
           // but PinLoginView itself will handle the case where it needs to fetch staff
           if (isAuthorized) {
             setUsePinLogin(true);
           }
         }
-      } catch {
-        // Not logged in
       } finally {
         setCheckingSession(false);
       }
-    })();
   }, [navigate, isAuthorized]);
 
   const handleSubmit = async (e: React.FormEvent) => {

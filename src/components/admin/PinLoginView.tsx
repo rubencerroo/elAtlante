@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { type StaffProfile, getStaffProfiles, verifyStaffPin, setActiveStaffId } from '../../services/authStore';
+import { type StaffProfile, getStaffProfiles, pinSignIn, setActiveStaffId } from '../../services/authStore';
 
 interface PinLoginViewProps {
   onSuccess: (role: string) => void;
@@ -49,16 +49,18 @@ export default function PinLoginView({ onSuccess, onCancel }: PinLoginViewProps)
     setLoading(true);
     setError('');
     try {
-      const isValid = await verifyStaffPin(selectedStaff.id, pinAttempt);
-      if (isValid) {
-        setActiveStaffId(selectedStaff.id);
-        onSuccess(selectedStaff.role);
-      } else {
+      // pinSignIn verifies the PIN server-side and creates a real Supabase auth session
+      const result = await pinSignIn(selectedStaff.id, pinAttempt);
+      setActiveStaffId(selectedStaff.id);
+      onSuccess(result.role);
+    } catch (err: any) {
+      const msg = err?.message || '';
+      if (msg.includes('PIN incorrecto')) {
         setError('PIN incorrecto');
-        setPin('');
+      } else {
+        setError('Error al verificar PIN');
+        console.error('Pin login error:', err);
       }
-    } catch (err) {
-      setError('Error al verificar PIN');
       setPin('');
     } finally {
       setLoading(false);

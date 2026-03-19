@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase, refreshSupabaseAuth } from './supabase';
 
 export type StaffRole = 'owner' | 'waiter';
 
@@ -11,46 +11,52 @@ export interface StaffProfile {
   pin?: string;
 }
 
-// ── Auth Functions ──
+// ── Auth Functions (Custom Local Storage) ──
+
+const SESSION_KEY = 'el_atlante_staff_session';
+
+export function getSession() {
+  const sessionStr = localStorage.getItem(SESSION_KEY);
+  if (!sessionStr) return null;
+  try {
+    return JSON.parse(sessionStr) as Partial<StaffProfile>;
+  } catch {
+    return null;
+  }
+}
+
+export function getUser() {
+  return getSession();
+}
+
+export function getStaffRole(): StaffRole | null {
+  const session = getSession();
+  return session?.role || null;
+}
 
 export async function signIn(email: string, password: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) throw error;
+  const { data, error } = await supabase.rpc('login_staff', {
+    p_email: email,
+    p_password: password
+  });
+
+  if (error) throw new Error(error.message);
+  
+  if (data?.error) throw new Error(data.error);
+  
+  // Successful login, data is the user profile
+  localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+  refreshSupabaseAuth();
   return data;
 }
 
 export async function signOut() {
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
-}
-
-export async function getSession() {
-  const { data: { session }, error } = await supabase.auth.getSession();
-  if (error) throw error;
-  return session;
-}
-
-export async function getUser() {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error) throw error;
-  return user;
+  localStorage.removeItem(SESSION_KEY);
+  setActiveStaffId(null);
+  refreshSupabaseAuth();
 }
 
 // ── Staff Profile Functions ──
-
-export async function getStaffRole(): Promise<StaffRole | null> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const { data, error } = await supabase
-    .from('staff_profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (error || !data) return null;
-  return data.role as StaffRole;
-}
 
 export async function getStaffProfiles(): Promise<StaffProfile[]> {
   const { data, error } = await supabase.rpc('get_staff_public_safe');
@@ -59,34 +65,27 @@ export async function getStaffProfiles(): Promise<StaffProfile[]> {
   return (data || []) as StaffProfile[];
 }
 
-// ── Invite Staff (calls Edge Function) ──
-
 export async function inviteStaff(email: string, role: StaffRole, password?: string): Promise<{ message: string }> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) throw new Error('No hay sesión activa');
+  const session = getSession();
+  if (!session || session.role !== 'owner') {
+    throw new Error('Solo los administradores pueden invitar');
+  }
 
-  const response = await supabase.functions.invoke('invite-staff', {
-    body: { email, role, password },
+  const { data, error } = await supabase.rpc('invite_staff_custom', {
+    p_email: email,
+    p_password: password || 'atlante123',
+    p_role: role,
+    p_display_name: email.split('@')[0]
   });
 
-  if (response.error) {
-    const errorMsg = (response.error as any).message || 'Error al invitar al usuario';
-    throw new Error(errorMsg);
-  }
+  if (error) throw new Error(error.message);
+  if (data?.error) throw new Error(data.error);
 
-  const result = response.data;
-  if (result.error) {
-    throw new Error(result.error);
-  }
-
-  return {
-    message: result.message,
-  };
+  return { message: 'Usuario creado con éxito' };
 }
 
-// ── Delete Staff ──
-
 export async function deleteStaff(staffId: string) {
+  // As it relies on public RLS, this will work. In production you'd use a secure RPC.
   const { error } = await supabase
     .from('staff_profiles')
     .delete()
@@ -121,34 +120,70 @@ export function setActiveStaffId(id: string | null) {
   }
 }
 
-export async function verifyStaffPin(staffId: string, pin: string): Promise<boolean> {
-  const { data, error } = await supabase.rpc('verify_staff_pin', {
+export interface PinSignInResult {
+  role: StaffRole;
+  display_name?: string;
+  email: string;
+}
+
+export async function pinSignIn(staffId: string, pin: string): Promise<PinSignInResult> {
+  const { data, error } = await supabase.rpc('verify_staff_pin_custom', {
     p_staff_id: staffId,
     p_pin: pin
   });
 
-  if (error) throw error;
-  return !!data;
+  if (error) throw new Error('Error al verificar PIN');
+  if (data?.error) throw new Error(data.error);
+
+  // Success, save custom session
+  localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+  refreshSupabaseAuth();
+
+  return { role: data.role as StaffRole, display_name: data.display_name, email: data.email };
+}
+
+export async function updateStaffPin(staffId: string, pin: string) {
+  const { data, error } = await supabase.rpc('update_staff_pin_custom', {
+    p_staff_id: staffId,
+    p_pin: pin
+  });
+
+  if (error) throw new Error(error.message);
+  if (data?.error) throw new Error(data.error);
 }
 
 export async function updateStaffProfile(staffId: string, updates: Partial<Pick<StaffProfile, 'display_name' | 'pin'>>) {
-  const { error } = await supabase
-    .from('staff_profiles')
-    .update(updates)
-    .eq('id', staffId);
+  // If pin is included, handle it separately via RPC to ensure hashing
+  if (updates.pin) {
+    await updateStaffPin(staffId, updates.pin);
+    delete updates.pin;
+  }
 
-  if (error) throw error;
+  // If there are other updates (like display_name), do them
+  if (Object.keys(updates).length > 0) {
+    const { error } = await supabase
+      .from('staff_profiles')
+      .update(updates)
+      .eq('id', staffId);
+
+    if (error) throw error;
+  }
 }
-
-// ── Update Password ──
 
 export async function updatePassword(newPassword: string) {
-  const { error } = await supabase.auth.updateUser({ password: newPassword });
-  if (error) throw error;
+  const session = getSession();
+  if (!session?.id) throw new Error('No hay sesión activa');
+
+  const { data, error } = await supabase.rpc('update_staff_password', {
+    p_staff_id: session.id,
+    p_new_password: newPassword
+  });
+
+  if (error) throw new Error(error.message);
+  if (data?.error) throw new Error(data.error);
 }
 
-// ── Auth State Listener ──
-
-export function onAuthStateChange(callback: (event: string, session: any) => void) {
-  return supabase.auth.onAuthStateChange(callback);
+export function onAuthStateChange() {
+  // Mock function, no longer hooked to Supabase
+  return { data: { subscription: { unsubscribe: () => {} } } };
 }
