@@ -1,4 +1,5 @@
 import SEO from '../components/SEO';
+import { CONTACT_INFO } from '../constants/contact';
 
 export default function PrivacyPolicy() {
   return (
@@ -24,7 +25,8 @@ export default function PrivacyPolicy() {
           <section className="space-y-4">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">1. Responsable del Tratamiento</h2>
             <p>
-              El responsable del tratamiento de sus datos personales es FELRODEZ S.L., con domicilio en Calle León y Castillo, 199, 35280 Santa Lucía de Tirajana, Las Palmas.
+              El responsable del tratamiento de sus datos personales es FELRODEZ S.L., con domicilio en Calle León y Castillo, 199, 35280 Santa Lucía de Tirajana, Las Palmas. 
+              Teléfonos de contacto: {CONTACT_INFO.landline.display} (Fijo) y {CONTACT_INFO.mobile.display} (Móvil).
             </p>
           </section>
 

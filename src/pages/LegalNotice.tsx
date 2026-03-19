@@ -1,4 +1,5 @@
 import SEO from '../components/SEO';
+import { CONTACT_INFO } from '../constants/contact';
 
 export default function LegalNotice() {
   return (
@@ -31,7 +32,8 @@ export default function LegalNotice() {
               <li><strong>NIF:</strong> B76254267</li>
               <li><strong>Domicilio:</strong> Calle León y Castillo, 199, 35280 Santa Lucía de Tirajana, Las Palmas</li>
               <li><strong>Email:</strong> info@elatlante.com</li>
-              <li><strong>Teléfono:</strong> +34 928 58 44 22</li>
+              <li><strong>Teléfono (Fijo):</strong> {CONTACT_INFO.landline.display}</li>
+              <li><strong>Teléfono (Móvil):</strong> {CONTACT_INFO.mobile.display}</li>
             </ul>
           </section>
 

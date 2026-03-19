@@ -112,3 +112,51 @@ export function getAvailableTimes(dateStr: string, intervalMinutes: number = 30)
 
   return times;
 }
+/**
+ * Checks if the restaurant is open right now in the restaurant's timezone
+ */
+export function isRestaurantOpenNow(): boolean {
+  try {
+    const now = new Date();
+    const optionsFormatter = new Intl.DateTimeFormat('es-ES', {
+      timeZone: RESTAURANT_TIMEZONE,
+      weekday: 'long',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false
+    });
+    
+    const parts = optionsFormatter.formatToParts(now);
+    const day = parts.find(p => p.type === 'weekday')?.value.toLowerCase();
+    const hourStr = parts.find(p => p.type === 'hour')?.value;
+    const minuteStr = parts.find(p => p.type === 'minute')?.value;
+    
+    if (!day || !hourStr || !minuteStr) return false;
+    
+    const currentMinutes = parseInt(hourStr) * 60 + parseInt(minuteStr);
+    
+    // remove accents for safe matching
+    const normalizedDay = day.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    let start = '';
+    let end = '';
+
+    if (OPENING_HOURS.closed.includes(normalizedDay)) {
+      return false;
+    }
+
+    if (normalizedDay === 'domingo') {
+      start = OPENING_HOURS.sunday.fullRange.start;
+      end = OPENING_HOURS.sunday.fullRange.end;
+    } else {
+      // Monday, Thursday, Friday, Saturday
+      start = OPENING_HOURS.standard.fullRange.start;
+      end = OPENING_HOURS.standard.fullRange.end;
+    }
+
+    return currentMinutes >= timeToMinutes(start) && currentMinutes <= timeToMinutes(end);
+  } catch (error) {
+    console.error("Error calculating open status", error);
+    return false;
+  }
+}

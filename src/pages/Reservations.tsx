@@ -7,9 +7,11 @@ import { addReservation, getReservationById, type Reservation } from '../service
 import GuestCounter from '../components/GuestCounter';
 import SEO from '../components/SEO';
 import Calendar from '../components/Calendar';
-import { getAvailableTimes, isDateValid, getTodayDateString, isDayClosed } from '../utils/reservationUtils';
+import { getAvailableTimes, isDateValid, getTodayDateString, isDayClosed, isRestaurantOpenNow } from '../utils/reservationUtils';
+import { CONTACT_INFO } from '../constants/contact';
 
 export default function Reservations() {
+  const isOpen = isRestaurantOpenNow();
   const [searchParams] = useSearchParams();
   const [phone, setPhone] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -247,7 +249,9 @@ export default function Reservations() {
                   <div className="w-10 h-10 rounded-full border border-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
                     <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 7V5z" /></svg>
                   </div>
-                  <span className="text-slate-600 dark:text-slate-300 font-medium text-sm">+34 928 58 44 22</span>
+                  <span className="text-slate-600 dark:text-slate-300 font-medium text-sm">
+                    {isOpen ? CONTACT_INFO.landline.display : CONTACT_INFO.mobile.display}
+                  </span>
                 </div>
                 <p className="text-[10px] text-slate-400 uppercase tracking-widest font-medium pl-14">Para grupos de más de 8 personas</p>
               </div>
@@ -437,11 +441,11 @@ export default function Reservations() {
                         Para grupos de más de 8 personas, por favor contacte directamente con el restaurante para asegurar su mesa:
                       </p>
                       <div className="flex flex-col sm:flex-row gap-4">
-                        <a href="tel:+34928584422" className="flex-1 h-14 flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-white rounded-2xl transition-all shadow-lg font-bold uppercase tracking-widest text-[11px]">
+                        <a href={isOpen ? CONTACT_INFO.landline.link : CONTACT_INFO.mobile.link} className="flex-1 h-14 flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-white rounded-2xl transition-all shadow-lg font-bold uppercase tracking-widest text-[11px]">
                           <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 7V5z" /></svg>
                           Llamar
                         </a>
-                        <a href="https://wa.me/34928584422" target="_blank" rel="noopener noreferrer" className="flex-1 h-14 flex items-center justify-center gap-3 border border-emerald-500 text-emerald-600 hover:bg-emerald-50 rounded-2xl transition-all font-bold uppercase tracking-widest text-[11px]">
+                        <a href={CONTACT_INFO.whatsapp.link} target="_blank" rel="noopener noreferrer" className="flex-1 h-14 flex items-center justify-center gap-3 border border-emerald-500 text-emerald-600 hover:bg-emerald-50 rounded-2xl transition-all font-bold uppercase tracking-widest text-[11px]">
                           WhatsApp
                         </a>
                       </div>

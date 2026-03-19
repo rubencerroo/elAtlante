@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import heroImage from '../assets/elatlantePaisaje.jpg';
+import { CONTACT_INFO } from '../constants/contact';
+import { isRestaurantOpenNow } from '../utils/reservationUtils';
 
 
 interface Dish {
@@ -43,67 +45,10 @@ function useIsOpen() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    const checkIsOpen = () => {
-      const now = new Date();
-      try {
-        const optionsFormatter = new Intl.DateTimeFormat('es-ES', {
-          timeZone: 'Atlantic/Canary',
-          weekday: 'long',
-          hour: 'numeric',
-          minute: 'numeric',
-          hour12: false
-        });
-        
-        const parts = optionsFormatter.formatToParts(now);
-        const day = parts.find(p => p.type === 'weekday')?.value.toLowerCase();
-        const hourStr = parts.find(p => p.type === 'hour')?.value;
-        const minuteStr = parts.find(p => p.type === 'minute')?.value;
-        
-        if (!day || !hourStr || !minuteStr) return false;
-        
-        const currentMinutes = parseInt(hourStr) * 60 + parseInt(minuteStr);
-        
-        const timeToMinutes = (timeStr: string) => {
-          const [h, m] = timeStr.split(':').map(Number);
-          return h * 60 + m;
-        };
-
-        let openTime = 0;
-        let closeTime = 0;
-
-        // remove accents for safe matching
-        const normalizedDay = day.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-        switch (normalizedDay) {
-          case 'lunes':
-          case 'jueves':
-          case 'viernes':
-          case 'sabado':
-            openTime = timeToMinutes('12:30');
-            closeTime = timeToMinutes('23:00');
-            break;
-          case 'domingo':
-            openTime = timeToMinutes('12:30');
-            closeTime = timeToMinutes('16:30');
-            break;
-          case 'martes':
-          case 'miercoles':
-            return false;
-          default:
-            return false;
-        }
-
-        return currentMinutes >= openTime && currentMinutes <= closeTime;
-      } catch (error) {
-        console.error("Error calculating open status", error);
-        return false;
-      }
-    };
-
-    setIsOpen(checkIsOpen());
+    setIsOpen(isRestaurantOpenNow());
 
     const interval = setInterval(() => {
-      setIsOpen(checkIsOpen());
+      setIsOpen(isRestaurantOpenNow());
     }, 60000);
 
     return () => clearInterval(interval);
@@ -177,7 +122,7 @@ export default function Home() {
             "longitude": -15.4165
           },
           "url": "https://elatlantedesancristobal.com",
-          "telephone": "+34928584422",
+          "telephone": CONTACT_INFO.landline.raw,
           "servesCuisine": "Canaria, Pescado, Mariscos",
           "priceRange": "$$",
           "openingHoursSpecification": [
@@ -344,7 +289,9 @@ export default function Home() {
 
               <div>
                 <span className="text-slate-400 font-bold tracking-widest uppercase text-[10px] mb-4 block">Contacto Directo</span>
-                <p className="text-2xl md:text-3xl font-black tracking-tight text-primary">+34 928 58 44 22</p>
+                <p className="text-2xl md:text-3xl font-black tracking-tight text-primary">
+                  {isOpen ? CONTACT_INFO.landline.display : CONTACT_INFO.mobile.display}
+                </p>
                 <div className="flex gap-8 mt-6">
                    <a 
                      href="https://www.instagram.com/restaurante_elatlante" 

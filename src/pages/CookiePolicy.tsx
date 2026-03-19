@@ -1,4 +1,5 @@
 import SEO from '../components/SEO';
+import { CONTACT_INFO } from '../constants/contact';
 
 export default function CookiePolicy() {
   return (
@@ -25,6 +26,7 @@ export default function CookiePolicy() {
             <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">1. Responsable</h2>
             <p>
               El responsable de esta página web y de las cookies que se instalan es FELRODEZ S.L., con NIF B76254267 y domicilio en Calle León y Castillo, 199, 35280 Santa Lucía de Tirajana, Las Palmas.
+              Teléfonos de contacto: {CONTACT_INFO.landline.display} (Fijo) y {CONTACT_INFO.mobile.display} (Móvil).
             </p>
           </section>
 

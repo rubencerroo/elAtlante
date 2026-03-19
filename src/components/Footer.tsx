@@ -1,8 +1,12 @@
 import { Link } from 'react-router-dom';
 import logoWhite from '../assets/logowhite.png';
 import logoBlack from '../assets/logoblack.png';
+import { isRestaurantOpenNow } from '../utils/reservationUtils';
+import { CONTACT_INFO } from '../constants/contact';
 
 export default function Footer() {
+  const isOpen = isRestaurantOpenNow();
+
   return (
     <footer className="relative bg-slate-50 dark:bg-[#0B0F14] text-slate-900 dark:text-slate-100 pt-24 pb-12 px-6 lg:px-40 overflow-hidden border-t border-slate-100 dark:border-white/5">
       {/* Background Texture/Decor from Reserva Page */}
@@ -52,10 +56,10 @@ export default function Footer() {
         <div>
           <h4 className="font-bold text-sm uppercase tracking-[0.3em] mb-8 text-primary dark:text-sky-400">Contacto</h4>
           <ul className="space-y-4 text-slate-600 dark:text-slate-400 font-light">
-            <li>Calle Marina, 81</li>
-            <li>San Cristóbal, Las Palmas</li>
-            <li>+34 928 58 44 22</li>
-            <li>info@elatlante.com</li>
+            <li>{CONTACT_INFO.address.street}</li>
+            <li>{CONTACT_INFO.address.city}</li>
+            <li>{isOpen ? CONTACT_INFO.landline.display : CONTACT_INFO.mobile.display}</li>
+            <li>{CONTACT_INFO.email}</li>
           </ul>
         </div>
       </div>
