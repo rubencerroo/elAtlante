@@ -25,6 +25,7 @@ export default function ConfirmReservation() {
   const navigate = useNavigate();
   const id = searchParams.get('id');
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'not-found'>('loading');
+  const [reservation, setReservation] = useState<any>(null);
 
   useEffect(() => {
     async function confirmIt() {
@@ -34,13 +35,15 @@ export default function ConfirmReservation() {
       }
 
       try {
-        const reservation = await getReservationById(id);
-        if (!reservation) {
+        const reservationData = await getReservationById(id);
+        if (!reservationData) {
           setStatus('not-found');
           return;
         }
+        
+        setReservation(reservationData);
 
-        if (reservation.status === 'confirmed') {
+        if (reservationData.status === 'confirmed') {
           // Already confirmed
           setStatus('success');
           return;
@@ -57,7 +60,7 @@ export default function ConfirmReservation() {
             fetch(endpoint, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(reservation),
+              body: JSON.stringify(reservationData),
             }).catch(err => console.error('Error triggering owner email:', err));
           } catch (e) {
             console.error('Error notifying owner:', e);
@@ -90,17 +93,52 @@ export default function ConfirmReservation() {
           </div>
         )}
 
-        {status === 'success' && (
-          <div className="flex flex-col items-center animate-fade-in-up">
-            <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-6">
+        {status === 'success' && reservation && (
+          <div className="flex flex-col items-center animate-fade-in-up w-full text-left">
+            <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-6 mx-auto">
               <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2 text-center w-full">
               ¡Reserva Confirmada!
             </h2>
-            <p className="text-slate-600 dark:text-slate-300 mb-8">
+            <p className="text-slate-600 dark:text-slate-300 mb-8 text-center w-full">
               Tu reserva ha sido confirmada con éxito. Te esperamos en El Atlante.
             </p>
+
+            <div className="w-full bg-slate-50 dark:bg-slate-900/50 rounded-xl p-6 mb-8 space-y-4 border border-slate-100 dark:border-slate-700">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Localizador</p>
+                  <p className="text-slate-900 dark:text-white font-medium">{reservation.bookingNumber || reservation.booking_number}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">A nombre de</p>
+                  <p className="text-slate-900 dark:text-white font-medium">{reservation.name}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Fecha</p>
+                  <p className="text-slate-900 dark:text-white font-medium">
+                    {new Date(reservation.date + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Hora</p>
+                  <p className="text-slate-900 dark:text-white font-medium">{reservation.time} h</p>
+                </div>
+              </div>
+              
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-600 dark:text-slate-400">Comensales:</span>
+                  <span className="text-slate-900 dark:text-white font-medium">{reservation.guests}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm mt-2">
+                  <span className="text-slate-600 dark:text-slate-400">Preferencia:</span>
+                  <span className="text-slate-900 dark:text-white font-medium">{reservation.preference}</span>
+                </div>
+              </div>
+            </div>
+
             <button
               onClick={() => navigate('/')}
               className="px-6 py-3 bg-primary text-white font-medium rounded-xl hover:bg-primary-dark transition-colors w-full"
