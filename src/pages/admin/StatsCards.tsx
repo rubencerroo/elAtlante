@@ -5,13 +5,6 @@ interface StatsCardsProps {
 }
 
 export default function StatsCards({ stats }: StatsCardsProps) {
-import type { ReservationStats } from '../../services/reservationStore';
-
-interface StatsCardsProps {
-  stats: ReservationStats;
-}
-
-export default function StatsCards({ stats }: StatsCardsProps) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6 mb-8">
       {/* Total Reservas */}

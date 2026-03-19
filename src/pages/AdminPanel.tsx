@@ -128,8 +128,8 @@ export default function AdminPanel() {
     })();
   }, [navigate]);
 
-  const fetchDashboardData = useCallback(async () => {
-    setLoading(true);
+  const fetchDashboardData = useCallback(async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     const [resData, statsData, occData, distData, weeklyData, nsRate, profiles, occTables, note] = await Promise.all([
       getReservations(),
       getStats(filterDate),
@@ -161,14 +161,14 @@ export default function AdminPanel() {
       // We'll rely on the debug info displayed in the FeedbackView
     }
     
-    setLoading(false);
+    if (showLoading) setLoading(false);
   }, [filterDate]);
 
   useEffect(() => {
-    fetchDashboardData();
+    fetchDashboardData(true);
   }, [fetchDashboardData]);
 
-  const reload = useCallback(() => fetchDashboardData(), [fetchDashboardData]);
+  const reload = useCallback(() => fetchDashboardData(false), [fetchDashboardData]);
 
   const filtered = useMemo(() => {
     return reservations
@@ -1020,7 +1020,9 @@ function StaffView({ showAlert }: {
       await updateStaffProfile(staffId, updates);
       showAlert('Éxito', 'Perfil actualizado correctamente.', 'success');
       setEditingStaff(null);
-      loadStaff();
+      // Avoid reload() if it triggers infinite loop via useEffect
+      const profiles = await getStaffProfiles();
+      setStaff(profiles);
     } catch (err: any) {
       showAlert('Error', 'No se pudo actualizar: ' + err.message, 'error');
     }

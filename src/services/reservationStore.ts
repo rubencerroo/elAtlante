@@ -210,12 +210,12 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
   return reservation;
 }
 
-export async function addWalkIn(guests: number, tableNumber: number, name?: string): Promise<Reservation | null> {
+export async function addWalkIn(guests: number, tableNumber: number, name: string): Promise<Reservation | null> {
   const now = new Date();
   const newR = {
     booking_number: generateBookingNumber(),
-    name: name || `Walk-in ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`,
-    phone: 'Walk-in',
+    name: name,
+    phone: 'Mesa Rápida',
     email: '',
     date: now.toISOString().split('T')[0],
     time: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
@@ -249,7 +249,7 @@ export async function addToWaitList(name: string, guests: number, phone?: string
   const newR = {
     booking_number: generateBookingNumber(),
     name: name,
-    phone: phone || 'Walk-in',
+    phone: phone || 'Lista de Espera',
     date: now.toISOString().split('T')[0],
     time: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
     guests,

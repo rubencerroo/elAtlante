@@ -66,6 +66,7 @@ export default function WaiterPanel() {
   const [tab, setTab] = useState<Tab>('upcoming');
   const [showWalkIn, setShowWalkIn] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [walkInName, setWalkInName] = useState('');
   const [walkInGuests, setWalkInGuests] = useState(2);
   const [walkInTable, setWalkInTable] = useState<number | null>(null);
   const [occupiedTables, setOccupiedTables] = useState<number[]>([]);
@@ -163,8 +164,9 @@ export default function WaiterPanel() {
   };
 
   const handleWalkIn = async () => {
-    if (walkInTable && walkInGuests > 0) {
-      await addWalkIn(walkInGuests, walkInTable);
+    if (walkInTable && walkInGuests > 0 && walkInName.trim()) {
+      await addWalkIn(walkInGuests, walkInTable, walkInName.trim());
+      setWalkInName('');
       setWalkInGuests(2);
       setWalkInTable(null);
       setShowWalkIn(false);
@@ -288,6 +290,17 @@ export default function WaiterPanel() {
             </div>
 
             <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Nombre del cliente</label>
+              <input 
+                type="text" 
+                value={walkInName} 
+                onChange={e => setWalkInName(e.target.value)} 
+                placeholder="Ej: Juan Pérez"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500/50" 
+              />
+            </div>
+
+            <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Comensales</label>
               <GuestCounter 
                 value={walkInGuests} 
@@ -302,7 +315,7 @@ export default function WaiterPanel() {
               <TableSelector occupiedTables={occupiedTables} selectedTable={walkInTable} onSelect={t => setWalkInTable(t)} />
             </div>
 
-            <button onClick={handleWalkIn} disabled={!walkInTable}
+            <button onClick={handleWalkIn} disabled={!walkInTable || !walkInName.trim()}
               className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl text-base transition-all shadow-lg shadow-emerald-500/20 active:scale-95">
               🪑 Sentar ahora
             </button>
@@ -545,9 +558,13 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, profile }
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               {r.tableNumber && (
-                <span className="bg-primary/10 text-primary border border-primary/20 rounded-lg px-2.5 py-1.5 text-sm font-bold">
+                <button 
+                  onClick={() => setShowTableSelector(true)}
+                  className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg px-2.5 py-1.5 text-sm font-bold transition-all active:scale-95"
+                  title="Cambiar mesa"
+                >
                   Mesa {r.tableNumber}
-                </span>
+                </button>
               )}
               <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${sc.color}`}>{sc.label}</span>
             </div>
@@ -584,8 +601,16 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, profile }
 
           {/* Table selector */}
           {showTableSelector && (
-            <div>
-              <TableSelector occupiedTables={occupiedTables} selectedTable={r.tableNumber} onSelect={(t) => { handleStatus(r.id, 'seated', t); setShowTableSelector(false); }} onClose={() => setShowTableSelector(false)} />
+            <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+              <TableSelector 
+                occupiedTables={occupiedTables} 
+                selectedTable={r.tableNumber} 
+                onSelect={(t) => { 
+                  handleStatus(r.id, r.status === 'seated' ? 'seated' : 'seated', t); 
+                  setShowTableSelector(false); 
+                }} 
+                onClose={() => setShowTableSelector(false)} 
+              />
             </div>
           )}
 
