@@ -1,0 +1,63 @@
+{
+  "nav": {
+    "inicio": "Home",
+    "nosotros": "About Us",
+    "carta": "Menu",
+    "reservar": "Book",
+    "reservarMesa": "Book a Table"
+  },
+  "hero": {
+    "abierto": "Open now",
+    "cerrado": "Closed",
+    "titulo1": "The Atlantic.",
+    "titulo2": "Authenticity in every bite.",
+    "subtitulo": "Fishing tradition and Km 0 produce in an unrivalled setting facing the Atlantic.",
+    "cta": "Book a Table",
+    "ctaCarta": "View Menu"
+  },
+  "nosotros": {
+    "label": "About Us",
+    "titulo": "Happiness",
+    "tituloDestacado": "facing",
+    "tituloFin": "the sea.",
+    "descripcion": "For generations, our family has lived by and for the sea. At El Atlante, we bring that passion to every dish, using traditional techniques and the freshest produce from the San Cristóbal fish market.",
+    "pilar1Titulo": "Direct Produce",
+    "pilar1Desc": "No middlemen — straight from the fish market to your table. Fresh in under 24h.",
+    "pilar2Titulo": "Bold Kitchen",
+    "pilar2Desc": "Recipes with soul and maritime power, inherited over decades."
+  },
+  "carta": {
+    "label": "Exclusivity",
+    "titulo": "Gems",
+    "tituloDestacado": "of El Atlante",
+    "subtitulo": "Iconic dishes that define our gastronomic identity without artifice.",
+    "pulpoTitulo": "Octopus a la Carmela",
+    "pulpoDesc": "Our most emblematic preparation, served with local peppers and premium paprika.",
+    "croquetasTitulo": "Octopus Croquettes",
+    "croquetasDesc": "A burst of the sea in every bite. Extra-creamy béchamel made fresh daily.",
+    "pescadoTitulo": "Fish of the day",
+    "pescadoDesc": "Directly sourced from the San Cristóbal boats. Traditional preparation or chef's style.",
+    "polvitoTitulo": "Polvito Uruguayo",
+    "polvitoDesc": "The quintessential Canarian dessert. Layers of meringue, biscuit and the finest dulce de leche."
+  },
+  "horarios": {
+    "label": "Opening Hours",
+    "lunes": "Monday",
+    "martesMiercoles": "Tuesday & Wednesday",
+    "juevesSabado": "Thursday - Saturday",
+    "domingo": "Sunday",
+    "cerrado": "Closed"
+  },
+  "contacto": {
+    "ubicacionLabel": "Location",
+    "direccion": "Calle Marina, 81\nSan Cristóbal Seafront\nLas Palmas de G.C.",
+    "verRuta": "Get directions on Google Maps",
+    "contactoLabel": "Direct Contact"
+  },
+  "mapa": {
+    "titulo": "We await you\nat the Promenade",
+    "subtitulo": "Right where the waves break, in the heart of the city's seafront.",
+    "abierto": "Open Now",
+    "cerrado": "Closed"
+  }
+}

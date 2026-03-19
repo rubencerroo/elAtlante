@@ -22,7 +22,7 @@ export default function Reservations() {
     guests: 2, preference: 'Indiferente' as const,
     hasPet: false, notes: '', acceptPolicies: false,
   });
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false); // kept for potential future use
 
   useEffect(() => {
     const isConfirmed = searchParams.get('confirmed') === 'true';
@@ -204,7 +204,7 @@ export default function Reservations() {
   }
 
   return (
-    <div className="min-h-screen pt-28 pb-24 flex flex-col items-center bg-background-light dark:bg-background-dark relative overflow-hidden font-sans">
+    <div className="min-h-screen pt-20 md:pt-28 pb-12 md:pb-24 flex flex-col items-center bg-background-light dark:bg-background-dark relative overflow-hidden font-sans">
       <SEO
         title="Reservar Mesa"
         description="Reserva tu mesa online en El Atlante de San Cristóbal. Disfruta de la mejor gastronomía marinera frente al mar en Las Palmas."
@@ -215,11 +215,11 @@ export default function Reservations() {
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[140px] -z-10 opacity-60"></div>
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-coastal-sea/5 rounded-full blur-[120px] -z-10 opacity-60"></div>
 
-      <div className="max-w-7xl w-full relative z-10 px-6 lg:px-12">
+      <div className="max-w-7xl w-full relative z-10 px-4 md:px-6 lg:px-12">
         <div className="flex flex-col lg:flex-row gap-0 items-stretch">
 
-          {/* Left Column: Visual & Info */}
-          <div className="lg:w-11/25 relative p-12 lg:p-20 flex flex-col justify-between overflow-hidden">
+          {/* Left Column: Visual & Info — hidden on mobile */}
+          <div className="hidden lg:flex lg:w-11/25 relative p-12 lg:p-20 flex-col justify-between overflow-hidden">
             {/* Texture/Overlay */}
             <div className="absolute inset-0 -z-10">
               <div className="absolute inset-0 bg-primary/5 dark:bg-primary/20 mix-blend-multiply"></div>
@@ -240,56 +240,39 @@ export default function Reservations() {
                 <div className="w-16 h-px bg-primary/20"></div>
               </div>
 
-              <p className="text-slate-500 dark:text-slate-400 text-base md:text-lg font-light leading-relaxed max-w-sm">
-                Asegura tu lugar en el corazón del barrio marinero. Cocina honesta, producto fresco y el susurro del mar como banda sonora.
-              </p>
 
-              <div className="pt-6 space-y-4">
-                <div className="flex items-center gap-4 group cursor-pointer">
-                  <div className="w-10 h-10 rounded-full border border-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                    <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 7V5z" /></svg>
-                  </div>
-                  <span className="text-slate-600 dark:text-slate-300 font-medium text-sm">
-                    {isOpen ? CONTACT_INFO.landline.display : CONTACT_INFO.mobile.display}
-                  </span>
-                </div>
-                <p className="text-[10px] text-slate-400 uppercase tracking-widest font-medium pl-14">Para grupos de más de 8 personas</p>
-              </div>
             </div>
 
-            <div className="mt-12 lg:mt-0 pt-12 border-t border-slate-100 dark:border-white/5 relative z-10">
-              <p className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mb-4">Horario de reservas</p>
-              <div className="grid grid-cols-2 gap-4 text-[11px] text-slate-600 dark:text-slate-400 font-medium">
-                <div>
-                  <p className="text-primary dark:text-slate-300 mb-1 font-bold">ALMUERZO</p>
-                  <p className="font-bold">13:00 — 16:30</p>
-                </div>
-                <div>
-                  <p className="text-primary dark:text-slate-300 mb-1 font-bold">CENA</p>
-                  <p className="font-bold">20:00 — 23:00</p>
-                </div>
-              </div>
-            </div>
+
           </div>
 
           {/* Right Column: Form */}
-          <div className="lg:w-14/25 p-12 lg:p-20 relative bg-[#F9FAFB] dark:bg-transparent">
-            <form className="space-y-16" onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12">
-                <div className="flex flex-col gap-4 group">
+          <div className="w-full lg:w-14/25 p-5 md:p-12 lg:p-20 relative bg-[#F9FAFB] dark:bg-transparent">
+
+            {/* Mobile-only compact header */}
+            <div className="lg:hidden mb-6">
+              <span className="text-primary/60 dark:text-slate-400 font-medium tracking-[0.4em] uppercase text-[10px]">Reservaciones</span>
+              <h1 className="text-primary dark:text-slate-100 text-3xl font-serif font-bold leading-tight tracking-tight mt-1">
+                Tu mesa en el <span className="italic text-coastal-sea opacity-90">Atlántico</span>.
+              </h1>
+            </div>
+
+            <form className="space-y-7 md:space-y-16" onSubmit={handleSubmit}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12">
+                <div className="flex flex-col gap-2 md:gap-4 group">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">Nombre Completo <span className="text-coastal-sea">*</span></label>
-                  <input className="bg-transparent text-lg font-light text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/5 focus:border-primary dark:focus:border-slate-400 focus:ring-0 p-0 pb-3 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600"
+                  <input className="bg-transparent text-base md:text-lg font-light text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/5 focus:border-primary dark:focus:border-slate-400 focus:ring-0 p-0 pb-2 md:pb-3 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600"
                     placeholder="Ej: Juan Pérez" type="text" required value={formData.name} onChange={e => handleChange('name', e.target.value)} />
                 </div>
-                <div className="flex flex-col gap-4 group">
+                <div className="flex flex-col gap-2 md:gap-4 group">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">Email <span className="text-coastal-sea">*</span></label>
-                  <input className="bg-transparent text-lg font-light text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/5 focus:border-primary dark:focus:border-slate-400 focus:ring-0 p-0 pb-3 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600"
+                  <input className="bg-transparent text-base md:text-lg font-light text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/5 focus:border-primary dark:focus:border-slate-400 focus:ring-0 p-0 pb-2 md:pb-3 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600"
                     placeholder="tu@email.com" type="email" required value={formData.email} onChange={e => handleChange('email', e.target.value)} />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12">
-                <div className="flex flex-col gap-4 group">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12">
+                <div className="flex flex-col gap-2 md:gap-4 group">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">Teléfono <span className="text-coastal-sea">*</span></label>
                   <div className="border-b border-slate-100 dark:border-white/5 group-focus-within:border-primary dark:group-focus-within:border-slate-400 pb-2 transition-all">
                     <PhoneInput
@@ -301,48 +284,23 @@ export default function Reservations() {
                     />
                   </div>
                 </div>
-                <div className="flex flex-col gap-4 group relative">
+                <div className="flex flex-col gap-2 md:gap-4 group relative">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">Fecha <span className="text-coastal-sea">*</span></label>
-                  <div
-                    onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
-                    className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 group-focus-within:border-primary dark:group-focus-within:border-slate-400 pb-3 transition-all cursor-pointer"
-                  >
-                    <span className={`text-lg font-light ${formData.date ? 'text-slate-900 dark:text-white' : 'text-slate-300 dark:text-slate-600'}`}>
-                      {formData.date ? new Date(formData.date + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Seleccionar fecha'}
-                    </span>
-                    <svg className={`size-5 text-slate-300 transition-transform ${isDatePickerOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                  </div>
-
-                  <AnimatePresence>
-                    {isDatePickerOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-40 bg-transparent"
-                          onClick={() => setIsDatePickerOpen(false)}
-                        />
-                        <motion.div
-                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          className="absolute top-full left-0 mt-4 z-50 w-full md:w-[350px]"
-                        >
-                          <Calendar
-                            selectedDate={formData.date}
-                            minDate={getTodayDateString()}
-                            onSelect={(date) => {
-                              handleChange('date', date);
-                              setIsDatePickerOpen(false);
-                              const times = getAvailableTimes(date, 15);
-                              if (times.length > 0 && !times.includes(formData.time)) {
-                                handleChange('time', times[0]);
-                              }
-                            }}
-                          />
-                        </motion.div>
-                      </>
-                    )}
-                  </AnimatePresence>
-
+                  <input
+                    type="date"
+                    required
+                    min={getTodayDateString()}
+                    value={formData.date}
+                    onChange={e => {
+                      const date = e.target.value;
+                      handleChange('date', date);
+                      const times = getAvailableTimes(date, 15);
+                      if (times.length > 0 && !times.includes(formData.time)) {
+                        handleChange('time', times[0]);
+                      }
+                    }}
+                    className="bg-transparent text-base md:text-lg font-light text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/5 focus:border-primary dark:focus:border-slate-400 focus:ring-0 p-0 pb-2 transition-all w-full appearance-none"
+                  />
                   {formData.date && isDayClosed(formData.date) && (
                     <p className="text-[10px] text-red-500 font-medium italic mt-1 animate-pulse">
                       El restaurante está cerrado este día. Por favor, selecciona otra fecha.
@@ -351,11 +309,11 @@ export default function Reservations() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12">
-                <div className="flex flex-col gap-4 group">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12">
+                <div className="flex flex-col gap-2 md:gap-4 group">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">Hora <span className="text-coastal-sea">*</span></label>
                   <div className="relative border-b border-slate-100 dark:border-white/5 group-focus-within:border-primary dark:group-focus-within:border-slate-400 pb-3 transition-all">
-                    <select className="bg-transparent w-full text-lg font-light text-slate-900 dark:text-white border-none focus:ring-0 p-0 appearance-none cursor-pointer"
+                    <select className="bg-transparent w-full text-base md:text-lg font-light text-slate-900 dark:text-white border-none focus:ring-0 p-0 appearance-none cursor-pointer"
                       required value={formData.time} onChange={e => handleChange('time', e.target.value)}>
                       {getAvailableTimes(formData.date, 15).length > 0 ? (
                         getAvailableTimes(formData.date, 15).map(t => <option key={t} value={t}>{t} h</option>)
@@ -368,7 +326,7 @@ export default function Reservations() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col gap-4 group relative">
+                <div className="flex flex-col gap-2 md:gap-4 group relative">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">Invitados</label>
                   <div className="border-b border-slate-100 dark:border-white/5 group-focus-within:border-primary dark:group-focus-within:border-slate-400 pb-2 transition-all">
                     <GuestCounter
@@ -393,11 +351,11 @@ export default function Reservations() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12">
-                <div className="flex flex-col gap-4 group">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12">
+                <div className="flex flex-col gap-2 md:gap-4 group">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">Preferencia de Zona</label>
                   <div className="relative border-b border-slate-100 dark:border-white/5 group-focus-within:border-primary dark:group-focus-within:border-slate-400 pb-3 transition-all">
-                    <select className="bg-transparent w-full text-lg font-light text-slate-900 dark:text-white border-none focus:ring-0 p-0 appearance-none cursor-pointer"
+                    <select className="bg-transparent w-full text-base md:text-lg font-light text-slate-900 dark:text-white border-none focus:ring-0 p-0 appearance-none cursor-pointer"
                       value={formData.preference} onChange={e => handleChange('preference', e.target.value)}>
                       <option>Indiferente</option>
                       <option>Interior</option>
@@ -419,13 +377,13 @@ export default function Reservations() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2 md:gap-4">
                 <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Notas Adicionales</label>
-                <textarea className="bg-slate-50/50 dark:bg-white/5 rounded-2xl p-6 text-base font-light text-slate-900 dark:text-white border border-slate-100 dark:border-white/5 focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600 outline-none"
-                  placeholder="¿Alguna alergia o preferencia especial?" rows={3} value={formData.notes} onChange={e => handleChange('notes', e.target.value)}></textarea>
+                <textarea className="bg-slate-50/50 dark:bg-white/5 rounded-xl md:rounded-2xl p-4 md:p-6 text-sm md:text-base font-light text-slate-900 dark:text-white border border-slate-100 dark:border-white/5 focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600 outline-none"
+                  placeholder="¿Alguna alergia o preferencia especial?" rows={2} value={formData.notes} onChange={e => handleChange('notes', e.target.value)}></textarea>
               </div>
 
-              <div className="space-y-8 pt-8">
+              <div className="space-y-5 md:space-y-8 pt-2 md:pt-8">
                 <div className="flex items-start gap-3">
                   <input type="checkbox" id="policies" required className="mt-1 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/20 bg-slate-50 dark:bg-white/5 dark:border-white/10"
                     checked={formData.acceptPolicies} onChange={e => handleChange('acceptPolicies', e.target.checked)} />
@@ -434,7 +392,7 @@ export default function Reservations() {
                   </label>
                 </div>
 
-                <div className="pt-2">
+                <div>
                   {formData.guests >= 9 ? (
                     <div className="bg-amber-50 dark:bg-amber-900/10 p-8 rounded-3xl border border-amber-100/50 dark:border-amber-900/10 space-y-6">
                       <p className="text-amber-800 dark:text-amber-300 text-sm font-medium text-center">
@@ -451,7 +409,7 @@ export default function Reservations() {
                       </div>
                     </div>
                   ) : (
-                    <button type="submit" disabled={isSubmitting || !formData.acceptPolicies} className="w-full h-16 rounded-2xl btn-primary-high disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                    <button type="submit" disabled={isSubmitting || !formData.acceptPolicies} className="w-full h-14 md:h-16 rounded-xl md:rounded-2xl btn-primary-high disabled:opacity-50 disabled:cursor-not-allowed transition-all">
                       <span className="relative z-10 font-bold uppercase tracking-[0.4em] text-[11px]">
                         {isSubmitting ? 'Procesando...' : 'Confirmar Reserva'}
                       </span>
@@ -460,7 +418,7 @@ export default function Reservations() {
                 </div>
               </div>
 
-              <div className="pt-8 text-center">
+              <div className="pt-2 md:pt-8 text-center">
                 <p className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-medium leading-loose">
                   Las solicitudes online están sujetas a confirmación.<br />
                   Le enviaremos un email tan pronto como procesemos su mesa.

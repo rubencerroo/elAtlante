@@ -1,0 +1,63 @@
+{
+  "nav": {
+    "inicio": "Inicio",
+    "nosotros": "Nosotros",
+    "carta": "Carta",
+    "reservar": "Reservar",
+    "reservarMesa": "Reservar Mesa"
+  },
+  "hero": {
+    "abierto": "Abierto ahora",
+    "cerrado": "Cerrado",
+    "titulo1": "El Atlántico.",
+    "titulo2": "Autenticidad en cada bocado.",
+    "subtitulo": "Tradición pesquera y producto Km 0 en un entorno inigualable frente al Atlántico.",
+    "cta": "Reservar Mesa",
+    "ctaCarta": "Ver la Carta"
+  },
+  "nosotros": {
+    "label": "Sobre Nosotros",
+    "titulo": "Felicidad",
+    "tituloDestacado": "frente",
+    "tituloFin": "al mar.",
+    "descripcion": "Desde hace generaciones, nuestra familia ha vivido del y para el mar. En El Atlante, trasladamos esa pasión a cada plato, utilizando técnicas tradicionales y el producto más fresco de la lonja de San Cristóbal.",
+    "pilar1Titulo": "Producto Directo",
+    "pilar1Desc": "Sin intermediarios, de la lonja a tu mesa. Frescura en menos de 24h.",
+    "pilar2Titulo": "Cocina Brava",
+    "pilar2Desc": "Recetas con alma y potencia marina heredadas por décadas."
+  },
+  "carta": {
+    "label": "Exclusividad",
+    "titulo": "Joyas",
+    "tituloDestacado": "del Atlante",
+    "subtitulo": "Platos icónicos que definen nuestra identidad gastronómica sin artificios.",
+    "pulpoTitulo": "Pulpo a la Carmela",
+    "pulpoDesc": "Nuestra preparación más emblemática, servida con pimientos de la tierra y pimentón premium.",
+    "croquetasTitulo": "Croquetas de Pulpo",
+    "croquetasDesc": "Explosión marina en cada bocado. Bechamel extra-cremosa elaborada diariamente.",
+    "pescadoTitulo": "Pescado del día",
+    "pescadoDesc": "Selección directa de los barcos de San Cristóbal. Preparación tradicional o al gusto del chef.",
+    "polvito Título": "Polvito Uruguayo",
+    "polvitoDesc": "El postre canario por excelencia. Capas de suspiro, galleta y el mejor dulce de leche."
+  },
+  "horarios": {
+    "label": "Horario de Apertura",
+    "lunes": "Lunes",
+    "martesMiercoles": "Martes & Miércoles",
+    "juevesSabado": "Jueves - Sábado",
+    "domingo": "Domingo",
+    "cerrado": "Cerrado"
+  },
+  "contacto": {
+    "ubicacionLabel": "Ubicación",
+    "direccion": "Calle Marina, 81\nBarrio Marinero de San Cristóbal\nLas Palmas de G.C.",
+    "verRuta": "Ver ruta en Google Maps",
+    "contactoLabel": "Contacto Directo"
+  },
+  "mapa": {
+    "titulo": "Te esperamos\nen el Paseo",
+    "subtitulo": "Justo donde rompen las olas, en el corazón marinero de la ciudad.",
+    "abierto": "Abierto Ahora",
+    "cerrado": "Cerrado"
+  }
+}
