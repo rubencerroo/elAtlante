@@ -6,7 +6,6 @@ import 'react-international-phone/style.css';
 import { addReservation, getReservationById, type Reservation } from '../services/reservationStore';
 import GuestCounter from '../components/GuestCounter';
 import SEO from '../components/SEO';
-import Calendar from '../components/Calendar';
 import { getAvailableTimes, isDateValid, getTodayDateString, isDayClosed, isRestaurantOpenNow } from '../utils/reservationUtils';
 import { CONTACT_INFO } from '../constants/contact';
 
@@ -22,7 +21,6 @@ export default function Reservations() {
     guests: 2, preference: 'Indiferente' as const,
     hasPet: false, notes: '', acceptPolicies: false,
   });
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false); // kept for potential future use
 
   useEffect(() => {
     const isConfirmed = searchParams.get('confirmed') === 'true';
