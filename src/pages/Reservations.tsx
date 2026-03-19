@@ -451,7 +451,7 @@ export default function Reservations() {
                       </div>
                     </div>
                   ) : (
-                    <button type="submit" disabled={isSubmitting || !formData.acceptPolicies} className="w-full h-16 rounded-2xl btn-primary-high disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                    <button type="submit" disabled={isSubmitting || !formData.acceptPolicies} className="w-full h-16 rounded-2xl bg-primary text-white dark:bg-white dark:text-primary hover:bg-primary/90 dark:hover:bg-slate-50 active:scale-95 shadow-xl shadow-primary/20 dark:shadow-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
                       <span className="relative z-10 font-bold uppercase tracking-[0.4em] text-[11px]">
                         {isSubmitting ? 'Procesando...' : 'Confirmar Reserva'}
                       </span>
