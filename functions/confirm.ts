@@ -47,7 +47,7 @@ export const onRequestGet = async (context: any) => {
 		if (!updateResponse.ok) throw new Error('Failed to update reservation status');
 
 		// Notify Owner
-		await fetch('https://api.brevo.com/v3/smtp/email', {
+		const emailRes = await fetch('https://api.brevo.com/v3/smtp/email', {
 			method: 'POST',
 			headers: {
 				'api-key': env.BREVO_API_KEY || env.VITE_BREVO_API_KEY,
@@ -77,7 +77,7 @@ export const onRequestGet = async (context: any) => {
 									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Hora:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1A365D;">${reservation.time}</td></tr>
 									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Comensales:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600;">${reservation.guests}</td></tr>
 									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Preferencia:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${reservation.preference || '—'}</td></tr>
-									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Mascota:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${reservation.has_pet ? 'Sí 🐕' : 'No'}</td></tr>
+									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Mascota:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${reservation.has_pet ? 'Sí' : 'No'}</td></tr>
 									<tr><td style="padding: 12px 8px; font-weight: 600; color: #1e293b;">Notas:</td><td style="padding: 12px 8px; font-style: italic;">${reservation.notes || '—'}</td></tr>
 								</table>
 							</div>
@@ -86,6 +86,13 @@ export const onRequestGet = async (context: any) => {
 				`,
 			}),
 		});
+
+		if (!emailRes.ok) {
+			const errorText = await emailRes.text();
+			console.error('Brevo error:', errorText);
+			// Throw to prevent silently failing, maybe there was a syntax issue
+			throw new Error('Failed to send owner notification email via Brevo');
+		}
 
 		// Redirect to website
 		return Response.redirect(env.CLIENT_REDIRECT_URL || `${url.origin}/reservar?confirmed=true&id=${id}`, 302);
