@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signIn, getStaffRole, getSession, signOut, isTabletAuthorized, authorizeTablet, deauthorizeTablet, setActiveStaffId } from '../services/authStore';
+import { signIn, getStaffRole, getSession, signOut, isTabletAuthorized, setActiveStaffId } from '../services/authStore';
 import PinLoginView from '../components/admin/PinLoginView';
 
 export default function AdminLogin() {
@@ -12,7 +12,7 @@ export default function AdminLogin() {
   const [checkingSession, setCheckingSession] = useState(true);
   const [showRoleSelector, setShowRoleSelector] = useState(false);
   const [usePinLogin, setUsePinLogin] = useState(isTabletAuthorized());
-  const [isAuthorized, setIsAuthorized] = useState(isTabletAuthorized());
+  const [isAuthorized] = useState(isTabletAuthorized());
 
   // Check if already logged in
   useEffect(() => {
@@ -83,15 +83,7 @@ export default function AdminLogin() {
     }
   };
 
-  const toggleDeviceAuth = () => {
-    if (isAuthorized) {
-      deauthorizeTablet();
-      setIsAuthorized(false);
-    } else {
-      authorizeTablet();
-      setIsAuthorized(true);
-    }
-  };
+
 
   const handlePinLoginSuccess = (role: string) => {
     if (role === 'owner') {
@@ -152,18 +144,7 @@ export default function AdminLogin() {
           </div>
           
           <div className="pt-8 border-t border-white/10 space-y-4">
-            <div className="flex items-center justify-between px-4 py-3 bg-white/5 rounded-xl border border-white/10">
-              <div className="text-left">
-                <p className="text-white text-sm font-medium">Modo Tablet</p>
-                <p className="text-slate-400 text-xs">Permite inicio de sesión con PIN</p>
-              </div>
-              <button
-                onClick={toggleDeviceAuth}
-                className={`w-12 h-6 rounded-full transition-colors relative ${isAuthorized ? 'bg-primary' : 'bg-slate-700'}`}
-              >
-                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isAuthorized ? 'left-7' : 'left-1'}`} />
-              </button>
-            </div>
+
 
             <button
               onClick={handleLogout}
