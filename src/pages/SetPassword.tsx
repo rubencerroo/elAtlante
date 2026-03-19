@@ -12,27 +12,17 @@ export default function SetPassword() {
   const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const session = await getSession();
-        if (!session) {
-          // No session — maybe the recovery link hasn't been processed yet
-          // The auth listener in App.tsx / Supabase should handle the token exchange
-          // Give it a moment
-          setTimeout(async () => {
-            const s = await getSession();
-            if (!s) {
-              navigate('/admin', { replace: true });
-            }
-            setCheckingSession(false);
-          }, 1500);
-          return;
-        }
-      } catch {
-        // ignore
+    try {
+      const session = getSession();
+      if (!session) {
+        // No session - redirect to login
+        navigate('/admin', { replace: true });
+        return;
       }
-      setCheckingSession(false);
-    })();
+    } catch {
+      navigate('/admin', { replace: true });
+    }
+    setCheckingSession(false);
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {

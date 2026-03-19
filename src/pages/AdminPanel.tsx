@@ -1,18 +1,21 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+// removed GuestCounter import
 import { useNavigate } from 'react-router-dom';
 import {
-  getReservations, addReservation, updateReservation, getStats, deleteReservation,
+  getReservations, updateReservation, getStats, deleteReservation,
   getOccupancyByHour, getStatusDistribution, getWeeklyComparison, getNoShowRate,
   getClientProfiles, getClientMeta, saveClientMeta, generateCSV, getOccupiedTables, getShiftNote, saveShiftNote, getFeedbacks, updateFeedbackStatus, deleteFeedback,
   type Reservation, type ReservationStatus, type ReservationStats, type ClientProfile, type ClientMeta
 } from '../services/reservationStore';
 import { signOut, getStaffRole, getSession, getStaffProfiles, inviteStaff, deleteStaff, updateStaffProfile, isTabletAuthorized, authorizeTablet, deauthorizeTablet, getActiveStaffId, type StaffProfile, type StaffRole } from '../services/authStore';
+
 import StatsCards from './admin/StatsCards';
 import StatusKanban from './admin/StatusKanban';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import FeedbackButton from '../components/FeedbackButton';
 import logoWhite from '../assets/logowhite.png';
 import { AlertModal } from '../components/AlertModal';
+import ManualReservationModal from '../components/ManualReservationModal';
 
 // ── Status config ──
 const STATUS_CONFIG: Record<ReservationStatus, { label: string; color: string; bg: string }> = {
@@ -35,7 +38,6 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<AdminTab>('kanban');
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
-  const [search, setSearch] = useState('');
   const [showTableSelector, setShowTableSelector] = useState<string | null>(null);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   
@@ -91,9 +93,9 @@ export default function AdminPanel() {
   };
   
   useEffect(() => {
-    (async () => {
+    (() => {
       try {
-        const session = await getSession();
+        const session = getSession();
         const activeStaffId = getActiveStaffId();
         const isAuthorized = isTabletAuthorized();
 
@@ -103,8 +105,8 @@ export default function AdminPanel() {
         }
 
         if (session) {
-          setCurrentUserEmail(session.user.email || null);
-          const role = await getStaffRole();
+          setCurrentUserEmail(session.email || null);
+          const role = getStaffRole();
           if (role !== 'owner') {
             navigate('/admin', { replace: true });
             return;
@@ -126,8 +128,8 @@ export default function AdminPanel() {
     })();
   }, [navigate]);
 
-  const fetchDashboardData = useCallback(async () => {
-    setLoading(true);
+  const fetchDashboardData = useCallback(async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     const [resData, statsData, occData, distData, weeklyData, nsRate, profiles, occTables, note] = await Promise.all([
       getReservations(),
       getStats(filterDate),
@@ -151,24 +153,28 @@ export default function AdminPanel() {
     setShiftNote(note || '');
     
     // Fetch feedbacks separately or in parallel
-    const fbData = await getFeedbacks();
-    setFeedbacks(fbData);
+    try {
+      const fbData = await getFeedbacks();
+      setFeedbacks(fbData);
+    } catch (err: any) {
+      console.error("Error fetching feedbacks:", err);
+      // We'll rely on the debug info displayed in the FeedbackView
+    }
     
-    setLoading(false);
+    if (showLoading) setLoading(false);
   }, [filterDate]);
 
   useEffect(() => {
-    fetchDashboardData();
+    fetchDashboardData(true);
   }, [fetchDashboardData]);
 
-  const reload = useCallback(() => fetchDashboardData(), [fetchDashboardData]);
+  const reload = useCallback(() => fetchDashboardData(false), [fetchDashboardData]);
 
   const filtered = useMemo(() => {
     return reservations
       .filter(r => filterDate === 'all' || r.date === filterDate)
-      .filter(r => !search || r.name.toLowerCase().includes(search.toLowerCase()) || r.email.toLowerCase().includes(search.toLowerCase()) || r.phone.includes(search))
       .sort((a, b) => a.time.localeCompare(b.time));
-  }, [reservations, filterDate, search]);
+  }, [reservations, filterDate]);
 
   const handleStatus = async (id: string, status: ReservationStatus) => {
     let cancellationReason;
@@ -240,6 +246,12 @@ export default function AdminPanel() {
           <td>${r.notes || '—'}</td>
         </tr>`).join('')}
       </table>
+      ${shiftNote ? `
+        <div style="margin-top: 30px; background: #fffbeb; border: 1px solid #fde68a; padding: 15px; border-radius: 8px;">
+          <h3 style="margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #92400e; letter-spacing: 0.5px;">💡 Notas del Turno</h3>
+          <p style="margin: 0; font-size: 13px; white-space: pre-wrap; color: #78350f;">${shiftNote}</p>
+        </div>
+      ` : ''}
       <div class="footer">Generado automáticamente · El Atlante Panel de Administración</div>
       </body></html>
     `);
@@ -335,18 +347,16 @@ export default function AdminPanel() {
         {/* Filters */}
         <div className="flex flex-wrap gap-4 items-center mb-8">
           <input type="date" value={filterDate} onChange={e => setFilterDate(e.target.value)}
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50" />
-          <input type="text" placeholder="Buscar nombre, email, teléfono…" value={search} onChange={e => setSearch(e.target.value)}
-            className="flex-1 min-w-[200px] bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary/50" />
-          <button onClick={() => setFilterDate('all' as string)} className="text-xs text-primary hover:text-primary/80 font-medium transition-colors">Ver todo</button>
+            className="bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50" />
+
           <div className="ml-auto flex gap-2">
             <button onClick={() => setShowAddModal(true)} className="bg-primary hover:bg-primary/90 text-white rounded-xl px-4 py-2.5 text-sm font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary/20">
               ➕ Nueva Reserva
             </button>
-            <button onClick={exportPDF} className="bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2">
+            <button onClick={exportPDF} className="bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5 rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2">
               📄 PDF
             </button>
-            <button onClick={exportCSV} className="bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2">
+            <button onClick={exportCSV} className="bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5 rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2">
               📊 CSV
             </button>
           </div>
@@ -354,7 +364,7 @@ export default function AdminPanel() {
 
         {/* Tab Content */}
         {activeTab === 'kanban' && <StatusKanban filtered={filtered} handleStatus={handleStatus} handleDelete={handleDelete} handleAssignTable={handleAssignTable} showTableSelector={showTableSelector} setShowTableSelector={setShowTableSelector} occupiedTables={occupiedTables} draggedId={draggedId} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} />}
-        {activeTab === 'dashboard' && <DashboardView filterDate={filterDate} reservations={reservations} occupancyData={occupancyData} statusData={statusData} weeklyComp={weeklyComp} noShowRate={noShowRate} shiftNote={shiftNote} setShiftNote={setShiftNote} handleSaveNote={handleSaveNote} savingNote={savingNote} />}
+        {activeTab === 'dashboard' && <DashboardView filterDate={filterDate} setFilterDate={setFilterDate} reservations={reservations} occupancyData={occupancyData} statusData={statusData} weeklyComp={weeklyComp} noShowRate={noShowRate} shiftNote={shiftNote} setShiftNote={setShiftNote} handleSaveNote={handleSaveNote} savingNote={savingNote} />}
         {activeTab === 'crm' && <CRMView search={crmSearch} setSearch={setCrmSearch} selectedClient={selectedClient} setSelectedClient={setSelectedClient} clientProfiles={clientProfiles} />}
         {activeTab === 'staff' && <StaffView showAlert={showAlert} />}
         {activeTab === 'feedback' && <FeedbackView feedbacks={feedbacks} onReload={fetchDashboardData} currentUserEmail={currentUserEmail} showAlert={showAlert} />}
@@ -390,10 +400,11 @@ export default function AdminPanel() {
 // ═══════════════════════════════════════════════
 
 function DashboardView({ 
-  filterDate, reservations, occupancyData, statusData, weeklyComp, noShowRate,
+  filterDate, setFilterDate, reservations, occupancyData, statusData, weeklyComp, noShowRate,
   shiftNote, setShiftNote, handleSaveNote, savingNote
 }: { 
   filterDate: string;
+  setFilterDate: (date: string) => void;
   reservations: Reservation[];
   occupancyData: { hour: string; guests: number }[];
   statusData: { name: string; value: number; color: string }[];
@@ -407,9 +418,19 @@ function DashboardView({
   const getSourceDistribution = () => {
     const list = reservations.filter(r => filterDate === 'all' ? true : r.date === filterDate);
     const data: Record<string, number> = {};
+    const labelMap: Record<string, string> = {
+      'walk-in': 'Walk-in',
+      'website': 'Reserva por Web',
+      'in-person': 'Reserva en Persona',
+      'phone': 'Reserva por Teléfono'
+    };
+
     list.forEach(r => {
-      const src = r.source || 'website';
-      data[src] = (data[src] || 0) + 1;
+      // If it's a walk-in or is_walk_in is true, force 'walk-in'
+      const rawSrc = r.isWalkIn || r.source === 'walk-in' ? 'walk-in' : (r.source || 'website');
+      // Use mapped label or fall back to 'Web' for any other legacy source
+      const srcName = labelMap[rawSrc] || 'Reserva por Web';
+      data[srcName] = (data[srcName] || 0) + 1;
     });
     return Object.entries(data).map(([name, value]) => ({ name, value }));
   };
@@ -474,7 +495,7 @@ function DashboardView({
               <XAxis dataKey="hour" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
               <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
               <Tooltip
-                contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px' }}
+                contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontSize: '12px' }}
                 labelStyle={{ color: '#94a3b8' }}
                 itemStyle={{ color: '#60a5fa' }}
               />
@@ -495,7 +516,7 @@ function DashboardView({
                       <Cell key={i} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px' }} />
+                  <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontSize: '12px' }} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-1.5 mt-2">
@@ -520,7 +541,7 @@ function DashboardView({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Booking Sources */}
         <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-6">
-          <h3 className="text-sm font-semibold mb-4">Orígenes de Reserva</h3>
+          <h3 className="text-sm font-semibold mb-4">Orígenes</h3>
           {sourceData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={200}>
@@ -530,7 +551,7 @@ function DashboardView({
                       <Cell key={i} fill={['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'][i % 5]} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px' }} />
+                  <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontSize: '12px' }} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-1.5 mt-2">
@@ -538,7 +559,7 @@ function DashboardView({
                   <div key={d.name} className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full" style={{ background: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'][i % 5] }}></span>
-                      <span className="text-slate-400 capitalize">{d.name}</span>
+                      <span className="text-slate-400">{d.name}</span>
                     </div>
                     <span className="font-bold">{d.value}</span>
                   </div>
@@ -559,7 +580,7 @@ function DashboardView({
               <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
               <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
               <Tooltip
-                contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px' }}
+                contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontSize: '12px' }}
                 labelStyle={{ color: '#94a3b8' }}
                 itemStyle={{ color: '#10b981' }}
               />
@@ -571,8 +592,19 @@ function DashboardView({
 
       {/* Shift Notes */}
       <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-6 mb-8 flex flex-col">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-sm font-semibold">Notas del Turno</h3>
+        <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
+          <div className="flex items-center gap-4">
+            <h3 className="text-sm font-semibold">Notas del Turno</h3>
+            <div className="flex items-center gap-2 bg-white/5 border border-white/5 rounded-lg px-2 py-1">
+              <span className="text-[10px] text-slate-500 font-bold uppercase">Día:</span>
+              <input 
+                type="date" 
+                value={filterDate === 'all' ? new Date().toISOString().split('T')[0] : filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                className="bg-transparent border-none text-[11px] text-primary focus:outline-none p-0 cursor-pointer"
+              />
+            </div>
+          </div>
           <button 
             onClick={handleSaveNote} 
             disabled={savingNote}
@@ -584,8 +616,12 @@ function DashboardView({
           value={shiftNote}
           onChange={(e) => setShiftNote(e.target.value)}
           placeholder="Anota aquí las incidencias, clientes VIP que vienen hoy, o tareas pendientes para los camareros..."
-          className="w-full h-32 bg-slate-900/50 border border-white/10 rounded-xl p-4 text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-primary/50 resize-none"
+          className="w-full h-32 bg-slate-900/50 border border-white/5 rounded-xl p-4 text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-primary/50 resize-none"
         ></textarea>
+        <div className="mt-3 flex items-center gap-2 text-[10px] text-slate-500">
+          <span>💡</span>
+          <span>Puedes cambiar la fecha del filtro arriba para programar notas para días futuros.</span>
+        </div>
       </div>
 
     </div>
@@ -638,7 +674,7 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
       {/* Client List */}
       <div className="lg:col-span-1 space-y-4">
         <input type="text" placeholder="Buscar cliente…" value={search} onChange={e => setSearch(e.target.value)}
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary/50" />
+          className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary/50" />
         <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
           {filteredClients.map(c => (
             <button key={c.email || c.phone || c.name} onClick={() => setSelectedClient(c)}
@@ -700,7 +736,7 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
                   value={meta?.allergies || ''} 
                   onChange={e => setMeta(prev => prev ? { ...prev, allergies: e.target.value } : null)}
                   placeholder="Ej: Gluten, marisco..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 h-20 resize-none"
+                  className="w-full bg-white/5 border border-white/5 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 h-20 resize-none"
                 />
               </div>
               <div className="space-y-2">
@@ -709,7 +745,7 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
                   value={meta?.customNotes || ''} 
                   onChange={e => setMeta(prev => prev ? { ...prev, customNotes: e.target.value } : null)}
                   placeholder="Ej: Mesa cerca de ventana, vino preferido..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 h-20 resize-none"
+                  className="w-full bg-white/5 border border-white/5 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 h-20 resize-none"
                 />
               </div>
             </div>
@@ -748,134 +784,6 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
 // MANUAL RESERVATION MODAL
 // ═══════════════════════════════════════════════
 
-function ManualReservationModal({ onClose, onSave }: { onClose: () => void; onSave: () => void }) {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    date: new Date().toISOString().split('T')[0],
-    time: '20:00',
-    guests: 2,
-    preference: 'Indiferente' as any,
-    hasPet: false,
-    notes: '',
-    source: 'google'
-  });
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      await addReservation({
-        ...formData,
-        status: 'confirmed'
-      });
-      onSave();
-    } catch (err: any) {
-      alert(err.message === 'DUPLICATE_RESERVATION' 
-        ? 'Ya existe una reserva para ese cliente en esa fecha/hora.' 
-        : 'Error al crear la reserva.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
-      <div className="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl">
-        <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-          <h2 className="font-bold">Nueva Reserva Manual</h2>
-          <button onClick={onClose} className="text-slate-500 hover:text-white">✕</button>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Nombre</label>
-              <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary/50" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Teléfono (opcional)</label>
-              <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary/50" />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Email</label>
-            <input required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary/50" />
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Fecha</label>
-              <input required type="date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary/50" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Hora</label>
-              <input required type="time" value={formData.time} onChange={e => setFormData({ ...formData, time: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary/50" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Comensales</label>
-              <input required type="number" min="1" value={formData.guests} onChange={e => setFormData({ ...formData, guests: parseInt(e.target.value) })}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary/50" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Preferencia</label>
-              <select value={formData.preference} onChange={e => setFormData({ ...formData, preference: e.target.value as any })}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary/50 appearance-none">
-                <option value="Indiferente">Indiferente</option>
-                <option value="Interior">Interior</option>
-                <option value="Mesas altas">Mesas altas</option>
-                <option value="Terraza exterior">Terraza exterior</option>
-              </select>
-            </div>
-            <div className="flex items-center gap-3 pt-6">
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" checked={formData.hasPet} onChange={e => setFormData({ ...formData, hasPet: e.target.checked })} className="sr-only peer" />
-                <div className="w-11 h-6 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-              </label>
-              <span className="text-xs font-semibold text-slate-400">¿Trae mascota? 🐾</span>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Origen de la Reserva</label>
-              <select value={formData.source} onChange={e => setFormData({ ...formData, source: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary/50 appearance-none">
-                <option value="phone">📞 Teléfono</option>
-                <option value="in-person">🚶 En Persona</option>
-                <option value="google">🌐 Google My Business</option>
-                <option value="instagram">📸 Instagram</option>
-                <option value="website">💻 Página Web (Manual)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Notas internas</label>
-            <textarea value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Ej: Cliente VIP, aniversario..."
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary/50 h-20 resize-none" />
-          </div>
-
-          <div className="pt-4 flex gap-3">
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-3 rounded-xl border border-white/10 text-sm font-bold hover:bg-white/5 transition-colors">Cancelar</button>
-            <button type="submit" disabled={loading} className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-primary/20 disabled:opacity-50">
-              {loading ? 'Creando...' : 'Crear Reserva'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
 
 // ═══════════════════════════════════════════════
 // FEEDBACK VIEW
@@ -1112,7 +1020,9 @@ function StaffView({ showAlert }: {
       await updateStaffProfile(staffId, updates);
       showAlert('Éxito', 'Perfil actualizado correctamente.', 'success');
       setEditingStaff(null);
-      loadStaff();
+      // Avoid reload() if it triggers infinite loop via useEffect
+      const profiles = await getStaffProfiles();
+      setStaff(profiles);
     } catch (err: any) {
       showAlert('Error', 'No se pudo actualizar: ' + err.message, 'error');
     }
@@ -1163,7 +1073,7 @@ function StaffView({ showAlert }: {
               value={inviteEmail}
               onChange={e => setInviteEmail(e.target.value)}
               placeholder="email@ejemplo.com"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
+              className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
             />
           </div>
           <div className="space-y-1.5">
@@ -1171,7 +1081,7 @@ function StaffView({ showAlert }: {
             <select
               value={inviteRole}
               onChange={e => setInviteRole(e.target.value as StaffRole)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50 appearance-none min-w-[140px]"
+              className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50 appearance-none min-w-[140px]"
             >
               <option value="waiter">🍽 Camarero</option>
               <option value="owner">⭐ Dueño</option>
@@ -1180,13 +1090,13 @@ function StaffView({ showAlert }: {
           <div className="flex-1 space-y-1.5">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Contraseña inicial</label>
             <input
-              type="text"
+              type="password"
               required
               minLength={6}
               value={invitePassword}
               onChange={e => setInvitePassword(e.target.value)}
               placeholder="Min. 6 caracteres"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
+              className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
             />
           </div>
           <div className="flex items-end">
@@ -1269,7 +1179,7 @@ function StaffView({ showAlert }: {
                         type="text"
                         value={editForm.display_name}
                         onChange={e => setEditForm({ ...editForm, display_name: e.target.value })}
-                        className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2 text-sm text-white"
+                        className="w-full bg-slate-900 border border-white/5 rounded-xl px-4 py-2 text-sm text-white"
                         placeholder="Ej: Juan C."
                       />
                     </div>
@@ -1280,7 +1190,7 @@ function StaffView({ showAlert }: {
                         maxLength={4}
                         value={editForm.pin}
                         onChange={e => setEditForm({ ...editForm, pin: e.target.value.replace(/\D/g, '') })}
-                        className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2 text-sm text-white"
+                        className="w-full bg-slate-900 border border-white/5 rounded-xl px-4 py-2 text-sm text-white"
                         placeholder="••••"
                       />
                     </div>

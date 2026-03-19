@@ -39,7 +39,7 @@ export function AlertModal({ isOpen, title, message, type = 'info', onConfirm, o
       />
       
       {/* Modal Content */}
-      <div className="relative w-full max-w-sm bg-slate-900/90 border border-white/10 rounded-3xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-sm bg-slate-900/90 border border-white/5 rounded-3xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
         <div className="text-center space-y-4">
           <div className={`text-4xl ${getTypeColor()}`}>
             {getIcon()}
@@ -54,7 +54,7 @@ export function AlertModal({ isOpen, title, message, type = 'info', onConfirm, o
           {onCancel && (
             <button
               onClick={onCancel}
-              className="flex-1 px-4 py-3 rounded-xl border border-white/10 text-sm font-bold text-slate-300 hover:bg-white/5 transition-colors"
+              className="flex-1 px-4 py-3 rounded-xl border border-white/5 text-sm font-bold text-slate-300 hover:bg-white/5 transition-colors"
             >
               Cancelar
             </button>

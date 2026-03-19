@@ -9,6 +9,38 @@ export default function Header() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const [activeSection, setActiveSection] = useState('inicio');
+
+  useEffect(() => {
+    if (location.pathname !== '/') {
+      setActiveSection('');
+      return;
+    }
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '-40% 0px -40% 0px',
+      threshold: 0
+    };
+
+    const handleIntersect = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(handleIntersect, observerOptions);
+    
+    const sections = ['inicio', 'nosotros', 'carta'];
+    sections.forEach(id => {
+      const element = document.getElementById(id);
+      if (element) observer.observe(element);
+    });
+
+    return () => observer.disconnect();
+  }, [location.pathname]);
 
   const [theme, setTheme] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -100,9 +132,26 @@ export default function Header() {
         </div>
         
         <nav className="hidden md:flex items-center gap-10">
-          <Link className="text-slate-900 dark:text-slate-100 text-[10px] font-black uppercase tracking-[0.3em] hover:text-primary transition-colors" to="/">Inicio</Link>
-          <a className="text-slate-900 dark:text-slate-100 text-[10px] font-black uppercase tracking-[0.3em] hover:text-primary transition-colors" href="/#carta" onClick={(e) => handleAnchorClick(e, '/#carta')}>Carta</a>
-          <a className="text-slate-900 dark:text-slate-100 text-[10px] font-black uppercase tracking-[0.3em] hover:text-primary transition-colors" href="/#nosotros" onClick={(e) => handleAnchorClick(e, '/#nosotros')}>Nosotros</a>
+          <Link 
+            className={`relative text-[10px] font-black uppercase tracking-[0.3em] transition-colors hover:text-primary ${activeSection === 'inicio' ? 'text-primary after:scale-x-100' : 'text-slate-900 dark:text-slate-100 after:scale-x-0'} after:content-[''] after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:bg-primary after:transition-transform after:duration-300`} 
+            to="/"
+          >
+            Inicio
+          </Link>
+          <a 
+            className={`relative text-[10px] font-black uppercase tracking-[0.3em] transition-colors hover:text-primary ${activeSection === 'nosotros' ? 'text-primary after:scale-x-100' : 'text-slate-900 dark:text-slate-100 after:scale-x-0'} after:content-[''] after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:bg-primary after:transition-transform after:duration-300`} 
+            href="/#nosotros" 
+            onClick={(e) => handleAnchorClick(e, '/#nosotros')}
+          >
+            Nosotros
+          </a>
+          <a 
+            className={`relative text-[10px] font-black uppercase tracking-[0.3em] transition-colors hover:text-primary ${activeSection === 'carta' ? 'text-primary after:scale-x-100' : 'text-slate-900 dark:text-slate-100 after:scale-x-0'} after:content-[''] after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:bg-primary after:transition-transform after:duration-300`} 
+            href="/#carta" 
+            onClick={(e) => handleAnchorClick(e, '/#carta')}
+          >
+            Carta
+          </a>
         </nav>
 
         <div className="flex items-center gap-4">
@@ -121,36 +170,38 @@ export default function Header() {
               </svg>
             )}
           </button>
-          <Link to="/reservar" className="flex min-w-[120px] cursor-pointer items-center justify-center rounded-full h-10 px-6 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20">
-            Reservar
-          </Link>
+          {location.pathname !== '/reservar' && (
+            <Link to="/reservar" className="flex min-w-[120px] cursor-pointer items-center justify-center rounded-full h-10 px-6 btn-primary-high text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl">
+              Reservar
+            </Link>
+          )}
         </div>
       </header>
 
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
-        <div className="absolute top-[80px] left-4 right-4 md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden border border-slate-200 dark:border-white/10 z-[90]">
+        <div className="absolute top-[80px] left-4 right-4 md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden border border-slate-100 dark:border-white/5 z-[90]">
           <nav className="flex flex-col py-6 px-8 gap-6">
             <Link 
-              className="text-slate-900 dark:text-white text-sm font-black uppercase tracking-[0.2em] w-full border-b border-slate-200 dark:border-white/10 pb-4" 
+              className={`text-sm font-black uppercase tracking-[0.2em] w-full border-b border-slate-200 dark:border-white/10 pb-4 transition-colors ${activeSection === 'inicio' ? 'text-primary' : 'text-slate-900 dark:text-white'}`} 
               to="/" 
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Inicio
             </Link>
             <a 
-              className="text-slate-900 dark:text-white text-sm font-black uppercase tracking-[0.2em] w-full border-b border-slate-200 dark:border-white/10 pb-4" 
-              href="/#carta" 
-              onClick={(e) => { setIsMobileMenuOpen(false); handleAnchorClick(e, '/#carta'); }}
-            >
-              Carta
-            </a>
-            <a 
-              className="text-slate-900 dark:text-white text-sm font-black uppercase tracking-[0.2em] w-full pb-2" 
+              className={`text-sm font-black uppercase tracking-[0.2em] w-full border-b border-slate-200 dark:border-white/10 pb-4 transition-colors ${activeSection === 'nosotros' ? 'text-primary' : 'text-slate-900 dark:text-white'}`} 
               href="/#nosotros" 
               onClick={(e) => { setIsMobileMenuOpen(false); handleAnchorClick(e, '/#nosotros'); }}
             >
               Nosotros
+            </a>
+            <a 
+              className={`text-sm font-black uppercase tracking-[0.2em] w-full pb-2 transition-colors ${activeSection === 'carta' ? 'text-primary' : 'text-slate-900 dark:text-white'}`} 
+              href="/#carta" 
+              onClick={(e) => { setIsMobileMenuOpen(false); handleAnchorClick(e, '/#carta'); }}
+            >
+              Carta
             </a>
           </nav>
         </div>

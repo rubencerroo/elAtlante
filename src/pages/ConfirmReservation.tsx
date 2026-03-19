@@ -49,6 +49,20 @@ export default function ConfirmReservation() {
         const updated = await updateReservation(id, { status: 'confirmed' });
         if (updated) {
           setStatus('success');
+          
+          // Notify owner via Cloudflare Pages Function
+          try {
+            const workerUrl = import.meta.env.VITE_WORKER_URL;
+            const endpoint = workerUrl && workerUrl !== 'https://elatlantedesancristobal.com' ? `${workerUrl}/notify-owner` : '/notify-owner';
+            fetch(endpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(reservation),
+            }).catch(err => console.error('Error triggering owner email:', err));
+          } catch (e) {
+            console.error('Error notifying owner:', e);
+          }
+          
         } else {
           setStatus('error');
         }

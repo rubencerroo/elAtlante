@@ -1,4 +1,5 @@
 import SEO from '../components/SEO';
+import { CONTACT_INFO } from '../constants/contact';
 
 export default function LegalNotice() {
   return (
@@ -14,9 +15,9 @@ export default function LegalNotice() {
 
       <div className="max-w-3xl w-full relative z-10">
         <header className="mb-16">
-          <span className="text-primary font-bold tracking-[0.4em] uppercase text-[10px]">Información Legal</span>
+          <span className="text-primary dark:text-sky-400 font-bold tracking-[0.4em] uppercase text-[10px]">Información Legal</span>
           <h1 className="text-slate-900 dark:text-slate-100 text-3xl md:text-4xl lg:text-5xl font-black mt-4 tracking-tight leading-tight">
-            Aviso <span className="text-primary italic">Legal</span>
+            Aviso <span className="text-primary dark:text-sky-400 italic">Legal</span>
           </h1>
         </header>
 
@@ -31,7 +32,8 @@ export default function LegalNotice() {
               <li><strong>NIF:</strong> B76254267</li>
               <li><strong>Domicilio:</strong> Calle León y Castillo, 199, 35280 Santa Lucía de Tirajana, Las Palmas</li>
               <li><strong>Email:</strong> info@elatlante.com</li>
-              <li><strong>Teléfono:</strong> +34 928 58 44 22</li>
+              <li><strong>Teléfono (Fijo):</strong> {CONTACT_INFO.landline.display}</li>
+              <li><strong>Teléfono (Móvil):</strong> {CONTACT_INFO.mobile.display}</li>
             </ul>
           </section>
 

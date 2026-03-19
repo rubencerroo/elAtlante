@@ -1,44 +1,73 @@
 import { Link } from 'react-router-dom';
 import logoWhite from '../assets/logowhite.png';
+import logoBlack from '../assets/logoblack.png';
+import { isRestaurantOpenNow } from '../utils/reservationUtils';
+import { CONTACT_INFO } from '../constants/contact';
 
 export default function Footer() {
+  const isOpen = isRestaurantOpenNow();
+
   return (
-    <footer className="bg-slate-950 text-white pt-24 pb-12 px-6 lg:px-40">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-16 border-b border-white/5 pb-16 mb-12">
+    <footer className="relative bg-slate-50 dark:bg-[#0B0F14] text-slate-900 dark:text-slate-100 pt-24 pb-12 px-6 lg:px-40 overflow-hidden border-t border-slate-100 dark:border-white/5">
+      {/* Background Texture/Decor from Reserva Page */}
+      <div className="absolute inset-0 -z-10 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
+        <img
+          src="https://images.unsplash.com/photo-1551244072-5d12893278ab?auto=format&fit=crop&q=80&w=1200"
+          alt="Coastal texture"
+          className="w-full h-full object-cover grayscale"
+        />
+      </div>
+
+      <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] -z-10 opacity-60"></div>
+      <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-coastal-sea/5 rounded-full blur-[80px] -z-10 opacity-60"></div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-16 border-b border-slate-100 dark:border-white/5 pb-16 mb-12 relative z-10">
         <div>
           <div className="flex items-center gap-4 mb-6">
             <div className="h-10">
-              <img src={logoWhite} alt="El Atlante" className="h-full w-auto object-contain" />
+              <picture>
+                <source srcSet={logoWhite} media="(prefers-color-scheme: dark)" />
+                <img 
+                  src={logoBlack} 
+                  alt="El Atlante" 
+                  className="h-full w-auto object-contain dark:hidden" 
+                />
+                <img 
+                  src={logoWhite} 
+                  alt="El Atlante" 
+                  className="h-full w-auto object-contain hidden dark:block" 
+                />
+              </picture>
             </div>
           </div>
-          <p className="text-slate-500 font-light leading-relaxed">
+          <p className="text-slate-500 dark:text-slate-400 font-light leading-relaxed">
             Honrando la tradición pesquera de San Cristóbal con el producto más fresco del Atlántico.
           </p>
         </div>
         <div>
-          <h4 className="font-bold text-sm uppercase tracking-[0.3em] mb-8 text-primary">Navegación</h4>
-          <ul className="space-y-4 text-slate-400 font-light">
-            <li><Link className="hover:text-white transition-colors" to="/">Inicio</Link></li>
-            <li><a className="hover:text-white transition-colors" href="/#carta">La Carta</a></li>
-            <li><a className="hover:text-white transition-colors" href="/#nosotros">Nosotros</a></li>
-            <li><Link className="hover:text-white transition-colors" to="/reservar">Reservar</Link></li>
+          <h4 className="font-bold text-sm uppercase tracking-[0.3em] mb-8 text-primary dark:text-sky-400">Navegación</h4>
+          <ul className="space-y-4 text-slate-600 dark:text-slate-400 font-light">
+            <li><Link className="hover:text-primary dark:hover:text-white transition-colors" to="/">Inicio</Link></li>
+            <li><a className="hover:text-primary dark:hover:text-white transition-colors" href="/#carta">La Carta</a></li>
+            <li><a className="hover:text-primary dark:hover:text-white transition-colors" href="/#nosotros">Nosotros</a></li>
+            <li><Link className="hover:text-primary dark:hover:text-white transition-colors" to="/reservar">Reservar</Link></li>
           </ul>
         </div>
         <div>
-          <h4 className="font-bold text-sm uppercase tracking-[0.3em] mb-8 text-primary">Contacto</h4>
-          <ul className="space-y-4 text-slate-400 font-light">
-            <li>Calle Marina, 81</li>
-            <li>San Cristóbal, Las Palmas</li>
-            <li>+34 928 58 44 22</li>
-            <li>info@elatlante.com</li>
+          <h4 className="font-bold text-sm uppercase tracking-[0.3em] mb-8 text-primary dark:text-sky-400">Contacto</h4>
+          <ul className="space-y-4 text-slate-600 dark:text-slate-400 font-light">
+            <li>{CONTACT_INFO.address.street}</li>
+            <li>{CONTACT_INFO.address.city}</li>
+            <li>{isOpen ? CONTACT_INFO.landline.display : CONTACT_INFO.mobile.display}</li>
+            <li>{CONTACT_INFO.email}</li>
           </ul>
         </div>
       </div>
-      <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] text-slate-600 uppercase tracking-[0.4em] font-bold">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] text-slate-400 dark:text-slate-600 uppercase tracking-[0.4em] font-bold relative z-10">
         <p>© {new Date().getFullYear()} El Atlante de San Cristóbal</p>
         <div className="flex gap-10">
           <a 
-            className="hover:text-primary transition-colors flex items-center gap-2" 
+            className="hover:text-primary dark:hover:text-sky-400 transition-colors flex items-center gap-2" 
             href="https://www.instagram.com/restaurante_elatlante" 
             target="_blank" 
             rel="noopener noreferrer"
@@ -49,7 +78,7 @@ export default function Footer() {
             Instagram
           </a>
           <a 
-            className="hover:text-primary transition-colors flex items-center gap-2" 
+            className="hover:text-primary dark:hover:text-sky-400 transition-colors flex items-center gap-2" 
             href="https://www.facebook.com/elatlantedesancristobal/" 
             target="_blank" 
             rel="noopener noreferrer"
@@ -59,9 +88,9 @@ export default function Footer() {
             </svg>
             Facebook
           </a>
-          <Link className="hover:text-primary transition-colors" to="/aviso-legal">Legal</Link>
-          <Link className="hover:text-primary transition-colors" to="/privacidad">Privacidad</Link>
-          <Link className="hover:text-primary transition-colors" to="/cookies">Cookies</Link>
+          <Link className="hover:text-primary dark:hover:text-sky-400 transition-colors" to="/aviso-legal">Legal</Link>
+          <Link className="hover:text-primary dark:hover:text-sky-400 transition-colors" to="/privacidad">Privacidad</Link>
+          <Link className="hover:text-primary dark:hover:text-sky-400 transition-colors" to="/cookies">Cookies</Link>
         </div>
       </div>
     </footer>

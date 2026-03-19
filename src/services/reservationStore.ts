@@ -143,7 +143,8 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
     language: r.language,
   };
 
-  // Check for duplicate reservation (same person, same time, not cancelled)
+  // Check for duplicate reservation removed as per user request to allow multiple reservations at same time.
+  /*
   const { data: existing, error: checkError } = await supabase
     .from('reservations')
     .select('id')
@@ -157,6 +158,15 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
   } else if (existing && existing.length > 0) {
     throw new Error('DUPLICATE_RESERVATION');
   }
+  */
+
+  // ── Automatic Table Assignment ──
+  if (!newR.table_number) {
+    const assignedTable = await findAvailableTable(r.date, r.time, r.preference);
+    if (assignedTable) {
+      newR.table_number = assignedTable;
+    }
+  }
 
   const { data, error } = await supabase
     .from('reservations')
@@ -164,7 +174,7 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
     .select()
     .single();
 
-  if (error) {
+  if (error || !data) {
     console.error('Error adding reservation:', error);
     return null;
   }
@@ -200,12 +210,12 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
   return reservation;
 }
 
-export async function addWalkIn(guests: number, tableNumber: number, name?: string): Promise<Reservation | null> {
+export async function addWalkIn(guests: number, tableNumber: number, name: string): Promise<Reservation | null> {
   const now = new Date();
   const newR = {
     booking_number: generateBookingNumber(),
-    name: name || `Walk-in ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`,
-    phone: 'Walk-in',
+    name: name,
+    phone: 'Mesa Rápida',
     email: '',
     date: now.toISOString().split('T')[0],
     time: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
@@ -216,6 +226,7 @@ export async function addWalkIn(guests: number, tableNumber: number, name?: stri
     seated_at: now.toISOString(),
     table_number: tableNumber,
     is_walk_in: true,
+    source: 'walk-in',
   };
 
   const { data, error } = await supabase
@@ -238,7 +249,7 @@ export async function addToWaitList(name: string, guests: number, phone?: string
   const newR = {
     booking_number: generateBookingNumber(),
     name: name,
-    phone: phone || 'Walk-in',
+    phone: phone || 'Lista de Espera',
     date: now.toISOString().split('T')[0],
     time: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
     guests,
@@ -246,6 +257,7 @@ export async function addToWaitList(name: string, guests: number, phone?: string
     has_pet: false,
     status: 'waiting',
     is_walk_in: true,
+    source: 'walk-in',
   };
 
   const { data, error } = await supabase
@@ -414,7 +426,7 @@ export async function getWeeklyComparison(): Promise<{ thisWeek: number; lastWee
 
   const { data, error } = await supabase
     .from('reservations')
-    .select('date, status')
+    .select('date, status, is_walk_in')
     .gte('date', startOfLastWeekStr);
 
   if (error) return { thisWeek: 0, lastWeek: 0, change: 0 };
@@ -440,10 +452,11 @@ export async function getNoShowRate(): Promise<number> {
 
   const { data, error } = await supabase
     .from('reservations')
-    .select('status')
+    .select('status, is_walk_in')
     .gte('date', lastMonthStr);
 
-  if (error || !data.length) return 0;
+  if (error || !data) return 0;
+  if (!data.length) return 0;
   const noShows = data.filter(r => r.status === 'no-show').length;
   return Math.round((noShows / data.length) * 100);
 }
@@ -519,7 +532,7 @@ export async function getClientMeta(email: string): Promise<ClientMeta | null> {
     .eq('email', email)
     .maybeSingle();
 
-  if (error) return null;
+  if (error || !data) return null;
   return {
     email: data.email,
     phone: data.phone,
@@ -657,3 +670,54 @@ export async function saveShiftNote(dateStr: string, content: string): Promise<v
   }
 }
 
+
+// ── Table Assignment Helpers ──
+
+async function findAvailableTable(date: string, time: string, preference: string): Promise<number | undefined> {
+  // Get tables that are either seated or have a reservation at this exact time
+  const { data: reservations, error } = await supabase
+    .from('reservations')
+    .select('table_number')
+    .eq('date', date)
+    .eq('time', time)
+    .not('status', 'eq', 'cancelled')
+    .not('table_number', 'is', null);
+
+  if (error) {
+    console.error('Error checking table availability:', error);
+  }
+
+  const occupied = (reservations || []).map(r => r.table_number);
+  
+  const ranges: Record<string, [number, number]> = {
+    'Interior': [1, 15],
+    'Mesas altas': [16, 30],
+    'Terraza exterior': [31, 45],
+    'Indiferente': [1, 45]
+  };
+
+  const getSectionTables = (range: [number, number]) => 
+    Array.from({ length: range[1] - range[0] + 1 }, (_, i) => range[0] + i);
+
+  // Try preferred section first
+  const preferredRange = ranges[preference] || ranges['Indiferente'];
+  const preferredTables = getSectionTables(preferredRange);
+  const availableInPreferred = preferredTables.filter(t => !occupied.includes(t));
+
+  if (availableInPreferred.length > 0) {
+    // Pick a random table from available ones in preferred section
+    return availableInPreferred[Math.floor(Math.random() * availableInPreferred.length)];
+  }
+
+  // If preferred section is full or preference is Indiferente, look elsewhere
+  if (preference !== 'Indiferente') {
+    const allTables = getSectionTables([1, 45]);
+    const availableAnywhere = allTables.filter(t => !occupied.includes(t));
+
+    if (availableAnywhere.length > 0) {
+      return availableAnywhere[Math.floor(Math.random() * availableAnywhere.length)];
+    }
+  }
+
+  return undefined; // No tables left at this time
+}
