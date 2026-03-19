@@ -532,7 +532,7 @@ export async function getClientMeta(email: string): Promise<ClientMeta | null> {
     .eq('email', email)
     .maybeSingle();
 
-  if (error) return null;
+  if (error || !data) return null;
   return {
     email: data.email,
     phone: data.phone,
