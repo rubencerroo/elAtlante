@@ -199,7 +199,7 @@ export default function Home() {
           <div className="flex min-h-[85vh] flex-col rounded-[2rem] md:rounded-[3rem] items-center justify-center p-6 relative overflow-hidden shadow-2xl" 
                style={{backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.5) 100%), url('https://lh3.googleusercontent.com/aida-public/AB6AXuCbv4Dv6O89wmDw82msQkmpHfAHMPyBL93oTKLgg6BLzFOHoT8UCD97FfOXr4tBZl1OWHN3p1YmhBWzaO5AI3QBqjKAF3Zmd13X_7oEPpToFNnChrgtMwjQFUBaqlRUW4o81Il-AJvJgbQ4FhEftHiJDUXMBCXX1pGRcnWgqIKmMgA69vIECpIOUvLe-muTBbb67DG9yCUSKeJJxCAMH7fBQRnxqLEIljydJWZxT_bmSOdkx3JmMZEpDLQrKeAIL9IzT1uI5J312Pc')", backgroundSize: 'cover', backgroundPosition: 'center'}}>
             
-            <div className="floating flex flex-col gap-6 text-center max-w-[750px] z-10 p-4">
+            <div className="flex flex-col gap-6 text-center max-w-[750px] z-10 p-4">
               <span className="text-primary font-bold tracking-[0.3em] uppercase text-[10px] bg-white/20 dark:bg-white/10 backdrop-blur-md px-4 py-2 rounded-full w-fit mx-auto border sm:border-2 border-white/50 dark:border-white/20 shadow-sm">Experiencia Gastronómica</span>
               <h1 className="text-white text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-tight">
                 El <span className="text-primary italic">sabor</span> del Mar <br/> San Cristóbal

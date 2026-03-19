@@ -79,14 +79,6 @@
     @apply bg-slate-900/60 backdrop-blur-lg border border-slate-700/30 shadow-2xl;
   }
 
-  .floating {
-    animation: float 6s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-15px); }
-  }
 }
 
 
