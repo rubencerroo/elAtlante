@@ -143,7 +143,7 @@ export default function WaiterPanel() {
   }, [reload]);
 
   // Re-render every minute for time alerts
-  const [, setTick] = useState(0);
+  const [tick, setTick] = useState(0);
   useEffect(() => {
     const timer = setInterval(() => setTick(t => t + 1), 60000);
     return () => clearInterval(timer);
@@ -194,13 +194,35 @@ export default function WaiterPanel() {
 
   const logout = async () => { await signOut(); navigate('/admin'); };
 
-  const now = new Date();
-  const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+  const reservedTables = useMemo(() => {
+    const d = new Date();
+    const currentMins = d.getHours() * 60 + d.getMinutes();
+    const tables = new Set<number>();
+    
+    grouped.upcoming.forEach(r => {
+      if (r.tableNumber && (r.status === 'pending' || r.status === 'confirmed')) {
+        const [h, m] = r.time.split(':').map(Number);
+        const resMins = h * 60 + m;
+        // Res is within 2 hours or late -> blocked
+        if (resMins - currentMins <= 120) {
+          tables.add(r.tableNumber);
+        }
+      }
+    });
+    return Array.from(tables);
+  }, [grouped.upcoming, tick]);
 
-  const tabs: { key: Tab; label: string; count: number; color: string }[] = [
+  const allUnavailable = new Set([...occupiedTables, ...reservedTables]);
+  const hasAvailableTable = allUnavailable.size < 45;
+  const shouldBlinkWaitlist = grouped.waitlist.length > 0 && hasAvailableTable;
+
+  const nowTime = new Date();
+  const currentTimeStr = `${nowTime.getHours().toString().padStart(2, '0')}:${nowTime.getMinutes().toString().padStart(2, '0')}`;
+
+  const tabs: { key: Tab; label: string; count: number; color: string; blink?: boolean }[] = [
     { key: 'upcoming', label: 'Por llegar', count: grouped.upcoming.length, color: 'text-amber-400' },
     { key: 'seated', label: 'En mesa', count: grouped.seated.length, color: 'text-blue-400' },
-    { key: 'waitlist', label: 'Espera', count: grouped.waitlist.length, color: 'text-purple-400' },
+    { key: 'waitlist', label: 'Espera', count: grouped.waitlist.length, color: 'text-purple-400', blink: shouldBlinkWaitlist },
     { key: 'done', label: 'Finalizadas', count: grouped.done.length, color: 'text-slate-400' },
   ];
 
@@ -250,7 +272,7 @@ export default function WaiterPanel() {
         <div className="grid grid-cols-4 gap-2">
           {tabs.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
-              className={`rounded-2xl py-3 px-1 text-center transition-all border ${tab === t.key ? 'bg-white/[0.06] border-white/10' : 'bg-white/[0.02] border-transparent hover:bg-white/[0.04]'}`}>
+              className={`rounded-2xl py-3 px-1 text-center transition-all border ${tab === t.key ? 'bg-white/[0.06] border-white/10' : 'bg-white/[0.02] border-transparent hover:bg-white/[0.04]'} ${t.blink ? 'animate-strong-blink text-purple-300' : ''}`}>
               <p className={`text-xl font-black ${t.color}`}>{t.count}</p>
               <p className="text-slate-500 text-[9px] font-medium uppercase tracking-wider mt-1">{t.label}</p>
             </button>
@@ -267,6 +289,7 @@ export default function WaiterPanel() {
             removeFromWaitList={removeFromWaitList}
             onSeat={handleSeatFromWaitlist}
             occupiedTables={occupiedTables}
+            reservedTables={reservedTables}
             clientProfiles={clientProfiles}
           />
         ) : currentList.length === 0 ? (
@@ -275,7 +298,7 @@ export default function WaiterPanel() {
           </div>
         ) : (
           currentList.map(r => (
-            <SwipeableCard key={r.id} reservation={r} handleStatus={handleStatus} occupiedTables={occupiedTables} profile={clientProfiles.find(p => p.email === r.email || p.phone === r.phone)} />
+            <SwipeableCard key={r.id} reservation={r} handleStatus={handleStatus} occupiedTables={occupiedTables} reservedTables={reservedTables} profile={clientProfiles.find(p => p.email === r.email || p.phone === r.phone)} />
           ))
         )}
       </div>
@@ -312,7 +335,7 @@ export default function WaiterPanel() {
 
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mesa</label>
-              <TableSelector occupiedTables={occupiedTables} selectedTable={walkInTable} onSelect={t => setWalkInTable(t)} />
+              <TableSelector occupiedTables={occupiedTables} reservedTables={reservedTables} selectedTable={walkInTable} onSelect={t => setWalkInTable(t)} />
             </div>
 
             <button onClick={handleWalkIn} disabled={!walkInTable || !walkInName.trim()}
@@ -348,12 +371,13 @@ export default function WaiterPanel() {
 // WAIT LIST VIEW
 // ═══════════════════════════════════════════════
 
-function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occupiedTables, clientProfiles }: {
+function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occupiedTables, reservedTables, clientProfiles }: {
   waitList: Reservation[];
   addToWaitList: (name: string, guests: number, phone?: string) => void;
   removeFromWaitList: (id: string) => void;
   onSeat: (id: string, guests: number, table: number) => void;
   occupiedTables: number[];
+  reservedTables: number[];
   clientProfiles: ClientProfile[];
 }) {
   const [waitName, setWaitName] = useState('');
@@ -439,6 +463,7 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
               <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Selecciona Mesa Disponible</label>
               <TableSelector 
                 occupiedTables={occupiedTables} 
+                reservedTables={reservedTables}
                 onSelect={(table) => {
                   const item = waitList.find(w => w.id === seatingId);
                   if (item) onSeat(item.id, item.guests, table);
@@ -457,10 +482,11 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
 // SWIPEABLE RESERVATION CARD
 // ═══════════════════════════════════════════════
 
-function SwipeableCard({ reservation: r, handleStatus, occupiedTables, profile }: {
+function SwipeableCard({ reservation: r, handleStatus, occupiedTables, reservedTables, profile }: {
   reservation: Reservation;
   handleStatus: (id: string, status: ReservationStatus, tableNumber?: number) => void;
   occupiedTables: number[];
+  reservedTables: number[];
   profile?: ClientProfile;
 }) {
   const [swipeX, setSwipeX] = useState(0);
@@ -604,6 +630,7 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, profile }
             <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
               <TableSelector 
                 occupiedTables={occupiedTables} 
+                reservedTables={reservedTables}
                 selectedTable={r.tableNumber} 
                 onSelect={(t) => { 
                   handleStatus(r.id, r.status === 'seated' ? 'seated' : 'seated', t); 

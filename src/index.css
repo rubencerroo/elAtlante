@@ -88,6 +88,26 @@
   }
 }
 
+@layer utilities {
+  @keyframes strong-blink {
+    0%, 100% {
+      background-color: rgba(168, 85, 247, 0.3);
+      border-color: rgba(168, 85, 247, 0.8);
+      box-shadow: 0 0 30px rgba(168, 85, 247, 0.8);
+      transform: scale(1.02);
+    }
+    50% {
+      background-color: rgba(168, 85, 247, 0.05);
+      border-color: transparent;
+      box-shadow: none;
+      transform: scale(1);
+    }
+  }
+  .animate-strong-blink {
+    animation: strong-blink 1.2s ease-in-out infinite;
+  }
+}
+
 
 
 /* Custom layout container if needed, though Tailwind classes usually suffice */
