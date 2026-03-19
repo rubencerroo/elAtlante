@@ -66,6 +66,16 @@ export function isDateValid(dateStr: string, timeStr: string): boolean {
 }
 
 /**
+ * Checks if a specific date is closed
+ */
+export function isDayClosed(dateStr: string): boolean {
+  if (!dateStr) return true;
+  const date = new Date(dateStr + 'T12:00:00');
+  const normalizedDay = normalizeDayName(date);
+  return OPENING_HOURS.closed.includes(normalizedDay);
+}
+
+/**
  * Generates available time slots for a given date
  */
 export function getAvailableTimes(dateStr: string, intervalMinutes: number = 30): string[] {

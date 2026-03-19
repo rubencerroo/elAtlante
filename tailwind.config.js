@@ -8,17 +8,25 @@ export default {
   theme: {
     extend: {
       colors: {
-        "primary": "#1162d4",
-        "background-light": "#f6f7f8",
-        "background-dark": "#101822",
+        "primary": "#1A365D",
+        "secondary": "#2D3748",
+        "background-light": "#FBFBF9",
+        "background-dark": "#1A1C1E",
+        "coastal": {
+          "slate": "#4A5568",
+          "sea": "#2B6E62",
+          "sand": "#F0EAD6",
+        }
       },
       fontFamily: {
-        "display": ["Work Sans"]
+        "sans": ["Inter", "Work Sans", "sans-serif"],
+        "serif": ["Lora", "Playfair Display", "serif"],
+        "display": ["Lora", "serif"]
       },
       borderRadius: {
-        "DEFAULT": "0.25rem",
-        "lg": "0.5rem",
-        "xl": "0.75rem",
+        "DEFAULT": "0.5rem",
+        "lg": "1rem",
+        "xl": "1.5rem",
         "full": "9999px"
       },
     },

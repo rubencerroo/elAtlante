@@ -20,7 +20,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
       </div>
 
       {/* Total Comensales */}
-      <div className="relative group overflow-hidden bg-emerald-500/5 backdrop-blur-md border border-emerald-500/10 rounded-2xl p-5 hover:border-emerald-500/20 transition-all duration-300">
+      <div className="relative group overflow-hidden bg-emerald-500/5 backdrop-blur-md border border-emerald-500/5 rounded-2xl p-5 hover:border-emerald-500/10 transition-all duration-300">
         <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 blur-3xl -mr-12 -mt-12 rounded-full group-hover:bg-emerald-500/20 transition-colors"></div>
         <div className="flex items-center gap-3 mb-3">
           <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">
@@ -32,7 +32,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
       </div>
 
       {/* Sentados */}
-      <div className="relative group overflow-hidden bg-blue-500/5 backdrop-blur-md border border-blue-500/10 rounded-2xl p-5 hover:border-blue-500/20 transition-all duration-300">
+      <div className="relative group overflow-hidden bg-blue-500/5 backdrop-blur-md border border-blue-500/5 rounded-2xl p-5 hover:border-blue-500/10 transition-all duration-300">
         <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 blur-3xl -mr-12 -mt-12 rounded-full group-hover:bg-blue-500/20 transition-colors"></div>
         <div className="flex items-center gap-3 mb-3">
           <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
@@ -44,7 +44,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
       </div>
 
       {/* Pendientes */}
-      <div className="relative group overflow-hidden bg-amber-500/5 backdrop-blur-md border border-amber-500/10 rounded-2xl p-5 hover:border-amber-500/20 transition-all duration-300">
+      <div className="relative group overflow-hidden bg-amber-500/5 backdrop-blur-md border border-amber-500/5 rounded-2xl p-5 hover:border-amber-500/10 transition-all duration-300">
         <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 blur-3xl -mr-12 -mt-12 rounded-full group-hover:bg-amber-500/20 transition-colors"></div>
         <div className="flex items-center gap-3 mb-3">
           <div className="p-2 bg-amber-500/10 rounded-lg text-amber-400">

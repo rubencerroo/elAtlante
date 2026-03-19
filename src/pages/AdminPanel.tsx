@@ -347,16 +347,16 @@ export default function AdminPanel() {
         {/* Filters */}
         <div className="flex flex-wrap gap-4 items-center mb-8">
           <input type="date" value={filterDate} onChange={e => setFilterDate(e.target.value)}
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50" />
+            className="bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50" />
 
           <div className="ml-auto flex gap-2">
             <button onClick={() => setShowAddModal(true)} className="bg-primary hover:bg-primary/90 text-white rounded-xl px-4 py-2.5 text-sm font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary/20">
               ➕ Nueva Reserva
             </button>
-            <button onClick={exportPDF} className="bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2">
+            <button onClick={exportPDF} className="bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5 rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2">
               📄 PDF
             </button>
-            <button onClick={exportCSV} className="bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2">
+            <button onClick={exportCSV} className="bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5 rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2">
               📊 CSV
             </button>
           </div>
@@ -495,7 +495,7 @@ function DashboardView({
               <XAxis dataKey="hour" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
               <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
               <Tooltip
-                contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px' }}
+                contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontSize: '12px' }}
                 labelStyle={{ color: '#94a3b8' }}
                 itemStyle={{ color: '#60a5fa' }}
               />
@@ -516,7 +516,7 @@ function DashboardView({
                       <Cell key={i} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px' }} />
+                  <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontSize: '12px' }} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-1.5 mt-2">
@@ -551,7 +551,7 @@ function DashboardView({
                       <Cell key={i} fill={['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'][i % 5]} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px' }} />
+                  <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontSize: '12px' }} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-1.5 mt-2">
@@ -580,7 +580,7 @@ function DashboardView({
               <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
               <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
               <Tooltip
-                contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px' }}
+                contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontSize: '12px' }}
                 labelStyle={{ color: '#94a3b8' }}
                 itemStyle={{ color: '#10b981' }}
               />
@@ -595,7 +595,7 @@ function DashboardView({
         <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
           <div className="flex items-center gap-4">
             <h3 className="text-sm font-semibold">Notas del Turno</h3>
-            <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-2 py-1">
+            <div className="flex items-center gap-2 bg-white/5 border border-white/5 rounded-lg px-2 py-1">
               <span className="text-[10px] text-slate-500 font-bold uppercase">Día:</span>
               <input 
                 type="date" 
@@ -616,7 +616,7 @@ function DashboardView({
           value={shiftNote}
           onChange={(e) => setShiftNote(e.target.value)}
           placeholder="Anota aquí las incidencias, clientes VIP que vienen hoy, o tareas pendientes para los camareros..."
-          className="w-full h-32 bg-slate-900/50 border border-white/10 rounded-xl p-4 text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-primary/50 resize-none"
+          className="w-full h-32 bg-slate-900/50 border border-white/5 rounded-xl p-4 text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-primary/50 resize-none"
         ></textarea>
         <div className="mt-3 flex items-center gap-2 text-[10px] text-slate-500">
           <span>💡</span>
@@ -674,7 +674,7 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
       {/* Client List */}
       <div className="lg:col-span-1 space-y-4">
         <input type="text" placeholder="Buscar cliente…" value={search} onChange={e => setSearch(e.target.value)}
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary/50" />
+          className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary/50" />
         <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
           {filteredClients.map(c => (
             <button key={c.email || c.phone || c.name} onClick={() => setSelectedClient(c)}
@@ -736,7 +736,7 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
                   value={meta?.allergies || ''} 
                   onChange={e => setMeta(prev => prev ? { ...prev, allergies: e.target.value } : null)}
                   placeholder="Ej: Gluten, marisco..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 h-20 resize-none"
+                  className="w-full bg-white/5 border border-white/5 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 h-20 resize-none"
                 />
               </div>
               <div className="space-y-2">
@@ -745,7 +745,7 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
                   value={meta?.customNotes || ''} 
                   onChange={e => setMeta(prev => prev ? { ...prev, customNotes: e.target.value } : null)}
                   placeholder="Ej: Mesa cerca de ventana, vino preferido..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 h-20 resize-none"
+                  className="w-full bg-white/5 border border-white/5 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 h-20 resize-none"
                 />
               </div>
             </div>
@@ -1073,7 +1073,7 @@ function StaffView({ showAlert }: {
               value={inviteEmail}
               onChange={e => setInviteEmail(e.target.value)}
               placeholder="email@ejemplo.com"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
+              className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
             />
           </div>
           <div className="space-y-1.5">
@@ -1081,7 +1081,7 @@ function StaffView({ showAlert }: {
             <select
               value={inviteRole}
               onChange={e => setInviteRole(e.target.value as StaffRole)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50 appearance-none min-w-[140px]"
+              className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50 appearance-none min-w-[140px]"
             >
               <option value="waiter">🍽 Camarero</option>
               <option value="owner">⭐ Dueño</option>
@@ -1096,7 +1096,7 @@ function StaffView({ showAlert }: {
               value={invitePassword}
               onChange={e => setInvitePassword(e.target.value)}
               placeholder="Min. 6 caracteres"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
+              className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
             />
           </div>
           <div className="flex items-end">
@@ -1179,7 +1179,7 @@ function StaffView({ showAlert }: {
                         type="text"
                         value={editForm.display_name}
                         onChange={e => setEditForm({ ...editForm, display_name: e.target.value })}
-                        className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2 text-sm text-white"
+                        className="w-full bg-slate-900 border border-white/5 rounded-xl px-4 py-2 text-sm text-white"
                         placeholder="Ej: Juan C."
                       />
                     </div>
@@ -1190,7 +1190,7 @@ function StaffView({ showAlert }: {
                         maxLength={4}
                         value={editForm.pin}
                         onChange={e => setEditForm({ ...editForm, pin: e.target.value.replace(/\D/g, '') })}
-                        className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2 text-sm text-white"
+                        className="w-full bg-slate-900 border border-white/5 rounded-xl px-4 py-2 text-sm text-white"
                         placeholder="••••"
                       />
                     </div>

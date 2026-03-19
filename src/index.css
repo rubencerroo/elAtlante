@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
 
 
 @tailwind base;
@@ -8,12 +8,12 @@
 @layer base {
   body {
     @apply bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100;
-    font-family: 'Work Sans', sans-serif;
+    font-family: 'Inter', 'Work Sans', sans-serif;
     min-height: 100vh;
   }
 
   :root:not(.dark) body {
-    background: radial-gradient(circle at 50% 50%, #f6f7f8 0%, #e5e9f0 100%);
+    background: #FBFBF9;
   }
 
   option {
@@ -72,13 +72,20 @@
 
 @layer components {
   .glass {
-    @apply bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border border-white/20 dark:border-slate-800/30 shadow-xl;
+    @apply bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border border-white/10 dark:border-white/5 shadow-xl;
   }
 
   .glass-dark {
-    @apply bg-slate-900/60 backdrop-blur-lg border border-slate-700/30 shadow-2xl;
+    @apply bg-slate-900/60 backdrop-blur-lg border border-white/5 shadow-2xl;
   }
 
+  .btn-primary-high {
+    @apply bg-white text-primary hover:bg-slate-50 active:scale-95 transition-all shadow-xl shadow-white/10;
+  }
+
+  .btn-vibrant-blue {
+    @apply bg-sky-500 text-white hover:bg-sky-400 active:scale-95 transition-all shadow-xl shadow-sky-500/20;
+  }
 }
 
 

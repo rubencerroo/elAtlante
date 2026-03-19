@@ -1,6 +1,9 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
+import heroImage from '../assets/elatlantePaisaje.jpg';
+
 
 interface Dish {
 // ... existing Dish interface ...
@@ -21,7 +24,7 @@ const DishCard = ({ dish, idx }: { dish: Dish; idx: number }) => (
     className="flex flex-col gap-5 group relative"
   >
     <span className="absolute -top-6 -left-3 text-5xl font-black text-white/5 select-none z-0">{dish.num}</span>
-    <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-white/10 shadow-2xl bg-slate-900/60 backdrop-blur-lg">
+    <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-white/5 shadow-2xl bg-slate-900/60 backdrop-blur-lg">
       <img
         className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
         src={dish.img}
@@ -197,18 +200,23 @@ export default function Home() {
       <section className="@container" id="inicio">
         <div className="p-4 md:p-10">
           <div className="flex min-h-[85vh] flex-col rounded-[2rem] md:rounded-[3rem] items-center justify-center p-6 relative overflow-hidden shadow-2xl" 
-               style={{backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.5) 100%), url('https://lh3.googleusercontent.com/aida-public/AB6AXuCbv4Dv6O89wmDw82msQkmpHfAHMPyBL93oTKLgg6BLzFOHoT8UCD97FfOXr4tBZl1OWHN3p1YmhBWzaO5AI3QBqjKAF3Zmd13X_7oEPpToFNnChrgtMwjQFUBaqlRUW4o81Il-AJvJgbQ4FhEftHiJDUXMBCXX1pGRcnWgqIKmMgA69vIECpIOUvLe-muTBbb67DG9yCUSKeJJxCAMH7fBQRnxqLEIljydJWZxT_bmSOdkx3JmMZEpDLQrKeAIL9IzT1uI5J312Pc')", backgroundSize: 'cover', backgroundPosition: 'center'}}>
+               style={{backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%), url('${heroImage}')`, backgroundSize: 'cover', backgroundPosition: 'center'}}>
+
             
-            <div className="flex flex-col gap-6 text-center max-w-[750px] z-10 p-4">
-              <span className="text-primary font-bold tracking-[0.3em] uppercase text-[10px] bg-white/20 dark:bg-white/10 backdrop-blur-md px-4 py-2 rounded-full w-fit mx-auto border sm:border-2 border-white/50 dark:border-white/20 shadow-sm">Experiencia Gastronómica</span>
-              <h1 className="text-white text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-tight">
-                El <span className="text-primary italic">sabor</span> del Mar <br/> San Cristóbal
+            <div className="flex flex-col gap-6 text-center max-w-[850px] z-10 p-4">
+              <span className="text-white font-bold tracking-[0.3em] uppercase text-[10px] bg-primary/40 backdrop-blur-md px-4 py-2 rounded-full w-fit mx-auto border border-white/20 shadow-sm">Experiencia Gastronómica</span>
+              <h1 className="text-white text-4xl md:text-6xl lg:text-7xl font-serif font-extrabold leading-tight tracking-tight drop-shadow-2xl">
+                El Atlántico. <br/>
+                <span className="italic opacity-90">Autenticidad en cada bocado.</span>
               </h1>
-              <p className="text-white/90 text-base md:text-lg font-light leading-relaxed max-w-xl mx-auto">
+              <p className="text-white/95 text-base md:text-xl font-light leading-relaxed max-w-2xl mx-auto drop-shadow-lg">
                 Tradición pesquera y producto Km 0 en un entorno inigualable frente al Atlántico.
               </p>
               <div className="flex flex-wrap gap-4 justify-center mt-4">
-                <a href="#carta" className="group flex min-w-[180px] cursor-pointer items-center justify-center rounded-full h-14 px-8 bg-primary text-white text-xs font-bold uppercase tracking-[0.15em] hover:scale-105 transition-all shadow-2xl shadow-primary/40">
+                <Link to="/reservar" className="group flex min-w-[180px] cursor-pointer items-center justify-center rounded-full h-14 px-8 btn-primary-high text-xs font-black uppercase tracking-[0.15em] hover:scale-105 transition-all shadow-2xl">
+                  Reservar Mesa
+                </Link>
+                <a href="#carta" className="group flex min-w-[150px] cursor-pointer items-center justify-center rounded-full h-14 px-8 btn-vibrant-blue text-xs font-black uppercase tracking-[0.15em] hover:scale-105 transition-all shadow-xl">
                   Ver la Carta
                 </a>
               </div>
@@ -221,7 +229,7 @@ export default function Home() {
       <section className="px-6 lg:px-28 py-24 @container overflow-hidden" id="nosotros">
         <div className="flex flex-col lg:flex-row gap-16 items-center">
           <div className="flex-1 w-full relative">
-            <div className="aspect-[16/10] rounded-2xl md:rounded-[2.5rem] bg-cover bg-center shadow-[0_30px_80px_-15px_rgba(0,0,0,0.25)] border-2 border-white dark:border-slate-800" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDHN_4hnzs64uVTD9pNvyjzMd0gmF4u7d9jlcgGRfAeXVF6xYmg615NSyZS8rGp-W024Q6a7_VHAgETZykcP6iOmw5Q_bM7W4ySND3PfvJ0dKZeFEnZF7doKn5ut9QjDorkWL-tX8aPlHIukSpo6etujfLfe3dPBQuh8rfJoeS4UG_U9KSG3Y8sWtncAfSc0vaVFDKhnSKbOSMbQEx7lxCR4ub3_jIV_J89xZN_YklPuNB5zQlixYXbykzNRiO5ihIRGpKeVAtcraQ')"}}></div>
+            <div className="aspect-[16/10] rounded-2xl md:rounded-[2.5rem] bg-cover bg-center shadow-[0_30px_80px_-15px_rgba(0,0,0,0.25)] border border-white dark:border-white/5" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDHN_4hnzs64uVTD9pNvyjzMd0gmF4u7d9jlcgGRfAeXVF6xYmg615NSyZS8rGp-W024Q6a7_VHAgETZykcP6iOmw5Q_bM7W4ySND3PfvJ0dKZeFEnZF7doKn5ut9QjDorkWL-tX8aPlHIukSpo6etujfLfe3dPBQuh8rfJoeS4UG_U9KSG3Y8sWtncAfSc0vaVFDKhnSKbOSMbQEx7lxCR4ub3_jIV_J89xZN_YklPuNB5zQlixYXbykzNRiO5ihIRGpKeVAtcraQ')"}}></div>
           </div>
           <div className="flex flex-col gap-8 flex-1">
             <div className="flex flex-col gap-3">
@@ -309,7 +317,7 @@ export default function Home() {
               ].map((item, idx) => (
                 <div key={idx} className="flex justify-between items-center py-5 first:pt-0">
                   <span className={`font-bold uppercase tracking-wider text-sm ${item.highlight ? 'text-primary' : 'text-slate-900 dark:text-slate-100'}`}>{item.day}</span>
-                  <span className={`font-light text-lg ${item.highlight ? 'text-primary' : 'text-slate-500 dark:text-slate-400'}`}>{item.hours}</span>
+                  <span className={`font-normal text-lg ${item.highlight ? 'text-primary' : 'text-slate-500 dark:text-slate-400'}`}>{item.hours}</span>
                 </div>
               ))}
             </div>
@@ -365,12 +373,18 @@ export default function Home() {
       <section id="mapa" className="relative h-[450px] w-full bg-slate-100 dark:bg-slate-950 flex items-center justify-center">
         <div className="absolute inset-0 opacity-20" style={{backgroundImage: "radial-gradient(#1162d4 1.5px, transparent 1.5px)", backgroundSize: "50px 50px"}}></div>
         <div className="relative z-10 text-center max-w-xl px-6">
-           <div className="bg-primary/10 backdrop-blur-3xl p-12 md:p-16 rounded-[3rem] border border-primary/20">
+           <div className="bg-primary/10 backdrop-blur-3xl p-12 md:p-16 rounded-[3rem] border border-primary/10">
               <h4 className="text-2xl md:text-3xl font-black uppercase tracking-tight mb-4 text-slate-900 dark:text-white leading-tight">Te esperamos <br/>en el Paseo</h4>
               <p className="text-slate-500 font-light text-base mb-8">Justo donde rompen las olas, en el corazón marinero de la ciudad.</p>
-              <span className={`px-6 py-2.5 ${isOpen ? 'bg-primary' : 'bg-red-500'} text-white font-bold rounded-full text-xs uppercase tracking-[0.2em] inline-block shadow-2xl ${isOpen ? 'shadow-primary/40' : 'shadow-red-500/40'}`}>
-                {isOpen ? 'Abierto Ahora' : 'Cerrado'}
-              </span>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <span className={`px-6 py-2.5 ${isOpen ? 'bg-primary' : 'bg-red-500'} text-white font-bold rounded-full text-xs uppercase tracking-[0.2em] inline-block shadow-2xl ${isOpen ? 'shadow-primary/40' : 'shadow-red-500/40'}`}>
+                  {isOpen ? 'Abierto Ahora' : 'Cerrado'}
+                </span>
+                <Link to="/reservar" className="px-8 py-3 btn-primary-high rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-105 transition-all">
+                  Reservar Mesa
+                </Link>
+              </div>
            </div>
         </div>
       </section>

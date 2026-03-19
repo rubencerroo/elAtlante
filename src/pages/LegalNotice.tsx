@@ -14,9 +14,9 @@ export default function LegalNotice() {
 
       <div className="max-w-3xl w-full relative z-10">
         <header className="mb-16">
-          <span className="text-primary font-bold tracking-[0.4em] uppercase text-[10px]">Información Legal</span>
+          <span className="text-primary dark:text-sky-400 font-bold tracking-[0.4em] uppercase text-[10px]">Información Legal</span>
           <h1 className="text-slate-900 dark:text-slate-100 text-3xl md:text-4xl lg:text-5xl font-black mt-4 tracking-tight leading-tight">
-            Aviso <span className="text-primary italic">Legal</span>
+            Aviso <span className="text-primary dark:text-sky-400 italic">Legal</span>
           </h1>
         </header>
 
