@@ -59,5 +59,79 @@
     "subtitulo": "Right where the waves break, in the heart of the city's seafront.",
     "abierto": "Open Now",
     "cerrado": "Closed"
+  },
+  "reservas": {
+    "seo": {
+      "title": "Book a Table",
+      "description": "Book your table online at El Atlante de San Cristóbal. Enjoy the best seafood gastronomy by the sea in Las Palmas."
+    },
+    "alerts": {
+      "failedToConfirm": "We couldn't confirm your reservation. The link may have expired or is invalid.",
+      "reservationCancelled": "We're sorry, this reservation has been cancelled or is no longer valid.",
+      "notFoundConfirmed": "We couldn't find the details of your confirmed reservation.",
+      "invalidPhone": "Please enter a valid phone number.",
+      "restaurantClosed": "We're sorry, the restaurant is closed at the selected time. Please check our opening hours.",
+      "errorProcessing": "There was an error processing your reservation. Please try again or contact us by phone.",
+      "duplicateReservation": "You already have a reservation for this date and time. If you need to modify it, please contact us by phone.",
+      "errorProcessingWithReason": "There was an error processing your reservation: {{reason}}. Please try again.",
+      "unknownError": "Unknown error"
+    },
+    "success": {
+      "titleConfirmed": "Reservation Confirmed!",
+      "titleRegistered": "Reservation Registered!",
+      "descConfirmed": "Your table is secured. Get ready for an unforgettable beachfront experience.",
+      "descRegistered": "We have sent an email to your inbox ({{email}}) to confirm your attendance.",
+      "confirmPlease": "Please confirm your reservation by clicking the button in the email.",
+      "locator": "Booking Reference",
+      "guestName": "Guest",
+      "contact": "Contact",
+      "date": "Date",
+      "time": "Time",
+      "guests": "Guests",
+      "person": "person",
+      "people": "people",
+      "location": "Location",
+      "includesPet": "🐾 Pet included in reservation",
+      "specialRequests": "Special requests",
+      "makeAnother": "Make another reservation"
+    },
+    "form": {
+      "subtitle": "Reservations",
+      "titlePart1": "Your table <br />at the ",
+      "titlePart2": "Atlantic",
+      "fullName": "Full Name",
+      "namePlaceholder": "e.g. John Doe",
+      "email": "Email",
+      "emailPlaceholder": "you@email.com",
+      "phone": "Phone",
+      "date": "Date",
+      "dateClosedError": "The restaurant is closed on this day. Please select another date.",
+      "time": "Time",
+      "closedThisDay": "Closed this day",
+      "guestsAmount": "Guests",
+      "groupWarning": "For groups of more than 8 people, we recommend contacting us by phone.",
+      "zonePreference": "Seating Preference",
+      "zones": {
+        "Indiferente": "No preference",
+        "Interior": "Indoors",
+        "Mesas altas": "High tables",
+        "Terraza exterior": "Outdoor terrace"
+      },
+      "withPet": "I'm bringing a pet",
+      "additionalNotes": "Additional Notes",
+      "notesPlaceholder": "Any allergies or special preferences?",
+      "acceptTerms1": "I have read and accept the ",
+      "terms": "Terms and Conditions",
+      "acceptTerms2": " and the ",
+      "privacy": "Privacy Policy",
+      "acceptTerms3": " *",
+      "groupLargeMsg": "For groups of more than 8 people, please contact the restaurant directly to secure your table:",
+      "call": "Call",
+      "whatsapp": "WhatsApp",
+      "processing": "Processing...",
+      "confirmBtn": "Confirm Reservation",
+      "disclaimer1": "Online requests are subject to confirmation.",
+      "disclaimer2": "We will send you an email as soon as we process your table."
+    }
   }
 }

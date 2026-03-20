@@ -59,5 +59,79 @@
     "subtitulo": "Justo donde rompen las olas, en el corazón marinero de la ciudad.",
     "abierto": "Abierto Ahora",
     "cerrado": "Cerrado"
+  },
+  "reservas": {
+    "seo": {
+      "title": "Reservar Mesa",
+      "description": "Reserva tu mesa online en El Atlante de San Cristóbal. Disfruta de la mejor gastronomía marinera frente al mar en Las Palmas."
+    },
+    "alerts": {
+      "failedToConfirm": "No hemos podido confirmar tu reserva. El enlace puede haber caducado o ser inválido.",
+      "reservationCancelled": "Lo sentimos, esta reserva ha sido cancelada o ya no es válida.",
+      "notFoundConfirmed": "No hemos encontrado los detalles de tu reserva confirmada.",
+      "invalidPhone": "Por favor, introduce un número de teléfono válido.",
+      "restaurantClosed": "Lo sentimos, el restaurante está cerrado en el horario seleccionado. Por favor, revisa nuestros horarios.",
+      "errorProcessing": "Hubo un error al procesar tu reserva. Por favor, inténtalo de nuevo o contáctanos por teléfono.",
+      "duplicateReservation": "Ya tienes una reserva para esta misma fecha y hora. Si necesitas modificarla, por favor contáctanos por teléfono.",
+      "errorProcessingWithReason": "Hubo un error al procesar tu reserva: {{reason}}. Por favor, inténtalo de nuevo.",
+      "unknownError": "Error desconocido"
+    },
+    "success": {
+      "titleConfirmed": "¡Reserva confirmada!",
+      "titleRegistered": "¡Reserva registrada!",
+      "descConfirmed": "Tu mesa está asegurada. Prepárate para una experiencia inolvidable frente al mar.",
+      "descRegistered": "Hemos enviado un correo a su bandeja de entrada ({{email}}) para confirmar su asistencia.",
+      "confirmPlease": "Por favor, confirme su reserva pulsando el botón en el correo.",
+      "locator": "Localizador de Reserva",
+      "guestName": "Comensal",
+      "contact": "Contacto",
+      "date": "Fecha",
+      "time": "Horario",
+      "guests": "Invitados",
+      "person": "persona",
+      "people": "personas",
+      "location": "Ubicación",
+      "includesPet": "🐾 Incluye mascota en la reserva",
+      "specialRequests": "Peticiones especiales",
+      "makeAnother": "Realizar otra reserva"
+    },
+    "form": {
+      "subtitle": "Reservaciones",
+      "titlePart1": "Tu mesa <br />en el ",
+      "titlePart2": "Atlántico",
+      "fullName": "Nombre Completo",
+      "namePlaceholder": "Ej: Juan Pérez",
+      "email": "Email",
+      "emailPlaceholder": "tu@email.com",
+      "phone": "Teléfono",
+      "date": "Fecha",
+      "dateClosedError": "El restaurante está cerrado este día. Por favor, selecciona otra fecha.",
+      "time": "Hora",
+      "closedThisDay": "Cerrado este día",
+      "guestsAmount": "Invitados",
+      "groupWarning": "Para grupos de más de 8 personas, le recomendamos contactarnos vía telefónica.",
+      "zonePreference": "Preferencia de Zona",
+      "zones": {
+        "Indiferente": "Indiferente",
+        "Interior": "Interior",
+        "Mesas altas": "Mesas altas",
+        "Terraza exterior": "Terraza exterior"
+      },
+      "withPet": "Vengo con mascota",
+      "additionalNotes": "Notas Adicionales",
+      "notesPlaceholder": "¿Alguna alergia o preferencia especial?",
+      "acceptTerms1": "He leído y acepto los ",
+      "terms": "Términos y Condiciones",
+      "acceptTerms2": " y la ",
+      "privacy": "Política de Privacidad",
+      "acceptTerms3": " *",
+      "groupLargeMsg": "Para grupos de más de 8 personas, por favor contacte directamente con el restaurante para asegurar su mesa:",
+      "call": "Llamar",
+      "whatsapp": "WhatsApp",
+      "processing": "Procesando...",
+      "confirmBtn": "Confirmar Reserva",
+      "disclaimer1": "Las solicitudes online están sujetas a confirmación.",
+      "disclaimer2": "Le enviaremos un email tan pronto como procesemos su mesa."
+    }
   }
 }

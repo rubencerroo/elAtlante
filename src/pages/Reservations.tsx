@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
@@ -10,6 +11,7 @@ import { getAvailableTimes, isDateValid, getTodayDateString, isDayClosed, isRest
 import { CONTACT_INFO } from '../constants/contact';
 
 export default function Reservations() {
+  const { t, i18n } = useTranslation();
   const isOpen = isRestaurantOpenNow();
   const [searchParams] = useSearchParams();
   const [phone, setPhone] = useState('');
@@ -28,9 +30,9 @@ export default function Reservations() {
     const errorParam = searchParams.get('error');
 
     if (errorParam === 'failed_to_confirm') {
-      alert('No hemos podido confirmar tu reserva. El enlace puede haber caducado o ser inválido.');
+      alert(t('reservas.alerts.failedToConfirm'));
     } else if (errorParam === 'reservation_cancelled') {
-      alert('Lo sentimos, esta reserva ha sido cancelada o ya no es válida.');
+      alert(t('reservas.alerts.reservationCancelled'));
     }
 
     if (isConfirmed && reservationId && !submitted) {
@@ -39,7 +41,7 @@ export default function Reservations() {
           setLastReservation(res);
           setSubmitted(true);
         } else {
-          alert('No hemos encontrado los detalles de tu reserva confirmada.');
+          alert(t('reservas.alerts.notFoundConfirmed'));
         }
       });
     }
@@ -52,12 +54,12 @@ export default function Reservations() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (phone.length < 9) {
-      alert('Por favor, introduce un número de teléfono válido.');
+      alert(t('reservas.alerts.invalidPhone'));
       return;
     }
 
     if (!isDateValid(formData.date, formData.time)) {
-      alert('Lo sentimos, el restaurante está cerrado en el horario seleccionado. Por favor, revisa nuestros horarios.');
+      alert(t('reservas.alerts.restaurantClosed'));
       return;
     }
 
@@ -83,14 +85,14 @@ export default function Reservations() {
         setLastReservation(reservation);
         setSubmitted(true);
       } else {
-        alert('Hubo un error al procesar tu reserva. Por favor, inténtalo de nuevo o contáctanos por teléfono.');
+        alert(t('reservas.alerts.errorProcessing'));
       }
     } catch (err: any) {
       console.error('Reservation submission error:', err);
       if (err.message === 'DUPLICATE_RESERVATION') {
-        alert('Ya tienes una reserva para esta misma fecha y hora. Si necesitas modificarla, por favor contáctanos por teléfono.');
+        alert(t('reservas.alerts.duplicateReservation'));
       } else {
-        alert(`Hubo un error al procesar tu reserva: ${err.message || 'Error desconocido'}. Por favor, inténtalo de nuevo.`);
+        alert(t('reservas.alerts.errorProcessingWithReason', { reason: err.message || t('reservas.alerts.unknownError') }));
       }
     } finally {
       setIsSubmitting(false);
@@ -99,7 +101,7 @@ export default function Reservations() {
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr + 'T00:00:00');
-    return d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    return d.toLocaleDateString(i18n.language, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   };
 
   if (submitted && lastReservation) {
@@ -116,24 +118,24 @@ export default function Reservations() {
             </div>
             <div className="space-y-2">
               <h2 className="text-primary dark:text-white text-3xl font-serif font-bold">
-                {lastReservation.status === 'confirmed' ? '¡Reserva confirmada!' : '¡Reserva registrada!'}
+                {lastReservation.status === 'confirmed' ? t('reservas.success.titleConfirmed') : t('reservas.success.titleRegistered')}
               </h2>
               <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-sm mx-auto">
                 {lastReservation.status === 'confirmed'
-                  ? 'Tu mesa está asegurada. Prepárate para una experiencia inolvidable frente al mar.'
-                  : `Hemos enviado un correo a su bandeja de entrada (${lastReservation.email}) para confirmar su asistencia.`}
+                  ? t('reservas.success.descConfirmed')
+                  : t('reservas.success.descRegistered', { email: lastReservation.email })}
               </p>
             </div>
             {lastReservation.status !== 'confirmed' && (
               <p className="text-primary dark:text-coastal-sand font-medium text-xs bg-primary/5 dark:bg-white/5 py-3 px-6 rounded-full inline-block border border-primary/10">
-                Por favor, confirme su reserva pulsando el botón en el correo.
+                {t('reservas.success.confirmPlease')}
               </p>
             )}
           </div>
 
           {/* Booking Number Card */}
           <div className="bg-white dark:bg-white/5 rounded-3xl p-8 border border-slate-100 dark:border-white/5 text-center space-y-3 shadow-sm">
-            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400">Localizador de Reserva</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400">{t('reservas.success.locator')}</span>
             <p className="text-4xl font-serif text-primary dark:text-slate-200 tracking-widest select-all">{lastReservation.bookingNumber}</p>
           </div>
 
@@ -141,27 +143,27 @@ export default function Reservations() {
           <div className="bg-white/50 dark:bg-white/5 backdrop-blur-sm rounded-3xl p-8 space-y-6 border border-slate-100 dark:border-white/5 shadow-sm">
             <div className="grid grid-cols-2 gap-x-8 gap-y-6">
               <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Comensal</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{t('reservas.success.guestName')}</span>
                 <p className="text-sm font-medium text-slate-900 dark:text-white">{lastReservation.name}</p>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Contacto</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{t('reservas.success.contact')}</span>
                 <p className="text-sm font-medium text-slate-900 dark:text-white">{lastReservation.phone}</p>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Fecha</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{t('reservas.success.date')}</span>
                 <p className="text-sm font-medium text-slate-900 dark:text-white capitalize">{formatDate(lastReservation.date)}</p>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Horario</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{t('reservas.success.time')}</span>
                 <p className="text-sm font-medium text-slate-900 dark:text-white">{lastReservation.time} h</p>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Invitados</span>
-                <p className="text-sm font-medium text-slate-900 dark:text-white">{lastReservation.guests} {lastReservation.guests === 1 ? 'persona' : 'personas'}</p>
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{t('reservas.success.guests')}</span>
+                <p className="text-sm font-medium text-slate-900 dark:text-white">{lastReservation.guests} {lastReservation.guests === 1 ? t('reservas.success.person') : t('reservas.success.people')}</p>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Ubicación</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{t('reservas.success.location')}</span>
                 <p className="text-sm font-medium text-slate-900 dark:text-white">{lastReservation.preference}</p>
               </div>
             </div>
@@ -169,11 +171,11 @@ export default function Reservations() {
             {(lastReservation.hasPet || lastReservation.notes) && (
               <div className="pt-6 border-t border-slate-100 dark:border-white/5 space-y-4">
                 {lastReservation.hasPet && (
-                  <span className="text-xs text-slate-500 dark:text-slate-400 italic">🐾 Incluye mascota en la reserva</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 italic">{t('reservas.success.includesPet')}</span>
                 )}
                 {lastReservation.notes && (
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 block">Peticiones especiales</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 block">{t('reservas.success.specialRequests')}</span>
                     <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{lastReservation.notes}</p>
                   </div>
                 )}
@@ -192,7 +194,7 @@ export default function Reservations() {
               }}
               className="text-primary dark:text-slate-300 text-sm font-medium hover:text-coastal-sea transition-colors flex items-center gap-2 group"
             >
-              <span>Realizar otra reserva</span>
+              <span>{t('reservas.success.makeAnother')}</span>
               <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
             </button>
           </div>
@@ -204,8 +206,8 @@ export default function Reservations() {
   return (
     <div className="min-h-screen pt-20 md:pt-28 pb-12 md:pb-24 flex flex-col items-center bg-background-light dark:bg-background-dark relative overflow-hidden font-sans">
       <SEO
-        title="Reservar Mesa"
-        description="Reserva tu mesa online en El Atlante de San Cristóbal. Disfruta de la mejor gastronomía marinera frente al mar en Las Palmas."
+        title={t('reservas.seo.title')}
+        description={t('reservas.seo.description')}
         canonical="/reservar"
       />
 
@@ -231,9 +233,9 @@ export default function Reservations() {
 
             <div className="space-y-12 relative z-10">
               <div className="space-y-6">
-                <span className="text-primary/60 dark:text-slate-400 font-medium tracking-[0.4em] uppercase text-[10px]">Reservaciones</span>
+                <span className="text-primary/60 dark:text-slate-400 font-medium tracking-[0.4em] uppercase text-[10px]">{t('reservas.form.subtitle')}</span>
                 <h1 className="text-primary dark:text-slate-100 text-4xl md:text-5xl lg:text-6xl font-serif font-bold leading-[1.1] tracking-tight">
-                  Tu mesa <br />en el <span className="italic text-coastal-sea opacity-90">Atlántico</span>.
+                  <span dangerouslySetInnerHTML={{ __html: t('reservas.form.titlePart1') }} /><span className="italic text-coastal-sea opacity-90">{t('reservas.form.titlePart2')}</span>.
                 </h1>
                 <div className="w-16 h-px bg-primary/20"></div>
               </div>
@@ -249,29 +251,29 @@ export default function Reservations() {
 
             {/* Mobile-only compact header */}
             <div className="lg:hidden mb-6">
-              <span className="text-primary/60 dark:text-slate-400 font-medium tracking-[0.4em] uppercase text-[10px]">Reservaciones</span>
+              <span className="text-primary/60 dark:text-slate-400 font-medium tracking-[0.4em] uppercase text-[10px]">{t('reservas.form.subtitle')}</span>
               <h1 className="text-primary dark:text-slate-100 text-3xl font-serif font-bold leading-tight tracking-tight mt-1">
-                Tu mesa en el <span className="italic text-coastal-sea opacity-90">Atlántico</span>.
+                <span dangerouslySetInnerHTML={{ __html: t('reservas.form.titlePart1').replace(/<br \/>/g, '') }} /><span className="italic text-coastal-sea opacity-90">{t('reservas.form.titlePart2')}</span>.
               </h1>
             </div>
 
             <form className="space-y-7 md:space-y-16" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12">
                 <div className="flex flex-col gap-2 md:gap-4 group">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">Nombre Completo <span className="text-coastal-sea">*</span></label>
+                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.fullName')} <span className="text-coastal-sea">*</span></label>
                   <input className="bg-transparent text-base md:text-lg font-light text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/5 focus:border-primary dark:focus:border-slate-400 focus:ring-0 p-0 pb-2 md:pb-3 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600"
-                    placeholder="Ej: Juan Pérez" type="text" required value={formData.name} onChange={e => handleChange('name', e.target.value)} />
+                    placeholder={t('reservas.form.namePlaceholder')} type="text" required value={formData.name} onChange={e => handleChange('name', e.target.value)} />
                 </div>
                 <div className="flex flex-col gap-2 md:gap-4 group">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">Email <span className="text-coastal-sea">*</span></label>
+                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.email')} <span className="text-coastal-sea">*</span></label>
                   <input className="bg-transparent text-base md:text-lg font-light text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/5 focus:border-primary dark:focus:border-slate-400 focus:ring-0 p-0 pb-2 md:pb-3 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600"
-                    placeholder="tu@email.com" type="email" required value={formData.email} onChange={e => handleChange('email', e.target.value)} />
+                    placeholder={t('reservas.form.emailPlaceholder')} type="email" required value={formData.email} onChange={e => handleChange('email', e.target.value)} />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12">
                 <div className="flex flex-col gap-2 md:gap-4 group">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">Teléfono <span className="text-coastal-sea">*</span></label>
+                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.phone')} <span className="text-coastal-sea">*</span></label>
                   <div className="border-b border-slate-100 dark:border-white/5 group-focus-within:border-primary dark:group-focus-within:border-slate-400 pb-2 transition-all">
                     <PhoneInput
                       defaultCountry="es"
@@ -283,7 +285,7 @@ export default function Reservations() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 md:gap-4 group relative">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">Fecha <span className="text-coastal-sea">*</span></label>
+                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.date')} <span className="text-coastal-sea">*</span></label>
                   <input
                     type="date"
                     required
@@ -301,7 +303,7 @@ export default function Reservations() {
                   />
                   {formData.date && isDayClosed(formData.date) && (
                     <p className="text-[10px] text-red-500 font-medium italic mt-1 animate-pulse">
-                      El restaurante está cerrado este día. Por favor, selecciona otra fecha.
+                      {t('reservas.form.dateClosedError')}
                     </p>
                   )}
                 </div>
@@ -309,14 +311,14 @@ export default function Reservations() {
 
               <div className="grid grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12">
                 <div className="flex flex-col gap-2 md:gap-4 group">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">Hora <span className="text-coastal-sea">*</span></label>
+                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.time')} <span className="text-coastal-sea">*</span></label>
                   <div className="relative border-b border-slate-100 dark:border-white/5 group-focus-within:border-primary dark:group-focus-within:border-slate-400 pb-3 transition-all">
                     <select className="bg-transparent w-full text-base md:text-lg font-light text-slate-900 dark:text-white border-none focus:ring-0 p-0 appearance-none cursor-pointer"
                       required value={formData.time} onChange={e => handleChange('time', e.target.value)}>
                       {getAvailableTimes(formData.date, 15).length > 0 ? (
                         getAvailableTimes(formData.date, 15).map(t => <option key={t} value={t}>{t} h</option>)
                       ) : (
-                        <option value="">Cerrado este día</option>
+                        <option value="">{t('reservas.form.closedThisDay')}</option>
                       )}
                     </select>
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 text-primary/40 pointer-events-none">
@@ -325,7 +327,7 @@ export default function Reservations() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 md:gap-4 group relative">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">Invitados</label>
+                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.guestsAmount')}</label>
                   <div className="border-b border-slate-100 dark:border-white/5 group-focus-within:border-primary dark:group-focus-within:border-slate-400 pb-2 transition-all">
                     <GuestCounter
                       value={formData.guests}
@@ -342,7 +344,7 @@ export default function Reservations() {
                         exit={{ opacity: 0, y: -5 }}
                         className="absolute -bottom-8 left-0 text-[10px] text-amber-600 font-medium italic w-full"
                       >
-                        Para grupos de más de 8 personas, le recomendamos contactarnos vía telefónica.
+                        {t('reservas.form.groupWarning')}
                       </motion.p>
                     )}
                   </AnimatePresence>
@@ -351,14 +353,14 @@ export default function Reservations() {
 
               <div className="grid grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12">
                 <div className="flex flex-col gap-2 md:gap-4 group">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">Preferencia de Zona</label>
+                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.zonePreference')}</label>
                   <div className="relative border-b border-slate-100 dark:border-white/5 group-focus-within:border-primary dark:group-focus-within:border-slate-400 pb-3 transition-all">
                     <select className="bg-transparent w-full text-base md:text-lg font-light text-slate-900 dark:text-white border-none focus:ring-0 p-0 appearance-none cursor-pointer"
                       value={formData.preference} onChange={e => handleChange('preference', e.target.value)}>
-                      <option>Indiferente</option>
-                      <option>Interior</option>
-                      <option>Mesas altas</option>
-                      <option>Terraza exterior</option>
+                      <option value="Indiferente">{t('reservas.form.zones.Indiferente')}</option>
+                      <option value="Interior">{t('reservas.form.zones.Interior')}</option>
+                      <option value="Mesas altas">{t('reservas.form.zones.Mesas altas')}</option>
+                      <option value="Terraza exterior">{t('reservas.form.zones.Terraza exterior')}</option>
                     </select>
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 text-primary/40 pointer-events-none">
                       <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" /></svg>
@@ -370,15 +372,15 @@ export default function Reservations() {
                     <div className={`w-10 h-6 rounded-full relative transition-all duration-300 ${formData.hasPet ? 'bg-coastal-sea' : 'bg-slate-200 dark:bg-white/10'}`}>
                       <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${formData.hasPet ? 'translate-x-4' : ''}`}></div>
                     </div>
-                    <label className="text-sm font-light text-slate-600 dark:text-slate-400 cursor-pointer">Vengo con mascota</label>
+                    <label className="text-sm font-light text-slate-600 dark:text-slate-400 cursor-pointer">{t('reservas.form.withPet')}</label>
                   </div>
                 </div>
               </div>
 
               <div className="flex flex-col gap-2 md:gap-4">
-                <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Notas Adicionales</label>
+                <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">{t('reservas.form.additionalNotes')}</label>
                 <textarea className="bg-slate-50/50 dark:bg-white/5 rounded-xl md:rounded-2xl p-4 md:p-6 text-sm md:text-base font-light text-slate-900 dark:text-white border border-slate-100 dark:border-white/5 focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600 outline-none"
-                  placeholder="¿Alguna alergia o preferencia especial?" rows={2} value={formData.notes} onChange={e => handleChange('notes', e.target.value)}></textarea>
+                  placeholder={t('reservas.form.notesPlaceholder')} rows={2} value={formData.notes} onChange={e => handleChange('notes', e.target.value)}></textarea>
               </div>
 
               <div className="space-y-5 md:space-y-8 pt-2 md:pt-8">
@@ -386,7 +388,7 @@ export default function Reservations() {
                   <input type="checkbox" id="policies" required className="mt-1 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/20 bg-slate-50 dark:bg-white/5 dark:border-white/10"
                     checked={formData.acceptPolicies} onChange={e => handleChange('acceptPolicies', e.target.checked)} />
                   <label htmlFor="policies" className="text-[11px] font-light text-slate-500 dark:text-slate-400 leading-relaxed cursor-pointer">
-                    He leído y acepto los <a href="/aviso-legal" target="_blank" className="text-primary dark:text-sky-400 hover:text-coastal-sea underline underline-offset-2">Términos y Condiciones</a> y la <a href="/privacidad" target="_blank" className="text-primary dark:text-sky-400 hover:text-coastal-sea underline underline-offset-2">Política de Privacidad</a> *
+                    {t('reservas.form.acceptTerms1')}<a href="/aviso-legal" target="_blank" className="text-primary dark:text-sky-400 hover:text-coastal-sea underline underline-offset-2">{t('reservas.form.terms')}</a>{t('reservas.form.acceptTerms2')}<a href="/privacidad" target="_blank" className="text-primary dark:text-sky-400 hover:text-coastal-sea underline underline-offset-2">{t('reservas.form.privacy')}</a>{t('reservas.form.acceptTerms3')}
                   </label>
                 </div>
 
@@ -394,22 +396,22 @@ export default function Reservations() {
                   {formData.guests >= 9 ? (
                     <div className="bg-amber-50 dark:bg-amber-900/10 p-8 rounded-3xl border border-amber-100/50 dark:border-amber-900/10 space-y-6">
                       <p className="text-amber-800 dark:text-amber-300 text-sm font-medium text-center">
-                        Para grupos de más de 8 personas, por favor contacte directamente con el restaurante para asegurar su mesa:
+                        {t('reservas.form.groupLargeMsg')}
                       </p>
                       <div className="flex flex-col sm:flex-row gap-4">
                         <a href={isOpen ? CONTACT_INFO.landline.link : CONTACT_INFO.mobile.link} className="flex-1 h-14 flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-white rounded-2xl transition-all shadow-lg font-bold uppercase tracking-widest text-[11px]">
                           <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 7V5z" /></svg>
-                          Llamar
+                          {t('reservas.form.call')}
                         </a>
                         <a href={CONTACT_INFO.whatsapp.link} target="_blank" rel="noopener noreferrer" className="flex-1 h-14 flex items-center justify-center gap-3 border border-emerald-500 text-emerald-600 hover:bg-emerald-50 rounded-2xl transition-all font-bold uppercase tracking-widest text-[11px]">
-                          WhatsApp
+                          {t('reservas.form.whatsapp')}
                         </a>
                       </div>
                     </div>
                   ) : (
                     <button type="submit" disabled={isSubmitting || !formData.acceptPolicies} className="w-full h-14 md:h-16 rounded-xl md:rounded-2xl btn-primary-high disabled:opacity-50 disabled:cursor-not-allowed transition-all">
                       <span className="relative z-10 font-bold uppercase tracking-[0.4em] text-[11px]">
-                        {isSubmitting ? 'Procesando...' : 'Confirmar Reserva'}
+                        {isSubmitting ? t('reservas.form.processing') : t('reservas.form.confirmBtn')}
                       </span>
                     </button>
                   )}
@@ -418,8 +420,8 @@ export default function Reservations() {
 
               <div className="pt-2 md:pt-8 text-center">
                 <p className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-medium leading-loose">
-                  Las solicitudes online están sujetas a confirmación.<br />
-                  Le enviaremos un email tan pronto como procesemos su mesa.
+                  {t('reservas.form.disclaimer1')}<br />
+                  {t('reservas.form.disclaimer2')}
                 </p>
               </div>
             </form>
