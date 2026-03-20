@@ -37,7 +37,7 @@ export default function Header() {
     };
 
     const observer = new IntersectionObserver(handleIntersect, observerOptions);
-    
+
     const sections = ['inicio', 'nosotros'];
     sections.forEach(id => {
       const element = document.getElementById(id);
@@ -91,9 +91,8 @@ export default function Header() {
 
   const navLink = (section: string, label: string, href: string, isLink = false, isExternal = false) => {
     const isActive = activeSection === section || (href !== '/' && location.pathname === href);
-    const cls = `text-[11px] font-semibold tracking-widest uppercase transition-colors duration-200 whitespace-nowrap ${
-      isActive ? 'text-white' : 'text-white/40 hover:text-white/80'
-    }`;
+    const cls = `text-[11px] font-semibold tracking-widest uppercase transition-colors duration-200 whitespace-nowrap ${isActive ? 'text-white' : 'text-white/40 hover:text-white/80'
+      }`;
     return isExternal
       ? <a key={section} className={cls} href={href} target="_blank" rel="noopener noreferrer">{label}</a>
       : isLink
@@ -101,7 +100,7 @@ export default function Header() {
         : <a key={section} className={cls} href={href} onClick={(e) => handleAnchorClick(e, href)}>{label}</a>;
   };
 
-  const pdfUrl = i18n.language.startsWith('en') 
+  const pdfUrl = i18n.language.startsWith('en')
     ? (isDark ? '/assets/pdf/carta_en_dark.pdf' : '/assets/pdf/carta_en.pdf')
     : (isDark ? '/assets/pdf/carta_es_dark.pdf' : '/assets/pdf/carta_es.pdf');
 
@@ -120,9 +119,9 @@ export default function Header() {
         {/* ── DESKTOP ── */}
         <div className="hidden md:flex relative items-center px-12 h-[64px]">
           <nav className="flex items-center gap-10 flex-1">
-            {navLink('inicio',   t('nav.inicio'),   '/',          true)}
+            {navLink('inicio', t('nav.inicio'), '/', true)}
             {navLink('nosotros', t('nav.nosotros'), '/#nosotros')}
-            {navLink('carta',    t('nav.carta'),    pdfUrl,       false, true)}
+            {navLink('carta', t('nav.carta'), pdfUrl, false, true)}
           </nav>
           <Link to="/" className="absolute left-1/2 -translate-x-1/2">
             <img src={logoWhite} alt="El Atlante" className="h-11 w-auto object-contain" />
@@ -134,9 +133,8 @@ export default function Header() {
                   {i > 0 && <span className="w-px h-3 bg-white/20 block" />}
                   <button
                     onClick={() => { i18n.changeLanguage(l.toLowerCase()); localStorage.setItem('lang', l.toLowerCase()); }}
-                    className={`text-[11px] font-semibold tracking-widest uppercase transition-colors duration-200 ${
-                      i18n.language.toUpperCase() === l ? 'text-white' : 'text-white/35 hover:text-white/60'
-                    }`}
+                    className={`text-[11px] font-semibold tracking-widest uppercase transition-colors duration-200 ${i18n.language.toUpperCase() === l ? 'text-white' : 'text-white/35 hover:text-white/60'
+                      }`}
                   >{l}</button>
                 </span>
               ))}
@@ -177,15 +175,14 @@ export default function Header() {
 
           {/* Fila 2: nav + idioma, se expande/contrae */}
           <div
-            className={`transition-all duration-300 ease-in-out overflow-hidden ${
-              isMobileMenuOpen ? 'max-h-24 opacity-100 pb-4' : 'max-h-0 opacity-0'
-            }`}
+            className={`transition-all duration-300 ease-in-out overflow-hidden ${isMobileMenuOpen ? 'max-h-24 opacity-100 pb-4' : 'max-h-0 opacity-0'
+              }`}
           >
             <div className="flex items-center justify-center gap-6 px-4">
               {[
-                { section: 'inicio',   label: t('nav.inicio'),   href: '/',        isLink: true  as const },
+                { section: 'inicio', label: t('nav.inicio'), href: '/', isLink: true as const },
                 { section: 'nosotros', label: t('nav.nosotros'), href: '/#nosotros', isLink: false as const },
-                { section: 'carta',    label: t('nav.carta'),    href: pdfUrl,     isExternal: true as const },
+                { section: 'carta', label: t('nav.carta'), href: pdfUrl, isExternal: true as const },
               ].map(({ section, label, href, isLink, isExternal }, i) => {
                 const isActive = activeSection === section || (href !== '/' && location.pathname === href);
                 const cls = `text-[12px] font-semibold tracking-widest uppercase whitespace-nowrap transition-colors duration-200 ${isActive ? 'text-white' : 'text-white/45'}`;
@@ -206,9 +203,8 @@ export default function Header() {
                   {i > 0 && <span className="w-px h-3 bg-white/20 block" />}
                   <button
                     onClick={() => { i18n.changeLanguage(l.toLowerCase()); localStorage.setItem('lang', l.toLowerCase()); }}
-                    className={`text-[11px] font-semibold tracking-widest uppercase transition-colors duration-200 ${
-                      i18n.language.toUpperCase() === l ? 'text-white' : 'text-white/35 hover:text-white/60'
-                    }`}
+                    className={`text-[11px] font-semibold tracking-widest uppercase transition-colors duration-200 ${i18n.language.toUpperCase() === l ? 'text-white' : 'text-white/35 hover:text-white/60'
+                      }`}
                   >{l}</button>
                 </span>
               ))}

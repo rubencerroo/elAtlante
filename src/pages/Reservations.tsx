@@ -317,7 +317,7 @@ export default function Reservations() {
                     <span>{formData.date ? formatDate(formData.date) : ''}</span>
                     <svg className={`size-5 text-slate-400 transition-transform duration-300 ${showCalendar ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" /></svg>
                   </button>
-                  
+
                   <AnimatePresence>
                     {showCalendar && (
                       <>
