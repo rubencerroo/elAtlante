@@ -73,6 +73,7 @@
       "restaurantClosed": "Lo sentimos, el restaurante está cerrado en el horario seleccionado. Por favor, revisa nuestros horarios.",
       "errorProcessing": "Hubo un error al procesar tu reserva. Por favor, inténtalo de nuevo o contáctanos por teléfono.",
       "duplicateReservation": "Ya tienes una reserva para esta misma fecha y hora. Si necesitas modificarla, por favor contáctanos por teléfono.",
+      "tooSoon": "Lo sentimos, las reservas online deben realizarse con al menos 30 minutos de antelación.",
       "errorProcessingWithReason": "Hubo un error al procesar tu reserva: {{reason}}. Por favor, inténtalo de nuevo.",
       "unknownError": "Error desconocido"
     },
@@ -131,7 +132,121 @@
       "processing": "Procesando...",
       "confirmBtn": "Confirmar Reserva",
       "disclaimer1": "Las solicitudes online están sujetas a confirmación.",
-      "disclaimer2": "Le enviaremos un email tan pronto como procesemos su mesa."
+      "disclaimer2": "Le enviaremos un email tan pronto como procesemos su mesa.",
+      "calendar": {
+        "months": [
+          "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+          "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        ],
+        "days": ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
+        "available": "Disponible",
+        "closed": "Cerrado"
+      },
+      "guestCounter": {
+        "person": "Persona",
+        "people": "Personas",
+        "decrement": "Reducir comensales",
+        "increment": "Aumentar comensales"
+      }
+    }
+  },
+  "footer": {
+    "honoring": "Honrando la tradición pesquera de San Cristóbal con el producto más fresco del Atlántico.",
+    "navigation": "Navegación",
+    "contact": "Contacto",
+    "legal": "Legal",
+    "privacy": "Privacidad",
+    "cookies": "Cookies"
+  },
+  "legal": {
+    "seoTitle": "Aviso Legal",
+    "seoDescription": "Aviso legal y términos de uso del sitio web oficial de El Atlante de San Cristóbal.",
+    "headerLabel": "Información Legal",
+    "title1": "Aviso",
+    "title2": "Legal",
+    "section1": {
+      "title": "1. Datos Identificativos",
+      "p1": "En cumplimiento con el deber de información recogido en artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y del Comercio Electrónico, a continuación se reflejan los siguientes datos:",
+      "titular": "Titular:",
+      "nif": "NIF:",
+      "domicilio": "Domicilio:",
+      "email": "Email:",
+      "telFijo": "Teléfono (Fijo):",
+      "telMovil": "Teléfono (Móvil):"
+    },
+    "section2": {
+      "title": "2. Usuarios",
+      "p1": "El acceso y/o uso de este portal atribuye la condición de USUARIO, que acepta, desde dicho acceso y/o uso, las Condiciones Generales de Uso aquí reflejadas. Las citadas Condiciones serán de aplicación independientemente de las Condiciones Generales de Contratación que en su caso resulten de obligado cumplimiento."
+    },
+    "section3": {
+      "title": "3. Uso del Portal",
+      "p1": "El portal proporciona el acceso a multitud de informaciones, servicios, programas o datos (en adelante, \"los contenidos\") en Internet pertenecientes a El Atlante o a sus licenciantes a los que el USUARIO pueda tener acceso."
+    },
+    "section4": {
+      "title": "4. Propiedad Intelectual e Industrial",
+      "p1": "El Atlante por sí o como cesionaria, es titular de todos los derechos de propiedad intelectual e industrial de su página web, así como de los elementos contenidos en la misma (a título enunciativo, imágenes, sonido, audio, vídeo, software o textos; marcas o logotipos, combinaciones de colores, estructura y diseño, selección de materiales usados, programas de ordenador necesarios para su funcionamiento, acceso y uso, etc.)."
+    }
+  },
+  "privacy": {
+    "seoTitle": "Política de Privacidad",
+    "seoDescription": "Información detallada sobre cómo tratamos tus datos personales en El Atlante de San Cristóbal.",
+    "headerLabel": "Privacidad",
+    "title1": "Política de",
+    "title2": "Privacidad",
+    "section1": {
+      "title": "1. Responsable del Tratamiento",
+      "p1": "El responsable del tratamiento de sus datos personales es FELRODEZ S.L., con domicilio en Calle León y Castillo, 199, 35280 Santa Lucía de Tirajana, Las Palmas. Teléfonos de contacto: "
+    },
+    "fijo": "(Fijo)",
+    "movil": "(Móvil)",
+    "y": "y",
+    "section2": {
+      "title": "2. Finalidad del Tratamiento",
+      "p1": "Tratamos la información que nos facilita con las siguientes finalidades:",
+      "li1Label": "Gestión de Reservas:",
+      "li1Desc": "Tramitar y confirmar sus solicitudes de mesa en nuestro restaurante.",
+      "li2Label": "Atención al Cliente:",
+      "li2Desc": "Responder a sus consultas o peticiones de información.",
+      "li3Label": "Comunicaciones:",
+      "li3Desc": "En su caso, informar sobre cambios en su reserva o incidencias en el servicio."
+    },
+    "section3": {
+      "title": "3. Legitimación",
+      "p1": "La base legal para el tratamiento de sus datos es la ejecución del servicio de reserva solicitado por usted y, en su caso, el consentimiento que nos otorga al marcar las casillas correspondientes."
+    },
+    "section4": {
+      "title": "4. Conservación de Datos",
+      "p1": "Los datos personales proporcionados se conservarán mientras se mantenga la relación comercial o durante los años necesarios para cumplir con las obligaciones legales."
+    },
+    "section5": {
+      "title": "5. Derechos del Usuario",
+      "p1": "Usted tiene derecho a obtener confirmación sobre si estamos tratando sus datos personales, por tanto tiene derecho a acceder a sus datos personales, rectificar los datos inexactos o solicitar su supresión cuando los datos ya no sean necesarios. Para ejercer estos derechos, puede escribirnos a info@elatlante.com."
+    }
+  },
+  "cookies": {
+    "seoTitle": "Política de Cookies",
+    "seoDescription": "Información sobre las cookies que utilizamos en El Atlante de San Cristóbal para mejorar tu experiencia.",
+    "headerLabel": "Configuración",
+    "title1": "Política de",
+    "title2": "Cookies",
+    "section1": {
+      "title": "1. Responsable",
+      "p1": "El responsable de esta página web y de las cookies que se instalan es FELRODEZ S.L., con NIF B76254267 y domicilio en Calle León y Castillo, 199, 35280 Santa Lucía de Tirajana, Las Palmas. Teléfonos de contacto: "
+    },
+    "section2": {
+      "title": "2. ¿Qué son las Cookies?",
+      "p1": "Una cookie es un fichero que se descarga en su ordenador al acceder a determinadas páginas web. Las cookies permiten a una página web, entre otras cosas, almacenar y recuperar información sobre los hábitos de navegación de un usuario o de su equipo."
+    },
+    "section3": {
+      "title": "3. Tipos de Cookies utilizadas",
+      "t1": "Cookies Técnicas (Necesarias)",
+      "d1": "Son aquellas que permiten al usuario la navegación a través de una página web y la utilización de las diferentes opciones o servicios que en ella existan como, por ejemplo, controlar el tráfico y la comunicación de datos o realizar la solicitud de inscripción en un evento.",
+      "t2": "Cookies de Personalización",
+      "d2": "Son aquellas que permiten al usuario acceder al servicio con algunas características de carácter general predefinidas en función de una serie de criterios en el terminal del usuario como por ejemplo el idioma o el tipo de navegador."
+    },
+    "section4": {
+      "title": "4. Desactivación de Cookies",
+      "p1": "Usted puede permitir, bloquear o eliminar las cookies instaladas en su equipo mediante la configuración de las opciones del navegador instalado en su ordenador:"
     }
   }
 }

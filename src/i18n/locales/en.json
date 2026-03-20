@@ -73,6 +73,7 @@
       "restaurantClosed": "We're sorry, the restaurant is closed at the selected time. Please check our opening hours.",
       "errorProcessing": "There was an error processing your reservation. Please try again or contact us by phone.",
       "duplicateReservation": "You already have a reservation for this date and time. If you need to modify it, please contact us by phone.",
+      "tooSoon": "Sorry, online reservations must be made at least 30 minutes in advance.",
       "errorProcessingWithReason": "There was an error processing your reservation: {{reason}}. Please try again.",
       "unknownError": "Unknown error"
     },
@@ -131,7 +132,121 @@
       "processing": "Processing...",
       "confirmBtn": "Confirm Reservation",
       "disclaimer1": "Online requests are subject to confirmation.",
-      "disclaimer2": "We will send you an email as soon as we process your table."
+      "disclaimer2": "We will send you an email as soon as we process your table.",
+      "calendar": {
+        "months": [
+          "January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December"
+        ],
+        "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        "available": "Available",
+        "closed": "Closed"
+      },
+      "guestCounter": {
+        "person": "Guest",
+        "people": "Guests",
+        "decrement": "Decrease guests",
+        "increment": "Increase guests"
+      }
+    }
+  },
+  "footer": {
+    "honoring": "Honoring the fishing tradition of San Cristóbal with the freshest produce from the Atlantic.",
+    "navigation": "Navigation",
+    "contact": "Contact",
+    "legal": "Legal",
+    "privacy": "Privacy",
+    "cookies": "Cookies"
+  },
+  "legal": {
+    "seoTitle": "Legal Notice",
+    "seoDescription": "Legal notice and terms of use of the official website of El Atlante de San Cristóbal.",
+    "headerLabel": "Legal Information",
+    "title1": "Legal",
+    "title2": "Notice",
+    "section1": {
+      "title": "1. Identifying Data",
+      "p1": "In compliance with the information duty contained in Article 10 of Law 34/2002, of July 11, on Services of the Information Society and Electronic Commerce, the following data are reflected below:",
+      "titular": "Holder:",
+      "nif": "NIF:",
+      "domicilio": "Address:",
+      "email": "Email:",
+      "telFijo": "Phone (Landline):",
+      "telMovil": "Phone (Mobile):"
+    },
+    "section2": {
+      "title": "2. Users",
+      "p1": "Access and/or use of this portal attributes the condition of USER, who accepts, from said access and/or use, the General Conditions of Use reflected here. The aforementioned Conditions shall apply regardless of the General Conditions of Contracting that, where applicable, are legally binding."
+    },
+    "section3": {
+      "title": "3. Use of the Portal",
+      "p1": "The portal provides access to a multitude of information, services, programs or data (hereinafter, \"the contents\") on the Internet belonging to El Atlante or its licensors to which the USER may have access."
+    },
+    "section4": {
+      "title": "4. Intellectual and Industrial Property",
+      "p1": "El Atlante by itself or as an assignee, is the owner of all intellectual and industrial property rights of its website, as well as the elements contained therein (by way of example, images, sound, audio, video, software or texts; trademarks or logos, color combinations, structure and design, selection of materials used, computer programs necessary for its operation, access and use, etc.)."
+    }
+  },
+  "privacy": {
+    "seoTitle": "Privacy Policy",
+    "seoDescription": "Detailed information on how we handle your personal data at El Atlante de San Cristóbal.",
+    "headerLabel": "Privacy",
+    "title1": "Privacy",
+    "title2": "Policy",
+    "section1": {
+      "title": "1. Data Controller",
+      "p1": "The data controller of your personal data is FELRODEZ S.L., residing at Calle León y Castillo, 199, 35280 Santa Lucía de Tirajana, Las Palmas. Contact phones: "
+    },
+    "fijo": "(Landline)",
+    "movil": "(Mobile)",
+    "y": "and",
+    "section2": {
+      "title": "2. Purpose of Processing",
+      "p1": "We process the information you provide us with the following purposes:",
+      "li1Label": "Reservation Management:",
+      "li1Desc": "Process and confirm your table requests in our restaurant.",
+      "li2Label": "Customer Service:",
+      "li2Desc": "Respond to your inquiries or requests for information.",
+      "li3Label": "Communications:",
+      "li3Desc": "Where applicable, report changes to your reservation or service incidents."
+    },
+    "section3": {
+      "title": "3. Legitimation",
+      "p1": "The legal basis for processing your data is the execution of the reservation service requested by you and, where applicable, the consent you grant us by checking the corresponding boxes."
+    },
+    "section4": {
+      "title": "4. Data Retention",
+      "p1": "The personal data provided will be kept as long as the commercial relationship is maintained or for the years necessary to comply with legal obligations."
+    },
+    "section5": {
+      "title": "5. User Rights",
+      "p1": "You have the right to obtain confirmation on whether we are treating your personal data, therefore you have the right to access your personal data, rectify inaccurate data or request its deletion when the data is no longer necessary. To exercise these rights, you can write to us at info@elatlante.com."
+    }
+  },
+  "cookies": {
+    "seoTitle": "Cookie Policy",
+    "seoDescription": "Information about the cookies we use at El Atlante de San Cristóbal to improve your experience.",
+    "headerLabel": "Settings",
+    "title1": "Cookie",
+    "title2": "Policy",
+    "section1": {
+      "title": "1. Controller",
+      "p1": "The controller of this website and the cookies that are installed is FELRODEZ S.L., with NIF B76254267 and address at Calle León y Castillo, 199, 35280 Santa Lucía de Tirajana, Las Palmas. Contact phones: "
+    },
+    "section2": {
+      "title": "2. What are Cookies?",
+      "p1": "A cookie is a file that is downloaded to your computer when you access certain web pages. Cookies allow a web page, among other things, to store and retrieve information about the browsing habits of a user or their equipment."
+    },
+    "section3": {
+      "title": "3. Types of Cookies Used",
+      "t1": "Technical Cookies (Necessary)",
+      "d1": "These are those that allow the user to navigate through a web page and the use of the different options or services that exist in it, such as, for example, controlling traffic and data communication or making the request for registration in an event.",
+      "t2": "Personalization Cookies",
+      "d2": "These are those that allow the user to access the service with some predefined general characteristics based on a series of criteria in the user's terminal, such as language or browser type."
+    },
+    "section4": {
+      "title": "4. Deactivation of Cookies",
+      "p1": "You can allow, block or delete the cookies installed on your computer by configuring the options of the browser installed on your computer:"
     }
   }
 }

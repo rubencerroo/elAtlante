@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { normalizeDayName, OPENING_HOURS } from '../utils/reservationUtils';
 
@@ -9,17 +10,14 @@ interface CalendarProps {
 }
 
 export default function Calendar({ selectedDate, onSelect, minDate }: CalendarProps) {
+  const { t } = useTranslation();
   const [viewDate, setViewDate] = useState(() => {
     const initial = selectedDate || minDate || new Date().toISOString().split('T')[0];
     return new Date(initial + 'T12:00:00');
   });
 
-  const months = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-  ];
-
-  const daysOfWeek = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+  const months = t('reservas.form.calendar.months', { returnObjects: true }) as string[];
+  const daysOfWeek = t('reservas.form.calendar.days', { returnObjects: true }) as string[];
 
   const calendarDays = useMemo(() => {
     const year = viewDate.getFullYear();
@@ -175,11 +173,11 @@ export default function Calendar({ selectedDate, onSelect, minDate }: CalendarPr
       <div className="mt-6 pt-6 border-t border-slate-100 dark:border-white/5 flex gap-4 text-[10px] text-slate-400 font-medium px-2">
         <div className="flex items-center gap-1.5">
           <div className="size-1.5 rounded-full bg-primary/20"></div>
-          <span>Disponible</span>
+          <span>{t('reservas.form.calendar.available')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="size-1.5 rounded-full bg-slate-200 line-through"></div>
-          <span>Cerrado</span>
+          <span>{t('reservas.form.calendar.closed')}</span>
         </div>
       </div>
     </div>

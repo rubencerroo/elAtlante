@@ -21,7 +21,7 @@ export default function Carta() {
   const pdfUrl = `/assets/pdf/${pdfFileName}#toolbar=0&navpanes=0&scrollbar=0&view=${isMobile ? 'FitH' : 'Fit'}`;
 
   return (
-    <div className="min-h-screen pt-[64px] flex flex-col bg-background-light dark:bg-background-dark overflow-x-hidden">
+    <div className="w-screen h-screen flex flex-col bg-background-light dark:bg-background-dark overflow-hidden">
       <SEO 
         title={`${t('nav.carta')} - El Atlante de San Cristóbal`}
         description="Nuestra carta completa. Tradición pesquera y producto Km 0."
@@ -29,7 +29,7 @@ export default function Carta() {
       
       {/* Container with Tiled Logo Background */}
       <div 
-        className="flex-1 w-full flex items-center justify-center overflow-hidden relative bg-slate-50 dark:bg-slate-900"
+        className="flex-1 w-full flex items-center justify-center relative bg-slate-50 dark:bg-slate-900 overflow-hidden"
         style={{
           // Tiled logo background. It's faint so it doesn't distract from the PDF text.
           backgroundImage: `url('/assets/logoblack.png')`,

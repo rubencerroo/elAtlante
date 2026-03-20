@@ -26,6 +26,23 @@ export function getTodayDateString(): string {
 }
 
 /**
+ * Returns current time in minutes from start of day in the restaurant's timezone
+ */
+export function getCurrentTimeMinutes(): number {
+  const now = new Date();
+  const optionsFormatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: RESTAURANT_TIMEZONE,
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: false
+  });
+  const parts = optionsFormatter.formatToParts(now);
+  const hour = parseInt(parts.find(p => p.type === 'hour')?.value || '0');
+  const minute = parseInt(parts.find(p => p.type === 'minute')?.value || '0');
+  return hour * 60 + minute;
+}
+
+/**
  * Normalizes a day name to lowercase without accents
  */
 export function normalizeDayName(date: Date): string {
@@ -63,6 +80,28 @@ export function isDateValid(dateStr: string, timeStr: string): boolean {
   // Monday, Thursday, Friday, Saturday
   return currentMinutes >= timeToMinutes(OPENING_HOURS.standard.fullRange.start) && 
          currentMinutes <= timeToMinutes(OPENING_HOURS.standard.fullRange.end);
+}
+
+/**
+ * Checks if a reservation time is at least 30 minutes in the future
+ */
+export function isReservationTimeValid(dateStr: string, timeStr: string): boolean {
+  if (!dateStr || !timeStr) return false;
+  
+  const today = getTodayDateString();
+  
+  // If date is in the past, invalid
+  if (dateStr < today) return false;
+  
+  // If date is today, check 30 minutes buffer
+  if (dateStr === today) {
+    const reservationMinutes = timeToMinutes(timeStr);
+    const limitMinutes = getCurrentTimeMinutes() + 30;
+    return reservationMinutes >= limitMinutes;
+  }
+  
+  // Future dates are always valid (as long as they are within opening hours, which is checked by isDateValid)
+  return true;
 }
 
 /**
@@ -108,6 +147,12 @@ export function getAvailableTimes(dateStr: string, intervalMinutes: number = 30)
     generateRange(OPENING_HOURS.standard.lunch.start, OPENING_HOURS.standard.lunch.end);
     // Dinner
     generateRange(OPENING_HOURS.standard.dinner.start, OPENING_HOURS.standard.dinner.end);
+  }
+
+  // Filter for today's 30-minute buffer
+  if (dateStr === getTodayDateString()) {
+    const limitMinutes = getCurrentTimeMinutes() + 30;
+    return times.filter(t => timeToMinutes(t) >= limitMinutes);
   }
 
   return times;

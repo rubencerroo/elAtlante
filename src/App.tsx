@@ -92,6 +92,7 @@ function AppLayout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const isAdmin = pathname.startsWith('/admin');
+  const isCartaRoute = pathname === '/carta';
   
   // Auto-lock logic for tablet mode
   const handleAutoLock = useCallback(() => {
@@ -123,14 +124,14 @@ function AppLayout() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background-dark font-['Work_Sans',sans-serif] selection:bg-primary selection:text-white">
-      {!isAdmin && (
+      {!isAdmin && !isCartaRoute && (
         <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
           <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px] dark:bg-primary/10"></div>
           <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px] dark:bg-primary/10"></div>
         </div>
       )}
 
-      {!isAdmin && <Header />}
+      {!isAdmin && !isCartaRoute && <Header />}
       
       <main>
         <Routes>
@@ -149,7 +150,7 @@ function AppLayout() {
         </Routes>
       </main>
 
-      {!isAdmin && <Footer />}
+      {!isAdmin && !isCartaRoute && <Footer />}
       <CookieBanner />
     </div>
   );

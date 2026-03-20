@@ -3,29 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import logoWhite from '../assets/logowhite.png';
 
-function useSystemTheme() {
-  const [isDark, setIsDark] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
-  );
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.removeItem('theme');
-  }, [isDark]);
-
-  return isDark;
-}
+import { useSystemTheme } from '../hooks/useTheme';
 
 export default function Header() {
   const [isVisible, setIsVisible] = useState(true);
@@ -36,6 +14,7 @@ export default function Header() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const [activeSection, setActiveSection] = useState('inicio');
+  const isDark = useSystemTheme();
 
   useEffect(() => {
     if (location.pathname !== '/') {
@@ -110,15 +89,21 @@ export default function Header() {
     }
   };
 
-  const navLink = (section: string, label: string, href: string, isLink = false) => {
+  const navLink = (section: string, label: string, href: string, isLink = false, isExternal = false) => {
     const isActive = activeSection === section || (href !== '/' && location.pathname === href);
     const cls = `text-[11px] font-semibold tracking-widest uppercase transition-colors duration-200 whitespace-nowrap ${
       isActive ? 'text-white' : 'text-white/40 hover:text-white/80'
     }`;
-    return isLink
-      ? <Link key={section} className={cls} to={href}>{label}</Link>
-      : <a key={section} className={cls} href={href} onClick={(e) => handleAnchorClick(e, href)}>{label}</a>;
+    return isExternal
+      ? <a key={section} className={cls} href={href} target="_blank" rel="noopener noreferrer">{label}</a>
+      : isLink
+        ? <Link key={section} className={cls} to={href}>{label}</Link>
+        : <a key={section} className={cls} href={href} onClick={(e) => handleAnchorClick(e, href)}>{label}</a>;
   };
+
+  const pdfUrl = i18n.language.startsWith('en') 
+    ? (isDark ? '/assets/pdf/carta_en_dark.pdf' : '/assets/pdf/carta_en.pdf')
+    : (isDark ? '/assets/pdf/carta_es_dark.pdf' : '/assets/pdf/carta_es.pdf');
 
   return (
     <div className={`fixed top-0 left-0 right-0 z-[100] transition-transform duration-500 ease-in-out
@@ -137,7 +122,7 @@ export default function Header() {
           <nav className="flex items-center gap-10 flex-1">
             {navLink('inicio',   t('nav.inicio'),   '/',          true)}
             {navLink('nosotros', t('nav.nosotros'), '/#nosotros')}
-            {navLink('carta',    t('nav.carta'),    '/carta',     true)}
+            {navLink('carta',    t('nav.carta'),    pdfUrl,       false, true)}
           </nav>
           <Link to="/" className="absolute left-1/2 -translate-x-1/2">
             <img src={logoWhite} alt="El Atlante" className="h-11 w-auto object-contain" />
@@ -183,14 +168,16 @@ export default function Header() {
             {[
               { section: 'inicio',   label: t('nav.inicio'),   href: '/',          isLink: true  as const },
               { section: 'nosotros', label: t('nav.nosotros'), href: '/#nosotros', isLink: false as const },
-              { section: 'carta',    label: t('nav.carta'),    href: '/carta',     isLink: true as const },
-            ].map(({ section, label, href, isLink }, i) => {
+              { section: 'carta',    label: t('nav.carta'),    href: pdfUrl,     isExternal: true as const },
+            ].map(({ section, label, href, isLink, isExternal }, i) => {
               const isActive = activeSection === section || (href !== '/' && location.pathname === href);
               const cls = `text-sm font-medium whitespace-nowrap transition-all duration-300 ${isActive ? 'text-white' : 'text-white/45'}`;
               const style = { transitionDelay: isMobileMenuOpen ? `${i * 50}ms` : '0ms' };
-              return isLink
-                ? <Link key={section} to={href} className={cls} style={style} onClick={() => setIsMobileMenuOpen(false)}>{label}</Link>
-                : <a key={section} href={href} className={cls} style={style} onClick={(e) => { setIsMobileMenuOpen(false); handleAnchorClick(e, href); }}>{label}</a>;
+              return isExternal
+                ? <a key={section} href={href} target="_blank" rel="noopener noreferrer" className={cls} style={style} onClick={() => setIsMobileMenuOpen(false)}>{label}</a>
+                : isLink
+                  ? <Link key={section} to={href} className={cls} style={style} onClick={() => setIsMobileMenuOpen(false)}>{label}</Link>
+                  : <a key={section} href={href} className={cls} style={style} onClick={(e) => { setIsMobileMenuOpen(false); handleAnchorClick(e, href); }}>{label}</a>;
             })}
             {false && location.pathname !== '/reservar' && (
               <Link

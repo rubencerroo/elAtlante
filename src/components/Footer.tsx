@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import logoWhite from '../assets/logowhite.png';
 import logoBlack from '../assets/logoblack.png';
 import { isRestaurantOpenNow } from '../utils/reservationUtils';
 import { CONTACT_INFO } from '../constants/contact';
 
 export default function Footer() {
+  const { t, i18n } = useTranslation();
   const isOpen = isRestaurantOpenNow();
 
   return (
@@ -41,20 +43,30 @@ export default function Footer() {
             </div>
           </div>
           <p className="text-slate-500 dark:text-slate-400 font-light leading-relaxed">
-            Honrando la tradición pesquera de San Cristóbal con el producto más fresco del Atlántico.
+            {t('footer.honoring')}
           </p>
         </div>
         <div>
-          <h4 className="font-bold text-sm uppercase tracking-[0.3em] mb-5 md:mb-8 text-primary dark:text-sky-400">Navegación</h4>
+          <h4 className="font-bold text-sm uppercase tracking-[0.3em] mb-5 md:mb-8 text-primary dark:text-sky-400">{t('footer.navigation')}</h4>
           <ul className="space-y-4 text-slate-600 dark:text-slate-400 font-light">
-            <li><Link className="hover:text-primary dark:hover:text-white transition-colors" to="/">Inicio</Link></li>
-            <li><Link className="hover:text-primary dark:hover:text-white transition-colors" to="/carta">La Carta</Link></li>
-            <li><a className="hover:text-primary dark:hover:text-white transition-colors" href="/#nosotros">Nosotros</a></li>
-            <li><Link className="hover:text-primary dark:hover:text-white transition-colors" to="/reservar">Reservar</Link></li>
+            <li><Link className="hover:text-primary dark:hover:text-white transition-colors" to="/">{t('nav.inicio')}</Link></li>
+            <li>
+              <a 
+                className="hover:text-primary dark:hover:text-white transition-colors" 
+                href={i18n.language.startsWith('en') 
+                  ? (document.documentElement.classList.contains('dark') ? '/assets/pdf/carta_en_dark.pdf' : '/assets/pdf/carta_en.pdf')
+                  : (document.documentElement.classList.contains('dark') ? '/assets/pdf/carta_es_dark.pdf' : '/assets/pdf/carta_es.pdf')
+                } 
+                target="_blank" rel="noopener noreferrer">
+                {t('nav.carta')}
+              </a>
+            </li>
+            <li><a className="hover:text-primary dark:hover:text-white transition-colors" href="/#nosotros">{t('nav.nosotros')}</a></li>
+            <li><Link className="hover:text-primary dark:hover:text-white transition-colors" to="/reservar">{t('nav.reservar')}</Link></li>
           </ul>
         </div>
         <div>
-          <h4 className="font-bold text-sm uppercase tracking-[0.3em] mb-5 md:mb-8 text-primary dark:text-sky-400">Contacto</h4>
+          <h4 className="font-bold text-sm uppercase tracking-[0.3em] mb-5 md:mb-8 text-primary dark:text-sky-400">{t('footer.contact')}</h4>
           <ul className="space-y-4 text-slate-600 dark:text-slate-400 font-light">
             <li>{CONTACT_INFO.address.street}</li>
             <li>{CONTACT_INFO.address.city}</li>
@@ -91,9 +103,9 @@ export default function Footer() {
             </a>
           </div>
           <div className="flex gap-6 md:gap-8">
-            <Link className="hover:text-primary dark:hover:text-sky-400 transition-colors" to="/aviso-legal">Legal</Link>
-            <Link className="hover:text-primary dark:hover:text-sky-400 transition-colors" to="/privacidad">Privacidad</Link>
-            <Link className="hover:text-primary dark:hover:text-sky-400 transition-colors" to="/cookies">Cookies</Link>
+            <Link className="hover:text-primary dark:hover:text-sky-400 transition-colors" to="/aviso-legal">{t('footer.legal')}</Link>
+            <Link className="hover:text-primary dark:hover:text-sky-400 transition-colors" to="/privacidad">{t('footer.privacy')}</Link>
+            <Link className="hover:text-primary dark:hover:text-sky-400 transition-colors" to="/cookies">{t('footer.cookies')}</Link>
           </div>
         </div>
       </div>

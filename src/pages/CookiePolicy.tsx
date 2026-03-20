@@ -1,12 +1,15 @@
 import SEO from '../components/SEO';
+import { useTranslation } from 'react-i18next';
 import { CONTACT_INFO } from '../constants/contact';
 
 export default function CookiePolicy() {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen pt-28 pb-24 px-6 lg:px-28 flex flex-col items-center bg-white dark:bg-slate-950 relative overflow-hidden">
       <SEO 
-        title="Política de Cookies"
-        description="Información sobre las cookies que utilizamos en El Atlante de San Cristóbal para mejorar tu experiencia."
+        title={t('cookies.seoTitle')}
+        description={t('cookies.seoDescription')}
         canonical="/cookies"
       />
       {/* Background Decor ... existing code ... */}
@@ -15,46 +18,45 @@ export default function CookiePolicy() {
 
       <div className="max-w-3xl w-full relative z-10">
         <header className="mb-16">
-          <span className="text-primary dark:text-sky-400 font-bold tracking-[0.4em] uppercase text-[10px]">Configuración</span>
+          <span className="text-primary dark:text-sky-400 font-bold tracking-[0.4em] uppercase text-[10px]">{t('cookies.headerLabel')}</span>
           <h1 className="text-slate-900 dark:text-slate-100 text-3xl md:text-4xl lg:text-5xl font-black mt-4 tracking-tight leading-tight">
-            Política de <span className="text-primary dark:text-sky-400 italic">Cookies</span>
+            {t('cookies.title1')} <span className="text-primary dark:text-sky-400 italic">{t('cookies.title2')}</span>
           </h1>
         </header>
 
         <div className="prose prose-slate dark:prose-invert max-w-none space-y-8 text-slate-600 dark:text-slate-400 font-light leading-relaxed">
           <section className="space-y-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">1. Responsable</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">{t('cookies.section1.title')}</h2>
             <p>
-              El responsable de esta página web y de las cookies que se instalan es FELRODEZ S.L., con NIF B76254267 y domicilio en Calle León y Castillo, 199, 35280 Santa Lucía de Tirajana, Las Palmas.
-              Teléfonos de contacto: {CONTACT_INFO.landline.display} (Fijo) y {CONTACT_INFO.mobile.display} (Móvil).
+              {t('cookies.section1.p1')}{CONTACT_INFO.landline.display} {t('privacy.fijo')} {t('privacy.y')} {CONTACT_INFO.mobile.display} {t('privacy.movil')}.
             </p>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">2. ¿Qué son las Cookies?</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">{t('cookies.section2.title')}</h2>
             <p>
-              Una cookie es un fichero que se descarga en su ordenador al acceder a determinadas páginas web. Las cookies permiten a una página web, entre otras cosas, almacenar y recuperar información sobre los hábitos de navegación de un usuario o de su equipo.
+              {t('cookies.section2.p1')}
             </p>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">3. Tipos de Cookies utilizadas</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">{t('cookies.section3.title')}</h2>
             <div className="space-y-4">
               <div className="bg-slate-50 dark:bg-white/5 p-6 rounded-2xl border border-slate-100 dark:border-white/5">
-                <h3 className="text-slate-900 dark:text-white font-bold mb-2">Cookies Técnicas (Necesarias)</h3>
-                <p className="text-sm">Son aquellas que permiten al usuario la navegación a través de una página web y la utilización de las diferentes opciones o servicios que en ella existan como, por ejemplo, controlar el tráfico y la comunicación de datos o realizar la solicitud de inscripción en un evento.</p>
+                <h3 className="text-slate-900 dark:text-white font-bold mb-2">{t('cookies.section3.t1')}</h3>
+                <p className="text-sm">{t('cookies.section3.d1')}</p>
               </div>
               <div className="bg-slate-50 dark:bg-white/5 p-6 rounded-2xl border border-slate-100 dark:border-white/5">
-                <h3 className="text-slate-900 dark:text-white font-bold mb-2">Cookies de Personalización</h3>
-                <p className="text-sm">Son aquellas que permiten al usuario acceder al servicio con algunas características de carácter general predefinidas en función de una serie de criterios en el terminal del usuario como por ejemplo el idioma o el tipo de navegador.</p>
+                <h3 className="text-slate-900 dark:text-white font-bold mb-2">{t('cookies.section3.t2')}</h3>
+                <p className="text-sm">{t('cookies.section3.d2')}</p>
               </div>
             </div>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">4. Desactivación de Cookies</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">{t('cookies.section4.title')}</h2>
             <p>
-              Usted puede permitir, bloquear o eliminar las cookies instaladas en su equipo mediante la configuración de las opciones del navegador instalado en su ordenador:
+              {t('cookies.section4.p1')}
             </p>
             <ul className="list-disc pl-5 space-y-1">
               <li>Google Chrome</li>

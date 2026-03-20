@@ -1,12 +1,15 @@
 import SEO from '../components/SEO';
+import { useTranslation } from 'react-i18next';
 import { CONTACT_INFO } from '../constants/contact';
 
 export default function LegalNotice() {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen pt-28 pb-24 px-6 lg:px-28 flex flex-col items-center bg-white dark:bg-slate-950 relative overflow-hidden">
       <SEO 
-        title="Aviso Legal"
-        description="Aviso legal y términos de uso del sitio web oficial de El Atlante de San Cristóbal."
+        title={t('legal.seoTitle')}
+        description={t('legal.seoDescription')}
         canonical="/aviso-legal"
       />
       {/* Background Decor ... existing code ... */}
@@ -15,46 +18,46 @@ export default function LegalNotice() {
 
       <div className="max-w-3xl w-full relative z-10">
         <header className="mb-16">
-          <span className="text-primary dark:text-sky-400 font-bold tracking-[0.4em] uppercase text-[10px]">Información Legal</span>
+          <span className="text-primary dark:text-sky-400 font-bold tracking-[0.4em] uppercase text-[10px]">{t('legal.headerLabel')}</span>
           <h1 className="text-slate-900 dark:text-slate-100 text-3xl md:text-4xl lg:text-5xl font-black mt-4 tracking-tight leading-tight">
-            Aviso <span className="text-primary dark:text-sky-400 italic">Legal</span>
+            {t('legal.title1')} <span className="text-primary dark:text-sky-400 italic">{t('legal.title2')}</span>
           </h1>
         </header>
 
         <div className="prose prose-slate dark:prose-invert max-w-none space-y-8 text-slate-600 dark:text-slate-400 font-light leading-relaxed">
           <section className="space-y-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">1. Datos Identificativos</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">{t('legal.section1.title')}</h2>
             <p>
-              En cumplimiento con el deber de información recogido en artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y del Comercio Electrónico, a continuación se reflejan los siguientes datos:
+              {t('legal.section1.p1')}
             </p>
             <ul className="list-disc pl-5 space-y-2">
-              <li><strong>Titular:</strong> FELRODEZ S.L.</li>
-              <li><strong>NIF:</strong> B76254267</li>
-              <li><strong>Domicilio:</strong> Calle León y Castillo, 199, 35280 Santa Lucía de Tirajana, Las Palmas</li>
-              <li><strong>Email:</strong> info@elatlante.com</li>
-              <li><strong>Teléfono (Fijo):</strong> {CONTACT_INFO.landline.display}</li>
-              <li><strong>Teléfono (Móvil):</strong> {CONTACT_INFO.mobile.display}</li>
+              <li><strong>{t('legal.section1.titular')}</strong> FELRODEZ S.L.</li>
+              <li><strong>{t('legal.section1.nif')}</strong> B76254267</li>
+              <li><strong>{t('legal.section1.domicilio')}</strong> Calle León y Castillo, 199, 35280 Santa Lucía de Tirajana, Las Palmas</li>
+              <li><strong>{t('legal.section1.email')}</strong> info@elatlante.com</li>
+              <li><strong>{t('legal.section1.telFijo')}</strong> {CONTACT_INFO.landline.display}</li>
+              <li><strong>{t('legal.section1.telMovil')}</strong> {CONTACT_INFO.mobile.display}</li>
             </ul>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">2. Usuarios</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">{t('legal.section2.title')}</h2>
             <p>
-              El acceso y/o uso de este portal atribuye la condición de USUARIO, que acepta, desde dicho acceso y/o uso, las Condiciones Generales de Uso aquí reflejadas. Las citadas Condiciones serán de aplicación independientemente de las Condiciones Generales de Contratación que en su caso resulten de obligado cumplimiento.
+              {t('legal.section2.p1')}
             </p>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">3. Uso del Portal</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">{t('legal.section3.title')}</h2>
             <p>
-              El portal proporciona el acceso a multitud de informaciones, servicios, programas o datos (en adelante, "los contenidos") en Internet pertenecientes a El Atlante o a sus licenciantes a los que el USUARIO pueda tener acceso.
+              {t('legal.section3.p1')}
             </p>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">4. Propiedad Intelectual e Industrial</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">{t('legal.section4.title')}</h2>
             <p>
-              El Atlante por sí o como cesionaria, es titular de todos los derechos de propiedad intelectual e industrial de su página web, así como de los elementos contenidos en la misma (a título enunciativo, imágenes, sonido, audio, vídeo, software o textos; marcas o logotipos, combinaciones de colores, estructura y diseño, selección de materiales usados, programas de ordenador necesarios para su funcionamiento, acceso y uso, etc.).
+              {t('legal.section4.p1')}
             </p>
           </section>
 

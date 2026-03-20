@@ -26,7 +26,7 @@ function useIsOpen() {
 
 export default function Home() {
 
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const isOpen = useIsOpen();
 
   return (
@@ -99,9 +99,14 @@ export default function Home() {
                 <Link to="/reservar" className="group flex min-w-[180px] cursor-pointer items-center justify-center rounded-full h-14 px-8 btn-primary-high text-xs font-black uppercase tracking-[0.15em] hover:scale-105 transition-all shadow-2xl">
                   {t('hero.cta')}
                 </Link>
-                <Link to="/carta" className="group flex min-w-[150px] cursor-pointer items-center justify-center rounded-full h-14 px-8 btn-vibrant-blue text-xs font-black uppercase tracking-[0.15em] hover:scale-105 transition-all shadow-xl">
+                <a 
+                  href={i18n.language.startsWith('en') 
+                    ? (document.documentElement.classList.contains('dark') ? '/assets/pdf/carta_en_dark.pdf' : '/assets/pdf/carta_en.pdf')
+                    : (document.documentElement.classList.contains('dark') ? '/assets/pdf/carta_es_dark.pdf' : '/assets/pdf/carta_es.pdf')
+                  } 
+                  target="_blank" rel="noopener noreferrer" className="group flex min-w-[150px] cursor-pointer items-center justify-center rounded-full h-14 px-8 btn-vibrant-blue text-xs font-black uppercase tracking-[0.15em] hover:scale-105 transition-all shadow-xl">
                   {t('hero.ctaCarta')}
-                </Link>
+                </a>
               </div>
             </div>
           </div>

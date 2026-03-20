@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -6,8 +6,10 @@ import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
 import { addReservation, getReservationById, type Reservation } from '../services/reservationStore';
 import GuestCounter from '../components/GuestCounter';
+import Calendar from '../components/Calendar';
+import CustomSelect from '../components/CustomSelect';
 import SEO from '../components/SEO';
-import { getAvailableTimes, isDateValid, getTodayDateString, isDayClosed, isRestaurantOpenNow } from '../utils/reservationUtils';
+import { getAvailableTimes, isDateValid, getTodayDateString, isDayClosed, isRestaurantOpenNow, isReservationTimeValid } from '../utils/reservationUtils';
 import { CONTACT_INFO } from '../constants/contact';
 
 export default function Reservations() {
@@ -18,11 +20,27 @@ export default function Reservations() {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastReservation, setLastReservation] = useState<Reservation | null>(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const calendarRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     name: '', email: '', date: '', time: '13:00',
     guests: 2, preference: 'Indiferente' as const,
     hasPet: false, notes: '', acceptPolicies: false,
   });
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+        setShowCalendar(false);
+      }
+    }
+    if (showCalendar) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCalendar]);
 
   useEffect(() => {
     const isConfirmed = searchParams.get('confirmed') === 'true';
@@ -60,6 +78,11 @@ export default function Reservations() {
 
     if (!isDateValid(formData.date, formData.time)) {
       alert(t('reservas.alerts.restaurantClosed'));
+      return;
+    }
+
+    if (!isReservationTimeValid(formData.date, formData.time)) {
+      alert(t('reservas.alerts.tooSoon'));
       return;
     }
 
@@ -258,7 +281,7 @@ export default function Reservations() {
             </div>
 
             <form className="space-y-7 md:space-y-16" onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12 items-end">
                 <div className="flex flex-col gap-2 md:gap-4 group">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.fullName')} <span className="text-coastal-sea">*</span></label>
                   <input className="bg-transparent text-base md:text-lg font-light text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/5 focus:border-primary dark:focus:border-slate-400 focus:ring-0 p-0 pb-2 md:pb-3 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600"
@@ -271,7 +294,7 @@ export default function Reservations() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12 items-end">
                 <div className="flex flex-col gap-2 md:gap-4 group">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.phone')} <span className="text-coastal-sea">*</span></label>
                   <div className="border-b border-slate-100 dark:border-white/5 group-focus-within:border-primary dark:group-focus-within:border-slate-400 pb-2 transition-all">
@@ -284,23 +307,44 @@ export default function Reservations() {
                     />
                   </div>
                 </div>
-                <div className="flex flex-col gap-2 md:gap-4 group relative">
+                <div className="flex flex-col gap-2 md:gap-4 group relative" ref={calendarRef}>
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.date')} <span className="text-coastal-sea">*</span></label>
-                  <input
-                    type="date"
-                    required
-                    min={getTodayDateString()}
-                    value={formData.date}
-                    onChange={e => {
-                      const date = e.target.value;
-                      handleChange('date', date);
-                      const times = getAvailableTimes(date, 15);
-                      if (times.length > 0 && !times.includes(formData.time)) {
-                        handleChange('time', times[0]);
-                      }
-                    }}
-                    className="bg-transparent text-base md:text-lg font-light text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/5 focus:border-primary dark:focus:border-slate-400 focus:ring-0 p-0 pb-2 transition-all w-full appearance-none"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCalendar(!showCalendar)}
+                    className="flex justify-between items-center bg-transparent text-left text-base md:text-lg font-light text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/5 focus:border-primary dark:focus:border-slate-400 focus:ring-0 p-0 pb-2 transition-all w-full relative"
+                  >
+                    <span>{formData.date ? formatDate(formData.date) : ''}</span>
+                    <svg className={`size-5 text-slate-400 transition-transform duration-300 ${showCalendar ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" /></svg>
+                  </button>
+                  
+                  <AnimatePresence>
+                    {showCalendar && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute top-full left-0 md:-left-4 mt-4 z-50 w-[calc(100vw-3rem)] md:w-auto overflow-hidden"
+                      >
+                        <Calendar
+                          selectedDate={formData.date}
+                          onSelect={(date) => {
+                            handleChange('date', date);
+                            const times = getAvailableTimes(date, 15);
+                            if (times.length > 0 && (!formData.time || !times.includes(formData.time))) {
+                              handleChange('time', times[0]);
+                            } else if (times.length === 0) {
+                              handleChange('time', '');
+                            }
+                            setShowCalendar(false);
+                          }}
+                          minDate={getTodayDateString()}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   {formData.date && isDayClosed(formData.date) && (
                     <p className="text-[10px] text-red-500 font-medium italic mt-1 animate-pulse">
                       {t('reservas.form.dateClosedError')}
@@ -309,22 +353,15 @@ export default function Reservations() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12 items-end">
                 <div className="flex flex-col gap-2 md:gap-4 group">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.time')} <span className="text-coastal-sea">*</span></label>
-                  <div className="relative border-b border-slate-100 dark:border-white/5 group-focus-within:border-primary dark:group-focus-within:border-slate-400 pb-3 transition-all">
-                    <select className="bg-transparent w-full text-base md:text-lg font-light text-slate-900 dark:text-white border-none focus:ring-0 p-0 appearance-none cursor-pointer"
-                      required value={formData.time} onChange={e => handleChange('time', e.target.value)}>
-                      {getAvailableTimes(formData.date, 15).length > 0 ? (
-                        getAvailableTimes(formData.date, 15).map(t => <option key={t} value={t}>{t} h</option>)
-                      ) : (
-                        <option value="">{t('reservas.form.closedThisDay')}</option>
-                      )}
-                    </select>
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 text-primary/40 pointer-events-none">
-                      <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" /></svg>
-                    </div>
-                  </div>
+                  <CustomSelect
+                    value={formData.time}
+                    onChange={v => handleChange('time', v)}
+                    options={getAvailableTimes(formData.date, 15).map(time => ({ value: time, label: `${time} h` }))}
+                    placeholder={t('reservas.form.closedThisDay')}
+                  />
                 </div>
                 <div className="flex flex-col gap-2 md:gap-4 group relative">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.guestsAmount')}</label>
@@ -351,21 +388,19 @@ export default function Reservations() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12 items-end">
                 <div className="flex flex-col gap-2 md:gap-4 group">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.zonePreference')}</label>
-                  <div className="relative border-b border-slate-100 dark:border-white/5 group-focus-within:border-primary dark:group-focus-within:border-slate-400 pb-3 transition-all">
-                    <select className="bg-transparent w-full text-base md:text-lg font-light text-slate-900 dark:text-white border-none focus:ring-0 p-0 appearance-none cursor-pointer"
-                      value={formData.preference} onChange={e => handleChange('preference', e.target.value)}>
-                      <option value="Indiferente">{t('reservas.form.zones.Indiferente')}</option>
-                      <option value="Interior">{t('reservas.form.zones.Interior')}</option>
-                      <option value="Mesas altas">{t('reservas.form.zones.Mesas altas')}</option>
-                      <option value="Terraza exterior">{t('reservas.form.zones.Terraza exterior')}</option>
-                    </select>
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 text-primary/40 pointer-events-none">
-                      <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" /></svg>
-                    </div>
-                  </div>
+                  <CustomSelect
+                    value={formData.preference}
+                    onChange={v => handleChange('preference', v)}
+                    options={[
+                      { value: 'Indiferente', label: t('reservas.form.zones.Indiferente') },
+                      { value: 'Interior', label: t('reservas.form.zones.Interior') },
+                      { value: 'Mesas altas', label: t('reservas.form.zones.Mesas altas') },
+                      { value: 'Terraza exterior', label: t('reservas.form.zones.Terraza exterior') },
+                    ]}
+                  />
                 </div>
                 <div className="flex flex-col justify-end pb-3">
                   <div className="flex items-center gap-4 group cursor-pointer" onClick={() => handleChange('hasPet', !formData.hasPet)}>
