@@ -7,12 +7,11 @@ export const RESTAURANT_TIMEZONE = 'Atlantic/Canary';
 export const OPENING_HOURS = {
   // Monday, Thursday, Friday, Saturday
   standard: {
-    lunch: { start: '13:00', end: '16:00' }, // Service ends around 16:00
-    dinner: { start: '20:00', end: '23:00' }, // Service ends around 23:00
+    service: { start: '12:30', end: '23:00' },
     fullRange: { start: '12:30', end: '23:00' }
   },
   sunday: {
-    lunch: { start: '13:00', end: '16:30' },
+    service: { start: '12:30', end: '16:30' },
     fullRange: { start: '12:30', end: '16:30' }
   },
   closed: ['martes', 'miercoles']
@@ -73,13 +72,13 @@ export function isDateValid(dateStr: string, timeStr: string): boolean {
   }
 
   if (normalizedDay === 'domingo') {
-    return currentMinutes >= timeToMinutes(OPENING_HOURS.sunday.fullRange.start) && 
-           currentMinutes <= timeToMinutes(OPENING_HOURS.sunday.fullRange.end);
+    return currentMinutes >= timeToMinutes(OPENING_HOURS.sunday.service.start) && 
+           currentMinutes <= timeToMinutes(OPENING_HOURS.sunday.service.end);
   }
 
-  // Monday, Thursday, Friday, Saturday
-  return currentMinutes >= timeToMinutes(OPENING_HOURS.standard.fullRange.start) && 
-         currentMinutes <= timeToMinutes(OPENING_HOURS.standard.fullRange.end);
+  // Monday, Thursday, Friday, Saturday (Continuous Service)
+  return currentMinutes >= timeToMinutes(OPENING_HOURS.standard.service.start) && 
+         currentMinutes <= timeToMinutes(OPENING_HOURS.standard.service.end);
 }
 
 /**
@@ -141,12 +140,10 @@ export function getAvailableTimes(dateStr: string, intervalMinutes: number = 30)
   };
 
   if (normalizedDay === 'domingo') {
-    generateRange(OPENING_HOURS.sunday.lunch.start, OPENING_HOURS.sunday.lunch.end);
+    generateRange(OPENING_HOURS.sunday.service.start, OPENING_HOURS.sunday.service.end);
   } else {
-    // Lunch
-    generateRange(OPENING_HOURS.standard.lunch.start, OPENING_HOURS.standard.lunch.end);
-    // Dinner
-    generateRange(OPENING_HOURS.standard.dinner.start, OPENING_HOURS.standard.dinner.end);
+    // Continuous Service (Lunch through Dinner)
+    generateRange(OPENING_HOURS.standard.service.start, OPENING_HOURS.standard.service.end);
   }
 
   // Filter for today's 30-minute buffer
@@ -191,12 +188,12 @@ export function isRestaurantOpenNow(): boolean {
     }
 
     if (normalizedDay === 'domingo') {
-      start = OPENING_HOURS.sunday.fullRange.start;
-      end = OPENING_HOURS.sunday.fullRange.end;
+      start = OPENING_HOURS.sunday.service.start;
+      end = OPENING_HOURS.sunday.service.end;
     } else {
       // Monday, Thursday, Friday, Saturday
-      start = OPENING_HOURS.standard.fullRange.start;
-      end = OPENING_HOURS.standard.fullRange.end;
+      start = OPENING_HOURS.standard.service.start;
+      end = OPENING_HOURS.standard.service.end;
     }
 
     return currentMinutes >= timeToMinutes(start) && currentMinutes <= timeToMinutes(end);

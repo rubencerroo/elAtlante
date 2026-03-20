@@ -23,7 +23,7 @@ export default function Reservations() {
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
-    name: '', email: '', date: '', time: '13:00',
+    name: '', email: '', date: '', time: '12:30',
     guests: 2, preference: 'Indiferente' as const,
     hasPet: false, notes: '', acceptPolicies: false,
   });
@@ -212,7 +212,7 @@ export default function Reservations() {
               onClick={() => {
                 setSubmitted(false);
                 setLastReservation(null);
-                setFormData({ name: '', email: '', date: '', time: '13:00', guests: 2, preference: 'Indiferente', hasPet: false, notes: '', acceptPolicies: false });
+                setFormData({ name: '', email: '', date: '', time: '12:30', guests: 2, preference: 'Indiferente', hasPet: false, notes: '', acceptPolicies: false });
                 setPhone('');
               }}
               className="text-primary dark:text-slate-300 text-sm font-medium hover:text-coastal-sea transition-colors flex items-center gap-2 group"

@@ -8,7 +8,7 @@ export interface Reservation {
   id: string;
   bookingNumber: string;
   name: string;
-  email: string;
+  email?: string;
   phone: string;
   date: string; // YYYY-MM-DD
   time: string; // HH:MM
@@ -36,7 +36,7 @@ export interface Reservation {
 export interface ClientProfile {
   name: string;
   phone: string;
-  email: string;
+  email?: string;
   visitCount: number;
   noShowCount: number;
   lastVisit: string;
@@ -48,8 +48,8 @@ export interface ClientProfile {
 }
 
 export interface ClientMeta {
-  email: string;
-  phone?: string;
+  phone: string;
+  email?: string;
   allergies?: string;
   favoriteWine?: string;
   customNotes?: string;
@@ -182,11 +182,10 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
   const reservation = mapToReservation(data);
 
   // Auto-create client meta if phone exists but meta doesn't
-  // Auto-create client meta if email exists but meta doesn't
-  if (reservation.email && reservation.email !== 'Walk-in') {
-    const existingMeta = await getClientMeta(reservation.email);
+  if (reservation.phone) {
+    const existingMeta = await getClientMeta(reservation.phone);
     if (!existingMeta) {
-      await saveClientMeta({ email: reservation.email, phone: reservation.phone });
+      await saveClientMeta({ phone: reservation.phone, email: reservation.email });
     }
   }
 
@@ -474,8 +473,17 @@ export async function getClientProfiles(): Promise<ClientProfile[]> {
 
   const map = new Map<string, any[]>();
   data.forEach(r => {
-    // Use email as primary key, fallback to phone then name
-    const key = r.email || r.phone || r.name.toLowerCase();
+    // Only process "real" clients (must have a valid-looking phone and not be anonymous types)
+    if (!r.phone || 
+        r.phone === 'Mesa Rápida' || 
+        r.phone === 'Lista de Espera' || 
+        r.phone === 'Walk-in' ||
+        r.phone.toLowerCase().includes('mesa') ||
+        r.phone.toLowerCase().includes('lista') ||
+        r.phone.toLowerCase().includes('walk-in')) return;
+
+    // Use phone as primary key, fallback to email then name
+    const key = r.phone || r.email || r.name.toLowerCase();
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(r);
   });
@@ -525,17 +533,17 @@ export async function getClientHistory(nameOrPhone: string): Promise<Reservation
 
 // ── Client Metadata ──
 
-export async function getClientMeta(email: string): Promise<ClientMeta | null> {
+export async function getClientMeta(phone: string): Promise<ClientMeta | null> {
   const { data, error } = await supabase
     .from('client_meta')
     .select('*')
-    .eq('email', email)
+    .eq('phone', phone)
     .maybeSingle();
 
   if (error || !data) return null;
   return {
-    email: data.email,
     phone: data.phone,
+    email: data.email,
     allergies: data.allergies,
     favoriteWine: data.favorite_wine,
     customNotes: data.custom_notes,
@@ -546,8 +554,8 @@ export async function saveClientMeta(meta: ClientMeta): Promise<void> {
   const { error } = await supabase
     .from('client_meta')
     .upsert({
-      email: meta.email,
       phone: meta.phone,
+      email: meta.email,
       allergies: meta.allergies,
       favorite_wine: meta.favoriteWine,
       custom_notes: meta.customNotes,

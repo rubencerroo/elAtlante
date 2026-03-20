@@ -644,10 +644,10 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
   const [savingMeta, setSavingMeta] = useState(false);
 
   useEffect(() => {
-    if (selectedClient?.email) {
+    if (selectedClient?.phone) {
       setLoadingMeta(true);
-      getClientMeta(selectedClient.email).then(m => {
-        setMeta(m || { email: selectedClient.email, phone: selectedClient.phone });
+      getClientMeta(selectedClient.phone).then(m => {
+        setMeta(m || { phone: selectedClient.phone, email: selectedClient.email });
         setLoadingMeta(false);
       });
     } else {
@@ -666,7 +666,7 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
   const filteredClients = useMemo(() => {
     if (!search) return clientProfiles;
     const q = search.toLowerCase();
-    return clientProfiles.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q) || c.email.toLowerCase().includes(q));
+    return clientProfiles.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q) || (c.email && c.email.toLowerCase().includes(q)));
   }, [clientProfiles, search]);
 
   return (
@@ -677,8 +677,8 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
           className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary/50" />
         <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
           {filteredClients.map(c => (
-            <button key={c.email || c.phone || c.name} onClick={() => setSelectedClient(c)}
-              className={`w-full text-left bg-white/[0.03] hover:bg-white/[0.06] border rounded-xl px-4 py-3 transition-all ${selectedClient?.email === c.email && c.email ? 'border-primary/30 bg-primary/5' : 'border-white/5'}`}>
+            <button key={c.phone || c.email || c.name} onClick={() => setSelectedClient(c)}
+              className={`w-full text-left bg-white/[0.03] hover:bg-white/[0.06] border rounded-xl px-4 py-3 transition-all ${selectedClient?.phone === c.phone && c.phone ? 'border-primary/30 bg-primary/5' : 'border-white/5'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-sm">{c.name}</span>
