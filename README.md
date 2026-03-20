@@ -92,8 +92,3 @@
 El Atlante está configurado como una **Progressive Web App**. Puedes instalarla en cualquier dispositivo móvil o escritorio para un acceso directo y una experiencia similar a una app nativa, con soporte para notificaciones push y carga optimizada.
 
 ---
-
-<div align="center">
-  <p>Desarrollado con ❤️ para <b>El Atlante de San Cristóbal</b></p>
-  <img src="./public/icons.svg" alt="Icon" width="40" />
-</div>
