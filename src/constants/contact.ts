@@ -13,7 +13,7 @@ export const CONTACT_INFO = {
     display: '+34 647 99 19 33',
     link: 'https://wa.me/34647991933'
   },
-  email: 'info@elatlante.com',
+  email: 'info@elatlantedesancristobal.com',
   address: {
     street: 'Calle Marina, 81',
     city: 'San Cristóbal, Las Palmas',

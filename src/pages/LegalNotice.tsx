@@ -34,7 +34,7 @@ export default function LegalNotice() {
               <li><strong>{t('legal.section1.titular')}</strong> FELRODEZ S.L.</li>
               <li><strong>{t('legal.section1.nif')}</strong> B76254267</li>
               <li><strong>{t('legal.section1.domicilio')}</strong> Calle León y Castillo, 199, 35280 Santa Lucía de Tirajana, Las Palmas</li>
-              <li><strong>{t('legal.section1.email')}</strong> info@elatlante.com</li>
+              <li><strong>{t('legal.section1.email')}</strong> {CONTACT_INFO.email}</li>
               <li><strong>{t('legal.section1.telFijo')}</strong> {CONTACT_INFO.landline.display}</li>
               <li><strong>{t('legal.section1.telMovil')}</strong> {CONTACT_INFO.mobile.display}</li>
             </ul>
