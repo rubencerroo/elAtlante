@@ -59,7 +59,7 @@ export default function Header() {
 
     const observer = new IntersectionObserver(handleIntersect, observerOptions);
     
-    const sections = ['inicio', 'nosotros', 'carta'];
+    const sections = ['inicio', 'nosotros'];
     sections.forEach(id => {
       const element = document.getElementById(id);
       if (element) observer.observe(element);
@@ -111,7 +111,7 @@ export default function Header() {
   };
 
   const navLink = (section: string, label: string, href: string, isLink = false) => {
-    const isActive = activeSection === section;
+    const isActive = activeSection === section || (href !== '/' && location.pathname === href);
     const cls = `text-[11px] font-semibold tracking-widest uppercase transition-colors duration-200 whitespace-nowrap ${
       isActive ? 'text-white' : 'text-white/40 hover:text-white/80'
     }`;
@@ -137,7 +137,7 @@ export default function Header() {
           <nav className="flex items-center gap-10 flex-1">
             {navLink('inicio',   t('nav.inicio'),   '/',          true)}
             {navLink('nosotros', t('nav.nosotros'), '/#nosotros')}
-            {navLink('carta',    t('nav.carta'),    '/#carta')}
+            {navLink('carta',    t('nav.carta'),    '/carta',     true)}
           </nav>
           <Link to="/" className="absolute left-1/2 -translate-x-1/2">
             <img src={logoWhite} alt="El Atlante" className="h-11 w-auto object-contain" />
@@ -183,9 +183,9 @@ export default function Header() {
             {[
               { section: 'inicio',   label: t('nav.inicio'),   href: '/',          isLink: true  as const },
               { section: 'nosotros', label: t('nav.nosotros'), href: '/#nosotros', isLink: false as const },
-              { section: 'carta',    label: t('nav.carta'),    href: '/#carta',    isLink: false as const },
+              { section: 'carta',    label: t('nav.carta'),    href: '/carta',     isLink: true as const },
             ].map(({ section, label, href, isLink }, i) => {
-              const isActive = activeSection === section;
+              const isActive = activeSection === section || (href !== '/' && location.pathname === href);
               const cls = `text-sm font-medium whitespace-nowrap transition-all duration-300 ${isActive ? 'text-white' : 'text-white/45'}`;
               const style = { transitionDelay: isMobileMenuOpen ? `${i * 50}ms` : '0ms' };
               return isLink

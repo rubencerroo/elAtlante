@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
+import Carta from './pages/Carta';
 import Reservations from './pages/Reservations';
 import AdminLogin from './pages/AdminLogin';
 import AdminPanel from './pages/AdminPanel';
@@ -134,6 +135,7 @@ function AppLayout() {
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/carta" element={<Carta />} />
           <Route path="/reservar" element={<Reservations />} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/owner" element={<AdminPanel />} />
