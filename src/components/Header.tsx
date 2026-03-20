@@ -149,42 +149,58 @@ export default function Header() {
           </div>
         </div>
 
-        {/* ── MOBILE ── single row, header expands in-place */}
-        <div className="flex md:hidden items-center px-6 h-[64px]">
+        {/* ── MOBILE ── row 1: logo centrado + hamburger; row 2: nav expandible */}
+        <div className="flex md:hidden flex-col overflow-hidden">
 
-          {/* Logo — centered when closed (via transform), left when open */}
-          <Link
-            to="/"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="flex-shrink-0 transition-transform duration-300 ease-in-out z-10"
-            style={!isMobileMenuOpen ? { transform: 'translateX(calc(50vw - 1.5rem - 50%))' } : {}}
-          >
-            <img src={logoWhite} alt="El Atlante" className="h-10 w-auto object-contain" />
-          </Link>
-
-          {/* Nav items — fade + slide in between logo and hamburger */}
-          <div className={`flex-1 flex items-center gap-5 ml-6 min-w-0 transition-all duration-300 ease-in-out
-            ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-            {[
-              { section: 'inicio',   label: t('nav.inicio'),   href: '/',          isLink: true  as const },
-              { section: 'nosotros', label: t('nav.nosotros'), href: '/#nosotros', isLink: false as const },
-              { section: 'carta',    label: t('nav.carta'),    href: pdfUrl,     isExternal: true as const },
-            ].map(({ section, label, href, isLink, isExternal }, i) => {
-              const isActive = activeSection === section || (href !== '/' && location.pathname === href);
-              const cls = `text-sm font-medium whitespace-nowrap transition-all duration-300 ${isActive ? 'text-white' : 'text-white/45'}`;
-              const style = { transitionDelay: isMobileMenuOpen ? `${i * 50}ms` : '0ms' };
-              return isExternal
-                ? <a key={section} href={href} target="_blank" rel="noopener noreferrer" className={cls} style={style} onClick={() => setIsMobileMenuOpen(false)}>{label}</a>
-                : isLink
-                  ? <Link key={section} to={href} className={cls} style={style} onClick={() => setIsMobileMenuOpen(false)}>{label}</Link>
-                  : <a key={section} href={href} className={cls} style={style} onClick={(e) => { setIsMobileMenuOpen(false); handleAnchorClick(e, href); }}>{label}</a>;
-            })}
-
-            {/* Language selector */}
-            <div
-              className="flex items-center gap-2 ml-auto flex-shrink-0"
-              style={{ transitionDelay: isMobileMenuOpen ? '150ms' : '0ms' }}
+          {/* Fila 1: logo centrado + hamburger */}
+          <div className="relative flex items-center justify-center h-[64px] px-4">
+            {/* Logo siempre centrado */}
+            <Link
+              to="/"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="z-10"
             >
+              <img src={logoWhite} alt="El Atlante" className="h-10 w-auto object-contain" />
+            </Link>
+
+            {/* Hamburger → X, anclado a la derecha */}
+            <button
+              className="absolute right-4 flex flex-col justify-center items-center w-8 h-8 gap-[5px]"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Menú"
+            >
+              <span className={`block w-5 h-[1.5px] bg-white transition-all duration-300 origin-center ${isMobileMenuOpen ? 'rotate-45 translate-y-[6.5px]' : ''}`} />
+              <span className={`block h-[1.5px] bg-white transition-all duration-300 ${isMobileMenuOpen ? 'w-0 opacity-0' : 'w-5'}`} />
+              <span className={`block w-5 h-[1.5px] bg-white transition-all duration-300 origin-center ${isMobileMenuOpen ? '-rotate-45 -translate-y-[6.5px]' : ''}`} />
+            </button>
+          </div>
+
+          {/* Fila 2: nav + idioma, se expande/contrae */}
+          <div
+            className={`transition-all duration-300 ease-in-out overflow-hidden ${
+              isMobileMenuOpen ? 'max-h-24 opacity-100 pb-4' : 'max-h-0 opacity-0'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-6 px-4">
+              {[
+                { section: 'inicio',   label: t('nav.inicio'),   href: '/',        isLink: true  as const },
+                { section: 'nosotros', label: t('nav.nosotros'), href: '/#nosotros', isLink: false as const },
+                { section: 'carta',    label: t('nav.carta'),    href: pdfUrl,     isExternal: true as const },
+              ].map(({ section, label, href, isLink, isExternal }, i) => {
+                const isActive = activeSection === section || (href !== '/' && location.pathname === href);
+                const cls = `text-[12px] font-semibold tracking-widest uppercase whitespace-nowrap transition-colors duration-200 ${isActive ? 'text-white' : 'text-white/45'}`;
+                const style = { transitionDelay: isMobileMenuOpen ? `${i * 40}ms` : '0ms' };
+                return isExternal
+                  ? <a key={section} href={href} target="_blank" rel="noopener noreferrer" className={cls} style={style} onClick={() => setIsMobileMenuOpen(false)}>{label}</a>
+                  : isLink
+                    ? <Link key={section} to={href} className={cls} style={style} onClick={() => setIsMobileMenuOpen(false)}>{label}</Link>
+                    : <a key={section} href={href} className={cls} style={style} onClick={(e) => { setIsMobileMenuOpen(false); handleAnchorClick(e, href); }}>{label}</a>;
+              })}
+
+              {/* Separador */}
+              <span className="w-px h-4 bg-white/20 block" />
+
+              {/* Idioma */}
               {(['ES', 'EN'] as const).map((l, i) => (
                 <span key={l} className="flex items-center gap-2">
                   {i > 0 && <span className="w-px h-3 bg-white/20 block" />}
@@ -199,16 +215,6 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Hamburger → X */}
-          <button
-            className="flex-shrink-0 flex flex-col justify-center items-center w-8 h-8 gap-[5px] ml-3"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Menú"
-          >
-            <span className={`block w-5 h-[1.5px] bg-white transition-all duration-300 origin-center ${isMobileMenuOpen ? 'rotate-45 translate-y-[6.5px]' : ''}`} />
-            <span className={`block h-[1.5px] bg-white transition-all duration-300 ${isMobileMenuOpen ? 'w-0 opacity-0' : 'w-5'}`} />
-            <span className={`block w-5 h-[1.5px] bg-white transition-all duration-300 origin-center ${isMobileMenuOpen ? '-rotate-45 -translate-y-[6.5px]' : ''}`} />
-          </button>
         </div>
 
       </div>
