@@ -81,7 +81,7 @@ export default function ManualReservationModal({ onClose, onSave }: ManualReserv
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-[200] p-4 sm:p-6 overflow-y-auto custom-scrollbar">
+    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-[200] p-4 sm:p-6 overflow-y-auto custom-scrollbar dark">
       <div className="bg-slate-900 border border-white/5 rounded-3xl w-full max-w-lg sm:max-w-2xl my-auto overflow-hidden shadow-2xl">
         <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
           <h2 className="font-bold text-lg text-white">Nueva Reserva Manual</h2>
