@@ -91,13 +91,13 @@ export default function ManualReservationModal({ onClose, onSave }: ManualReserv
         <form onSubmit={handleSubmit} className="p-6 sm:p-10 space-y-6 max-h-[75vh] overflow-y-auto custom-scrollbar overflow-x-hidden">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-x-10">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Nombre Completo</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-white/70 ml-1">Nombre Completo</label>
               <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Nombre del cliente"
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all" />
             </div>
             <div className="space-y-2 group">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Teléfono (obligatorio)</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-white/70 ml-1">Teléfono (obligatorio)</label>
               <div className="border border-white/10 group-focus-within:border-primary/50 group-focus-within:ring-4 group-focus-within:ring-primary/5 bg-white/5 rounded-2xl px-5 py-2 transition-all">
                 <PhoneInput
                   defaultCountry="es"
@@ -112,7 +112,7 @@ export default function ManualReservationModal({ onClose, onSave }: ManualReserv
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-x-10">
             <div className="space-y-2 col-span-1 relative" ref={calendarRef}>
-              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Fecha</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-white/70 ml-1">Fecha</label>
               <button
                 type="button"
                 onClick={() => setShowCalendar(!showCalendar)}
@@ -149,7 +149,7 @@ export default function ManualReservationModal({ onClose, onSave }: ManualReserv
               </AnimatePresence>
             </div>
             <div className="space-y-2 col-span-1">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Hora</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-white/70 ml-1">Hora</label>
               <CustomSelect
                 value={formData.time}
                 onChange={v => setFormData({ ...formData, time: v })}
@@ -160,7 +160,7 @@ export default function ManualReservationModal({ onClose, onSave }: ManualReserv
           </div>
 
           <div className="space-y-3 pt-4 flex flex-col items-center">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 w-full text-center">Número de Comensales</label>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-white/70 w-full text-center">Número de Comensales</label>
             <div className="w-full flex justify-center py-2 bg-white/5 border border-white/5 rounded-2xl">
               <GuestCounter
                 value={formData.guests}
@@ -173,7 +173,7 @@ export default function ManualReservationModal({ onClose, onSave }: ManualReserv
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-x-10">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Preferencia de Zona</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-white/70 ml-1">Preferencia de Zona</label>
               <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden focus-within:border-primary/50 transition-all">
                 <select value={formData.preference} onChange={e => setFormData({ ...formData, preference: e.target.value as any })}
                   className="w-full bg-transparent px-5 py-3 text-sm text-white focus:outline-none appearance-none cursor-pointer font-light">
@@ -185,7 +185,7 @@ export default function ManualReservationModal({ onClose, onSave }: ManualReserv
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Origen de la Reserva</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-white/70 ml-1">Origen de la Reserva</label>
               <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden focus-within:border-primary/50 transition-all">
                 <select value={formData.source} onChange={e => setFormData({ ...formData, source: e.target.value })}
                   className="w-full bg-transparent px-5 py-3 text-sm text-white focus:outline-none appearance-none cursor-pointer font-light">
@@ -200,18 +200,18 @@ export default function ManualReservationModal({ onClose, onSave }: ManualReserv
             <div className={`w-10 h-5 rounded-full relative transition-colors flex-shrink-0 ${formData.hasPet ? 'bg-primary' : 'bg-white/10'}`}>
               <div className={`absolute top-1 left-1 w-3 h-3 rounded-full bg-white transition-transform duration-300 ${formData.hasPet ? 'translate-x-5' : 'translate-x-0'}`} />
             </div>
-            <span className="text-sm font-medium text-slate-400 group-hover:text-white transition-colors uppercase tracking-wider">Trae mascota 🐾</span>
+            <span className="text-sm font-medium text-white group-hover:text-white transition-colors uppercase tracking-wider">Trae mascota 🐾</span>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Notas internas / Observaciones</label>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-white/70 ml-1">Notas internas / Observaciones</label>
             <textarea value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Ej: Alergias, Cliente VIP, celebración especial..."
               className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5 h-28 resize-none transition-all font-light" />
           </div>
 
           <div className="pt-6 flex flex-col sm:flex-row gap-4">
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-4 rounded-2xl border border-white/10 text-sm font-bold text-slate-400 hover:bg-white/5 hover:text-white transition-all order-2 sm:order-1">Cancelar</button>
+            <button type="button" onClick={onClose} className="flex-1 px-4 py-4 rounded-2xl border border-white/10 text-sm font-bold text-white/70 hover:bg-white/5 hover:text-white transition-all order-2 sm:order-1">Cancelar</button>
             <button type="submit" disabled={loading || !formData.time} className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-2xl text-sm transition-all shadow-xl shadow-primary/20 disabled:opacity-50 order-1 sm:order-2 flex items-center justify-center gap-2">
               {loading ? (
                 <>
