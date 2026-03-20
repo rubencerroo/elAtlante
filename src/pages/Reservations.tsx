@@ -320,28 +320,75 @@ export default function Reservations() {
                   
                   <AnimatePresence>
                     {showCalendar && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute top-full left-0 md:-left-4 mt-4 z-50 w-[calc(100vw-3rem)] md:w-auto overflow-hidden"
-                      >
-                        <Calendar
-                          selectedDate={formData.date}
-                          onSelect={(date) => {
-                            handleChange('date', date);
-                            const times = getAvailableTimes(date, 15);
-                            if (times.length > 0 && (!formData.time || !times.includes(formData.time))) {
-                              handleChange('time', times[0]);
-                            } else if (times.length === 0) {
-                              handleChange('time', '');
-                            }
-                            setShowCalendar(false);
-                          }}
-                          minDate={getTodayDateString()}
-                        />
-                      </motion.div>
+                      <>
+                        {/* Mobile: full-screen modal overlay */}
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="md:hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center p-4"
+                          onClick={() => setShowCalendar(false)}
+                        >
+                          <motion.div
+                            initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 30, scale: 0.95 }}
+                            transition={{ duration: 0.25 }}
+                            className="w-full max-w-sm"
+                            onClick={e => e.stopPropagation()}
+                          >
+                            <div className="flex justify-between items-center mb-3 px-1">
+                              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">{t('reservas.form.date')}</span>
+                              <button
+                                type="button"
+                                onClick={() => setShowCalendar(false)}
+                                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-slate-400 hover:text-white transition-colors"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                              </button>
+                            </div>
+                            <Calendar
+                              selectedDate={formData.date}
+                              onSelect={(date) => {
+                                handleChange('date', date);
+                                const times = getAvailableTimes(date, 15);
+                                if (times.length > 0 && (!formData.time || !times.includes(formData.time))) {
+                                  handleChange('time', times[0]);
+                                } else if (times.length === 0) {
+                                  handleChange('time', '');
+                                }
+                                setShowCalendar(false);
+                              }}
+                              minDate={getTodayDateString()}
+                            />
+                          </motion.div>
+                        </motion.div>
+
+                        {/* Desktop: dropdown */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.2 }}
+                          className="hidden md:block absolute top-full -left-4 mt-4 z-50 overflow-hidden"
+                        >
+                          <Calendar
+                            selectedDate={formData.date}
+                            onSelect={(date) => {
+                              handleChange('date', date);
+                              const times = getAvailableTimes(date, 15);
+                              if (times.length > 0 && (!formData.time || !times.includes(formData.time))) {
+                                handleChange('time', times[0]);
+                              } else if (times.length === 0) {
+                                handleChange('time', '');
+                              }
+                              setShowCalendar(false);
+                            }}
+                            minDate={getTodayDateString()}
+                          />
+                        </motion.div>
+                      </>
                     )}
                   </AnimatePresence>
 

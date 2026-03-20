@@ -179,16 +179,24 @@ export default function Header() {
                   ? <Link key={section} to={href} className={cls} style={style} onClick={() => setIsMobileMenuOpen(false)}>{label}</Link>
                   : <a key={section} href={href} className={cls} style={style} onClick={(e) => { setIsMobileMenuOpen(false); handleAnchorClick(e, href); }}>{label}</a>;
             })}
-            {false && location.pathname !== '/reservar' && (
-              <Link
-                to="/reservar"
-                className="ml-auto flex-shrink-0 flex items-center h-8 px-4 rounded-full bg-white text-black text-[11px] font-semibold transition-all duration-300"
-                style={{ transitionDelay: isMobileMenuOpen ? '150ms' : '0ms' }}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {t('nav.reservar')}
-              </Link>
-            )}
+
+            {/* Language selector */}
+            <div
+              className="flex items-center gap-2 ml-auto flex-shrink-0"
+              style={{ transitionDelay: isMobileMenuOpen ? '150ms' : '0ms' }}
+            >
+              {(['ES', 'EN'] as const).map((l, i) => (
+                <span key={l} className="flex items-center gap-2">
+                  {i > 0 && <span className="w-px h-3 bg-white/20 block" />}
+                  <button
+                    onClick={() => { i18n.changeLanguage(l.toLowerCase()); localStorage.setItem('lang', l.toLowerCase()); }}
+                    className={`text-[11px] font-semibold tracking-widest uppercase transition-colors duration-200 ${
+                      i18n.language.toUpperCase() === l ? 'text-white' : 'text-white/35 hover:text-white/60'
+                    }`}
+                  >{l}</button>
+                </span>
+              ))}
+            </div>
           </div>
 
           {/* Hamburger → X */}
