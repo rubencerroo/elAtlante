@@ -19,6 +19,7 @@ export interface Reservation {
   status: ReservationStatus;
   createdAt: string; // ISO
   tableNumber?: number;
+  assignedTables?: string; // comma-separated table IDs (e.g. "1,7" for combined tables)
   seatedAt?: string; // ISO – when seated
   isWalkIn?: boolean;
 
@@ -80,6 +81,7 @@ function mapToReservation(data: any): Reservation {
     status: data.status,
     createdAt: data.created_at,
     tableNumber: data.table_number,
+    assignedTables: data.assigned_tables || (data.table_number ? String(data.table_number) : undefined),
     seatedAt: data.seated_at,
     isWalkIn: data.is_walk_in,
     source: data.source,
@@ -122,7 +124,7 @@ export async function getReservationById(id: string): Promise<Reservation | null
 }
 
 export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber' | 'status' | 'createdAt'> & { status?: ReservationStatus }): Promise<Reservation | null> {
-  const newR = {
+  const newR: any = {
     booking_number: generateBookingNumber(),
     name: r.name,
     email: r.email,
@@ -135,6 +137,7 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
     notes: r.notes,
     status: r.status || 'pending',
     table_number: r.tableNumber,
+    assigned_tables: r.assignedTables || (r.tableNumber ? String(r.tableNumber) : null),
     is_walk_in: r.isWalkIn || false,
     source: r.source || 'website',
     utm_source: r.utmSource,
@@ -162,9 +165,13 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
 
   // ── Automatic Table Assignment ──
   if (!newR.table_number) {
-    const assignedTable = await findAvailableTable(r.date, r.time, r.preference);
-    if (assignedTable) {
-      newR.table_number = assignedTable;
+    const result = await assignTable(r.date, r.time, r.guests, r.preference, r.hasPet);
+    if (result) {
+      newR.table_number = result.tableNumber;
+      newR.assigned_tables = result.allTableIds || String(result.tableNumber);
+      if (result.combinedNote) {
+        newR.notes = newR.notes ? `${newR.notes} ${result.combinedNote}` : result.combinedNote;
+      }
     }
   }
 
@@ -209,7 +216,7 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
   return reservation;
 }
 
-export async function addWalkIn(guests: number, tableNumber: number, name: string): Promise<Reservation | null> {
+export async function addWalkIn(guests: number, tableNumber: number, name: string, assignedTables?: string): Promise<Reservation | null> {
   const now = new Date();
   const newR = {
     booking_number: generateBookingNumber(),
@@ -224,6 +231,7 @@ export async function addWalkIn(guests: number, tableNumber: number, name: strin
     status: 'seated',
     seated_at: now.toISOString(),
     table_number: tableNumber,
+    assigned_tables: assignedTables || String(tableNumber),
     is_walk_in: true,
     source: 'walk-in',
   };
@@ -243,7 +251,7 @@ export async function addWalkIn(guests: number, tableNumber: number, name: strin
   return mapToReservation(data);
 }
 
-export async function addToWaitList(name: string, guests: number, phone?: string): Promise<Reservation | null> {
+export async function addToWaitList(name: string, guests: number, phone?: string, preference?: string, hasPet?: boolean): Promise<Reservation | null> {
   const now = new Date();
   const newR = {
     booking_number: generateBookingNumber(),
@@ -252,8 +260,8 @@ export async function addToWaitList(name: string, guests: number, phone?: string
     date: now.toISOString().split('T')[0],
     time: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
     guests,
-    preference: 'Indiferente',
-    has_pet: false,
+    preference: preference || 'Indiferente',
+    has_pet: hasPet || false,
     status: 'waiting',
     is_walk_in: true,
     source: 'walk-in',
@@ -285,7 +293,14 @@ export async function updateReservation(id: string, updates: Partial<Reservation
   if (updates.hasPet !== undefined) dbUpdates.has_pet = updates.hasPet;
   if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
   if (updates.status !== undefined) dbUpdates.status = updates.status;
-  if (updates.tableNumber !== undefined) dbUpdates.table_number = updates.tableNumber;
+  if (updates.tableNumber !== undefined) {
+    dbUpdates.table_number = updates.tableNumber;
+    // Also update assigned_tables if not explicitly provided
+    if (updates.assignedTables === undefined) {
+      dbUpdates.assigned_tables = String(updates.tableNumber);
+    }
+  }
+  if (updates.assignedTables !== undefined) dbUpdates.assigned_tables = updates.assignedTables;
   if (updates.seatedAt !== undefined) dbUpdates.seated_at = updates.seatedAt;
   if (updates.isWalkIn !== undefined) dbUpdates.is_walk_in = updates.isWalkIn;
   if (updates.cancellationReason !== undefined) dbUpdates.cancellation_reason = updates.cancellationReason;
@@ -567,17 +582,34 @@ export async function saveClientMeta(meta: ClientMeta): Promise<void> {
 
 // ── Occupied Tables ──
 
+/**
+ * Parse assigned_tables string (e.g. "1,7") into array of numbers.
+ */
+export function parseAssignedTables(assigned: string | null | undefined): number[] {
+  if (!assigned) return [];
+  return assigned.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+}
+
 export async function getOccupiedTables(dateStr?: string): Promise<number[]> {
   const today = dateStr || new Date().toISOString().split('T')[0];
   const { data, error } = await supabase
     .from('reservations')
-    .select('table_number')
+    .select('table_number, assigned_tables')
     .eq('date', today)
     .in('status', ['seated', 'confirmed'])
     .not('table_number', 'is', null);
 
   if (error) return [];
-  return data.map(r => r.table_number as number);
+  const tables: number[] = [];
+  for (const r of data) {
+    const assigned = parseAssignedTables(r.assigned_tables);
+    if (assigned.length > 0) {
+      tables.push(...assigned);
+    } else if (r.table_number) {
+      tables.push(r.table_number as number);
+    }
+  }
+  return tables;
 }
 
 // ── Feedback ──
@@ -681,51 +713,181 @@ export async function saveShiftNote(dateStr: string, content: string): Promise<v
 
 // ── Table Assignment Helpers ──
 
-async function findAvailableTable(date: string, time: string, preference: string): Promise<number | undefined> {
-  // Get tables that are either seated or have a reservation at this exact time
-  const { data: reservations, error } = await supabase
+import {
+  TABLES,
+  getAreasForPreference,
+  type AreaId,
+} from '../utils/tableConfig';
+
+import {
+  timeToMinutesLocal,
+  findBestFitInArea,
+  buildResult,
+} from '../utils/tableAssignment';
+
+/**
+ * Get all table IDs that are occupied (or reserved) within ±2 hours of the given time on the given date.
+ * Excludes cancelled, no-show, and completed reservations.
+ */
+async function getOccupiedTableIds(date: string, time: string): Promise<Set<number>> {
+  const { data, error } = await supabase
     .from('reservations')
-    .select('table_number')
+    .select('table_number, assigned_tables, time')
     .eq('date', date)
-    .eq('time', time)
-    .not('status', 'eq', 'cancelled')
+    .not('status', 'in', '(cancelled,no-show,completed)')
     .not('table_number', 'is', null);
 
   if (error) {
     console.error('Error checking table availability:', error);
+    return new Set();
   }
 
-  const occupied = (reservations || []).map(r => r.table_number);
-  
-  const ranges: Record<string, [number, number]> = {
-    'Interior': [1, 15],
-    'Mesas altas': [16, 30],
-    'Terraza exterior': [31, 45],
-    'Indiferente': [1, 45]
-  };
+  const targetMin = timeToMinutesLocal(time);
+  const occupied = new Set<number>();
 
-  const getSectionTables = (range: [number, number]) => 
-    Array.from({ length: range[1] - range[0] + 1 }, (_, i) => range[0] + i);
-
-  // Try preferred section first
-  const preferredRange = ranges[preference] || ranges['Indiferente'];
-  const preferredTables = getSectionTables(preferredRange);
-  const availableInPreferred = preferredTables.filter(t => !occupied.includes(t));
-
-  if (availableInPreferred.length > 0) {
-    // Pick a random table from available ones in preferred section
-    return availableInPreferred[Math.floor(Math.random() * availableInPreferred.length)];
-  }
-
-  // If preferred section is full or preference is Indiferente, look elsewhere
-  if (preference !== 'Indiferente') {
-    const allTables = getSectionTables([1, 45]);
-    const availableAnywhere = allTables.filter(t => !occupied.includes(t));
-
-    if (availableAnywhere.length > 0) {
-      return availableAnywhere[Math.floor(Math.random() * availableAnywhere.length)];
+  for (const r of data || []) {
+    const rMin = timeToMinutesLocal(r.time?.substring(0, 5) || '00:00');
+    if (Math.abs(rMin - targetMin) < 120) {
+      // Parse all assigned tables, not just the primary
+      const assigned = parseAssignedTables(r.assigned_tables);
+      if (assigned.length > 0) {
+        for (const tid of assigned) occupied.add(tid);
+      } else {
+        occupied.add(r.table_number as number);
+      }
     }
   }
 
-  return undefined; // No tables left at this time
+  return occupied;
 }
+
+/**
+ * Main table assignment function (DB-dependent wrapper).
+ */
+async function assignTable(
+  date: string,
+  time: string,
+  guests: number,
+  preference: string,
+  hasPet: boolean
+): Promise<{ tableNumber: number; combinedNote?: string; allTableIds: string } | undefined> {
+  const occupiedIds = await getOccupiedTableIds(date, time);
+  const candidateAreas = getAreasForPreference(preference, hasPet);
+
+  const preferredAreaCount = hasPet ? 3 : (
+    preference === 'Interior' ? 3 :
+    preference === 'Terraza exterior' ? 2 :
+    preference === 'Mesas altas' ? 1 :
+    6
+  );
+
+  for (const areaId of candidateAreas) {
+    const fit = findBestFitInArea(areaId, guests, occupiedIds);
+    if (fit) {
+      return buildResult(fit);
+    }
+  }
+
+  if (preference !== 'Indiferente' || hasPet) {
+    const preferredAreas = candidateAreas.slice(0, preferredAreaCount);
+    const swapResult = await trySwapForPreference(date, time, guests, preferredAreas, occupiedIds);
+    if (swapResult) return swapResult;
+  }
+
+  return undefined;
+}
+
+/**
+ * Swap logic: move Indiferente confirmed reservation to free preferred area space.
+ */
+async function trySwapForPreference(
+  date: string,
+  time: string,
+  guests: number,
+  preferredAreas: AreaId[],
+  occupiedIds: Set<number>
+): Promise<{ tableNumber: number; combinedNote?: string; allTableIds: string } | undefined> {
+  const { data: candidates, error } = await supabase
+    .from('reservations')
+    .select('id, table_number, time, guests, preference')
+    .eq('date', date)
+    .eq('preference', 'Indiferente')
+    .in('status', ['confirmed', 'pending'])
+    .not('table_number', 'is', null);
+
+  if (error || !candidates || candidates.length === 0) return undefined;
+
+  const targetMin = timeToMinutesLocal(time);
+
+  const tableIdToArea = new Map<number, AreaId>();
+  for (const t of TABLES) {
+    tableIdToArea.set(t.id, t.area);
+  }
+
+  const swappable = candidates.filter(c => {
+    const cMin = timeToMinutesLocal(c.time?.substring(0, 5) || '00:00');
+    if (Math.abs(cMin - targetMin) >= 120) return false;
+    const cArea = tableIdToArea.get(c.table_number as number);
+    return cArea && preferredAreas.includes(cArea);
+  });
+
+  swappable.sort((a, b) => a.guests - b.guests);
+
+  const allAreaIds: AreaId[] = [
+    'salon_grande', 'salon_derecha', 'salon_izquierda',
+    'terraza_principal', 'terraza_derecha', 'terraza_izquierda',
+  ];
+  const fallbackAreas = allAreaIds.filter(a => !preferredAreas.includes(a));
+
+  for (const candidate of swappable) {
+    for (const fbArea of fallbackAreas) {
+      const fitForCandidate = findBestFitInArea(fbArea, candidate.guests, occupiedIds);
+      if (fitForCandidate) {
+        const newTableForCandidate = fitForCandidate.sort((a, b) => a.id - b.id)[0].id;
+        const combinedNoteCandidate = fitForCandidate.length > 1
+          ? `[Mesas combinadas: ${fitForCandidate.map(t => t.id).join(', ')}]`
+          : undefined;
+
+        const updatePayload: any = { 
+          table_number: newTableForCandidate, 
+          assigned_tables: fitForCandidate.map(t => t.id).join(',') 
+        };
+        if (combinedNoteCandidate) {
+          const { data: existing } = await supabase
+            .from('reservations')
+            .select('notes')
+            .eq('id', candidate.id)
+            .single();
+
+          const existingNotes = existing?.notes || '';
+          const cleanNotes = existingNotes.replace(/\[Mesas combinadas:.*?\]/g, '').trim();
+          updatePayload.notes = cleanNotes
+            ? `${cleanNotes} ${combinedNoteCandidate}`
+            : combinedNoteCandidate;
+        }
+
+        await supabase
+          .from('reservations')
+          .update(updatePayload)
+          .eq('id', candidate.id);
+
+        const freedTableId = candidate.table_number as number;
+        occupiedIds.delete(freedTableId);
+
+        for (const ft of fitForCandidate) {
+          occupiedIds.add(ft.id);
+        }
+
+        for (const prefArea of preferredAreas) {
+          const fitForNew = findBestFitInArea(prefArea, guests, occupiedIds);
+          if (fitForNew) {
+            return buildResult(fitForNew);
+          }
+        }
+      }
+    }
+  }
+
+  return undefined;
+}
+

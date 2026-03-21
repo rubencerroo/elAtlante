@@ -114,7 +114,7 @@ function KanbanCard({ reservation: r, handleStatus, handleDelete, handleAssignTa
           </button>
 
           {showTableSelector === r.id && (
-            <TableSelector occupiedTables={occupiedTables} selectedTable={r.tableNumber} onSelect={(t) => handleAssignTable(r.id, t)} onClose={() => setShowTableSelector(null)} />
+            <TableSelector occupiedTables={occupiedTables} selectedTables={r.tableNumber ? [r.tableNumber] : []} onSelect={(t) => handleAssignTable(r.id, t)} onClose={() => setShowTableSelector(null)} />
           )}
 
           {/* Quick actions */}

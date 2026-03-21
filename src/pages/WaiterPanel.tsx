@@ -1,12 +1,14 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getReservationsForDate, updateReservation, addWalkIn, getOccupiedTables, getShiftNote, getClientProfiles, addToWaitList, type Reservation, type ReservationStatus, type ClientProfile } from '../services/reservationStore';
+import { getReservationsForDate, updateReservation, addWalkIn, getOccupiedTables, getShiftNote, getClientProfiles, addToWaitList, parseAssignedTables, type Reservation, type ReservationStatus, type ClientProfile } from '../services/reservationStore';
 import { signOut, getStaffRole, getSession, isTabletAuthorized, getActiveStaffId } from '../services/authStore';
 import TableSelector from '../components/TableSelector';
 import GuestCounter from '../components/GuestCounter';
 import FeedbackButton from '../components/FeedbackButton';
 import logoWhite from '../assets/logowhite.png';
 import ManualReservationModal from '../components/ManualReservationModal';
+import { assignTablePure } from '../utils/tableAssignment';
+import { getTableDef, getAreaDef } from '../utils/tableConfig';
 
 const STATUS_COLORS: Record<ReservationStatus, string> = {
   'pending': 'border-l-amber-400 bg-amber-400/5',
@@ -68,7 +70,10 @@ export default function WaiterPanel() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [walkInName, setWalkInName] = useState('');
   const [walkInGuests, setWalkInGuests] = useState(2);
-  const [walkInTable, setWalkInTable] = useState<number | null>(null);
+  const [walkInTables, setWalkInTables] = useState<number[]>([]);
+  const [walkInPreference, setWalkInPreference] = useState<string>('Indiferente');
+  const [walkInPet, setWalkInPet] = useState(false);
+  const [walkInRecommendation, setWalkInRecommendation] = useState<{ tableNumber: number; combinedNote?: string; allTableIds?: string } | null>(null);
   const [occupiedTables, setOccupiedTables] = useState<number[]>([]);
   const [shiftNote, setShiftNote] = useState<string | null>(null);
   const [clientProfiles, setClientProfiles] = useState<ClientProfile[]>([]);
@@ -158,17 +163,24 @@ export default function WaiterPanel() {
 
   const currentList = grouped[tab];
 
-  const handleStatus = async (id: string, status: ReservationStatus, tableNumber?: number) => {
-    await updateReservation(id, { status, ...(tableNumber ? { tableNumber } : {}) });
+  const handleStatus = async (id: string, status: ReservationStatus, tableNumber?: number, assignedTables?: string) => {
+    const payload: Partial<Reservation> = { status };
+    if (tableNumber) payload.tableNumber = tableNumber;
+    if (assignedTables) payload.assignedTables = assignedTables;
+    await updateReservation(id, payload);
     reload();
   };
 
+
   const handleWalkIn = async () => {
-    if (walkInTable && walkInGuests > 0 && walkInName.trim()) {
-      await addWalkIn(walkInGuests, walkInTable, walkInName.trim());
+    if (walkInTables.length > 0 && walkInGuests > 0 && walkInName.trim()) {
+      await addWalkIn(walkInGuests, walkInTables[0], walkInName.trim(), walkInTables.join(','));
       setWalkInName('');
       setWalkInGuests(2);
-      setWalkInTable(null);
+      setWalkInTables([]);
+      setWalkInPreference('Indiferente');
+      setWalkInPet(false);
+      setWalkInRecommendation(null);
       setShowWalkIn(false);
       reload();
     }
@@ -205,7 +217,9 @@ export default function WaiterPanel() {
         const resMins = h * 60 + m;
         // Res is within 2 hours or late -> blocked
         if (resMins - currentMins <= 120) {
-          tables.add(r.tableNumber);
+          const tids = parseAssignedTables(r.assignedTables);
+          if (tids.length > 0) tids.forEach(tid => tables.add(tid));
+          else tables.add(r.tableNumber);
         }
       }
     });
@@ -213,6 +227,20 @@ export default function WaiterPanel() {
   }, [grouped.upcoming, tick]);
 
   const allUnavailable = new Set([...occupiedTables, ...reservedTables]);
+
+  // Auto-recommend table when walk-in params change
+  useEffect(() => {
+    if (!showWalkIn) return;
+    const allUnavailableSet = new Set([...occupiedTables, ...reservedTables]);
+    const result = assignTablePure(walkInGuests, walkInPreference, walkInPet, allUnavailableSet);
+    if (result && result.allTableIds) {
+      setWalkInRecommendation(result);
+      setWalkInTables(parseAssignedTables(result.allTableIds));
+    } else {
+      setWalkInRecommendation(null);
+      setWalkInTables([]);
+    }
+  }, [showWalkIn, walkInGuests, walkInPreference, walkInPet, occupiedTables, reservedTables]);
   const hasAvailableTable = allUnavailable.size < 45;
   const shouldBlinkWaitlist = grouped.waitlist.length > 0 && hasAvailableTable;
 
@@ -333,12 +361,68 @@ export default function WaiterPanel() {
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mesa</label>
-              <TableSelector occupiedTables={occupiedTables} reservedTables={reservedTables} selectedTable={walkInTable} onSelect={t => setWalkInTable(t)} />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Preferencia</label>
+                <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                  <select value={walkInPreference} onChange={e => setWalkInPreference(e.target.value)}
+                    className="w-full bg-transparent px-4 py-3 text-sm text-white focus:outline-none appearance-none cursor-pointer">
+                    <option value="Indiferente">🔄 Indiferente</option>
+                    <option value="Interior">🏠 Interior</option>
+                    <option value="Terraza exterior">☀️ Terraza</option>
+                    <option value="Mesas altas">🪑 Mesas altas</option>
+                  </select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mascota</label>
+                <div 
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
+                    walkInPet ? 'bg-amber-500/10 border-amber-500/30' : 'bg-white/5 border-white/10 hover:bg-white/[0.08]'
+                  }`}
+                  onClick={() => setWalkInPet(!walkInPet)}
+                >
+                  <div className={`w-8 h-4 rounded-full relative transition-colors flex-shrink-0 ${walkInPet ? 'bg-amber-500' : 'bg-white/10'}`}>
+                    <div className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform duration-300 ${walkInPet ? 'translate-x-4' : 'translate-x-0'}`} />
+                  </div>
+                  <span className="text-sm text-white">🐾</span>
+                </div>
+              </div>
             </div>
 
-            <button onClick={handleWalkIn} disabled={!walkInTable || !walkInName.trim()}
+            {/* Table Recommendation Banner */}
+            {walkInRecommendation && (
+              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3 flex items-center gap-3">
+                <span className="text-emerald-400 text-lg">💡</span>
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Mesa recomendada</p>
+                  <p className="text-sm text-slate-300">
+                    Mesa <strong className="text-emerald-300">{walkInRecommendation.tableNumber}</strong>
+                    {(() => {
+                      const tDef = getTableDef(walkInRecommendation.tableNumber);
+                      if (!tDef) return null;
+                      const aDef = getAreaDef(tDef.area);
+                      return <> · {aDef.label} ({tDef.capacity}p)</>;
+                    })()}
+                    {walkInRecommendation.combinedNote && (
+                      <span className="text-xs text-slate-400 ml-1">{walkInRecommendation.combinedNote}</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mesa {walkInRecommendation ? '(auto-seleccionada, puedes cambiar)' : ''}</label>
+              <TableSelector 
+                occupiedTables={occupiedTables} 
+                reservedTables={reservedTables} 
+                selectedTables={walkInTables} 
+                onSelect={t => setWalkInTables(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t])} 
+              />
+            </div>
+
+            <button onClick={handleWalkIn} disabled={walkInTables.length === 0 || !walkInName.trim()}
               className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl text-base transition-all shadow-lg shadow-emerald-500/20 active:scale-95">
               🪑 Sentar ahora
             </button>
@@ -373,16 +457,60 @@ export default function WaiterPanel() {
 
 function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occupiedTables, reservedTables, clientProfiles }: {
   waitList: Reservation[];
-  addToWaitList: (name: string, guests: number, phone?: string) => void;
+  addToWaitList: (name: string, guests: number, phone?: string, preference?: string, hasPet?: boolean) => void;
   removeFromWaitList: (id: string) => void;
-  onSeat: (id: string, guests: number, table: number) => void;
+  onSeat: (id: string, guests: number, tableNumber: number, assignedTables?: string) => void;
   occupiedTables: number[];
   reservedTables: number[];
   clientProfiles: ClientProfile[];
 }) {
   const [waitName, setWaitName] = useState('');
   const [waitGuests, setWaitGuests] = useState(2);
+  const [waitPreference, setWaitPreference] = useState<string>('Indiferente');
+  const [waitPet, setWaitPet] = useState(false);
   const [seatingId, setSeatingId] = useState<string | null>(null);
+  const [seatingTables, setSeatingTables] = useState<number[]>([]);
+  const [seatingRecommendation, setSeatingRecommendation] = useState<{ tableNumber: number; combinedNote?: string; allTableIds?: string } | null>(null);
+
+  // Auto-recommend table when seating modal opens
+  useEffect(() => {
+    if (!seatingId) {
+      setSeatingRecommendation(null);
+      setSeatingTables([]);
+      return;
+    }
+    const item = waitList.find(w => w.id === seatingId);
+    if (!item) return;
+
+    const allUnavailableSet = new Set([...occupiedTables, ...reservedTables]);
+    // Uses the item's preference and pet status, tracking unavailable tables.
+    const result = assignTablePure(item.guests, item.preference || 'Indiferente', item.hasPet || false, allUnavailableSet);
+    
+    if (result && result.allTableIds) {
+      setSeatingRecommendation(result);
+      setSeatingTables(parseAssignedTables(result.allTableIds));
+    } else {
+      setSeatingRecommendation(null);
+      setSeatingTables([]);
+    }
+  }, [seatingId, waitList, occupiedTables, reservedTables]);
+
+  const allUnavailableSet = new Set([...occupiedTables, ...reservedTables]);
+
+  const enrichedWaitList = waitList.map((w, idx) => {
+    const result = assignTablePure(w.guests, w.preference || 'Indiferente', w.hasPet || false, allUnavailableSet);
+    return {
+      reservation: w,
+      originalIndex: idx + 1,
+      canSeat: !!result
+    };
+  });
+
+  const sortedWaitList = [...enrichedWaitList].sort((a, b) => {
+    if (a.canSeat && !b.canSeat) return -1;
+    if (!a.canSeat && b.canSeat) return 1;
+    return a.originalIndex - b.originalIndex;
+  });
 
   return (
     <div className="space-y-6">
@@ -393,16 +521,40 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
               className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50" />
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <GuestCounter 
               value={waitGuests} 
               onChange={setWaitGuests} 
               max={20}
               className="bg-white/5 border border-white/10 rounded-xl px-4 py-2"
             />
-            <button onClick={() => { if (waitName) { addToWaitList(waitName, waitGuests); setWaitName(''); } }}
-              className="bg-primary hover:bg-primary/90 text-white rounded-xl px-6 py-3 text-sm font-bold transition-all shrink-0">
-              + Añadir a la fila
+            <select
+              value={waitPreference}
+              onChange={(e) => setWaitPreference(e.target.value)}
+              className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
+            >
+              <option value="Indiferente">Indiferente</option>
+              <option value="Interior">Interior</option>
+              <option value="Terraza exterior">Terraza exterior</option>
+              <option value="Mesas altas">Mesas altas</option>
+            </select>
+            <button
+              onClick={() => setWaitPet(!waitPet)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all border ${waitPet ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-white/5 text-slate-400 border-white/10 hover:bg-white/10'}`}
+              title="¿Lleva mascota?"
+            >
+              🐾 <span className="hidden sm:inline">Mascota</span>
+            </button>
+            <button onClick={() => { 
+                if (waitName) { 
+                  addToWaitList(waitName, waitGuests, '', waitPreference, waitPet); 
+                  setWaitName(''); 
+                  setWaitPreference('Indiferente');
+                  setWaitPet(false);
+                } 
+              }}
+              className="bg-primary hover:bg-primary/90 text-white rounded-xl px-6 py-3 text-sm font-bold transition-all sm:ml-auto">
+              + Añadir
             </button>
           </div>
         </div>
@@ -416,19 +568,25 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
             </div>
           ) : (
             <div className="space-y-3">
-              {waitList.map((w, idx) => {
+              {sortedWaitList.map(({ reservation: w, originalIndex, canSeat }) => {
                 const profile = clientProfiles.find(p => p.email === w.email || p.phone === w.phone);
                 return (
-                  <div key={w.id} className="bg-white/[0.04] border border-white/5 rounded-2xl px-5 py-4 flex items-center justify-between">
+                  <div key={w.id} className={`bg-white/[0.04] border rounded-2xl px-5 py-4 flex items-center justify-between transition-colors ${canSeat ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'border-white/5'}`}>
                     <div className="flex items-center gap-4">
-                      <span className="bg-primary/20 text-primary rounded-xl w-10 h-10 flex items-center justify-center font-black text-lg">{idx + 1}</span>
+                      <div className="relative">
+                        <span className={`rounded-xl w-10 h-10 flex items-center justify-center font-black text-lg ${canSeat ? 'bg-emerald-500/20 text-emerald-400' : 'bg-primary/20 text-primary'}`}>{originalIndex}</span>
+                      </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="font-bold text-base">{w.name}</p>
+                          <p className={`font-bold text-base ${canSeat ? 'text-emerald-400' : 'text-white'}`}>{w.name}</p>
                           {profile?.isVIP && <span title="Cliente VIP" className="text-sm">⭐</span>}
                           {profile?.isProblem && <span title="Atención requerida" className="text-sm">⚠️</span>}
+                          {canSeat && <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full px-2 py-0.5 font-bold uppercase tracking-wide ml-1">¡Mesa Disponible!</span>}
                         </div>
-                        <p className="text-xs text-slate-500 font-medium">👥 {w.guests} comensales · Esperando desde {new Date(w.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
+                        <p className="text-xs text-slate-500 font-medium">
+                          👥 {w.guests} · {w.preference === 'Terraza exterior' ? '☀️' : w.preference === 'Interior' ? '🏠' : w.preference === 'Mesas altas' ? '🪑' : '🔄'}
+                          {w.hasPet && ' 🐾'} · {new Date(w.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -460,16 +618,34 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Selecciona Mesa Disponible</label>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Mesa {seatingRecommendation ? '(auto-seleccionada, puedes cambiar)' : ''}
+              </label>
+              {seatingRecommendation && seatingRecommendation.combinedNote && (
+                <div className="mb-2 p-2 bg-primary/10 border border-primary/20 rounded-lg text-xs text-primary/80">
+                  <span className="font-bold">Sugerencia múltiple:</span> {seatingRecommendation.combinedNote}
+                </div>
+              )}
               <TableSelector 
                 occupiedTables={occupiedTables} 
                 reservedTables={reservedTables}
-                onSelect={(table) => {
-                  const item = waitList.find(w => w.id === seatingId);
-                  if (item) onSeat(item.id, item.guests, table);
-                  setSeatingId(null);
-                }} 
+                selectedTables={seatingTables}
+                onSelect={(table) => setSeatingTables(prev => prev.includes(table) ? prev.filter(x => x !== table) : [...prev, table])} 
               />
+              <button 
+                onClick={() => {
+                  const item = waitList.find(w => w.id === seatingId);
+                  if (item && seatingTables.length > 0) {
+                    onSeat(item.id, item.guests, seatingTables[0], seatingTables.join(','));
+                  }
+                  setSeatingId(null);
+                  setSeatingTables([]);
+                }}
+                disabled={seatingTables.length === 0}
+                className="w-full mt-4 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
+              >
+                ✓ Aplicar y sentar
+              </button>
             </div>
           </div>
         </div>
@@ -482,16 +658,20 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
 // SWIPEABLE RESERVATION CARD
 // ═══════════════════════════════════════════════
 
-function SwipeableCard({ reservation: r, handleStatus, occupiedTables, reservedTables, profile }: {
+export type SwipeableCardProps = {
   reservation: Reservation;
-  handleStatus: (id: string, status: ReservationStatus, tableNumber?: number) => void;
+  handleStatus: (id: string, status: ReservationStatus, tableNumber?: number, assignedTables?: string) => void;
   occupiedTables: number[];
   reservedTables: number[];
   profile?: ClientProfile;
-}) {
+};
+
+function SwipeableCard({ reservation: r, handleStatus, occupiedTables, reservedTables, profile }: SwipeableCardProps) {
   const [swipeX, setSwipeX] = useState(0);
   const [swiping, setSwiping] = useState(false);
   const [showTableSelector, setShowTableSelector] = useState(false);
+  const initialTables = r.assignedTables ? parseAssignedTables(r.assignedTables) : (r.tableNumber ? [r.tableNumber] : []);
+  const [selectedChangeTables, setSelectedChangeTables] = useState<number[]>(initialTables);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const isHorizontalSwipe = useRef(false);
@@ -583,13 +763,13 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, reservedT
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              {r.tableNumber && (
+              {(r.assignedTables || r.tableNumber) && (
                 <button 
                   onClick={() => setShowTableSelector(true)}
                   className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg px-2.5 py-1.5 text-sm font-bold transition-all active:scale-95"
                   title="Cambiar mesa"
                 >
-                  Mesa {r.tableNumber}
+                  {r.assignedTables && r.assignedTables.includes(',') ? 'Mesas ' : 'Mesa '}{r.assignedTables || r.tableNumber}
                 </button>
               )}
               <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${sc.color}`}>{sc.label}</span>
@@ -629,15 +809,24 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, reservedT
           {showTableSelector && (
             <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
               <TableSelector 
-                occupiedTables={occupiedTables} 
-                reservedTables={reservedTables}
-                selectedTable={r.tableNumber} 
-                onSelect={(t) => { 
-                  handleStatus(r.id, r.status === 'seated' ? 'seated' : 'seated', t); 
-                  setShowTableSelector(false); 
-                }} 
+                occupiedTables={occupiedTables.filter(t => !selectedChangeTables.includes(t))} 
+                reservedTables={reservedTables.filter(t => !selectedChangeTables.includes(t))}
+                selectedTables={selectedChangeTables} 
+                onSelect={(t) => setSelectedChangeTables(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t])} 
                 onClose={() => setShowTableSelector(false)} 
               />
+              <button 
+                onClick={() => {
+                  if (selectedChangeTables.length > 0) {
+                    handleStatus(r.id, r.status === 'seated' ? 'seated' : 'confirmed', selectedChangeTables[0], selectedChangeTables.join(','));
+                  }
+                  setShowTableSelector(false);
+                }}
+                disabled={selectedChangeTables.length === 0}
+                className="w-full mt-4 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
+              >
+                ✓ Aplicar
+              </button>
             </div>
           )}
 
