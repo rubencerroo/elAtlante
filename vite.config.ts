@@ -38,6 +38,9 @@ export default defineConfig({
             purpose: 'maskable'
           }
         ]
+      },
+      workbox: {
+        navigateFallbackDenylist: [/^\/assets\/pdf\//]
       }
     })
   ],
