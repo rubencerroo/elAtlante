@@ -430,19 +430,18 @@ export default function WaiterPanel() {
         </div>
       )}
 
-      {/* FAB Left - Mesa Rápida */}
-      <button onClick={() => setShowWalkIn(true)}
-        className="fixed bottom-6 left-6 h-16 bg-emerald-500 hover:bg-emerald-400 rounded-2xl shadow-2xl shadow-emerald-500/30 flex items-center gap-3 px-5 transition-all active:scale-95 z-50">
-        <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 -960 960 960"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
-        <span className="text-white font-bold text-sm">Mesa Rápida</span>
-      </button>
+      {/* Floating Action Buttons */}
+      <div className="fixed bottom-6 left-4 right-4 flex justify-between gap-3 z-50 pointer-events-none">
+        <button onClick={() => setShowWalkIn(true)}
+          className="pointer-events-auto flex-1 h-14 sm:h-16 bg-emerald-500 hover:bg-emerald-400 rounded-2xl shadow-2xl shadow-emerald-500/30 flex items-center justify-center gap-2 sm:gap-3 px-2 sm:px-5 transition-all active:scale-95">
+          <svg className="w-5 h-5 sm:w-7 sm:h-7 text-white flex-shrink-0" fill="currentColor" viewBox="0 -960 960 960"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
+          <span className="text-white font-bold text-xs sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis">Mesa Rápida</span>
+        </button>
 
-      {/* FAB Right - Nueva Reserva */}
-      <div className="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-50">
         <button onClick={() => setShowAddModal(true)}
-          className="h-16 bg-primary hover:bg-primary/90 rounded-2xl shadow-2xl shadow-primary/30 flex items-center gap-3 px-5 transition-all active:scale-95">
-          <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 -960 960 960"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
-          <span className="text-white font-bold text-sm">Nueva Reserva</span>
+          className="pointer-events-auto flex-1 h-14 sm:h-16 bg-primary hover:bg-primary/90 rounded-2xl shadow-2xl shadow-primary/30 flex items-center justify-center gap-2 sm:gap-3 px-2 sm:px-5 transition-all active:scale-95">
+          <svg className="w-5 h-5 sm:w-7 sm:h-7 text-white flex-shrink-0" fill="currentColor" viewBox="0 -960 960 960"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
+          <span className="text-white font-bold text-xs sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis">Nueva Reserva</span>
         </button>
       </div>
 
