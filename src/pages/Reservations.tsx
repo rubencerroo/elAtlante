@@ -9,7 +9,7 @@ import GuestCounter from '../components/GuestCounter';
 import Calendar from '../components/Calendar';
 import CustomSelect from '../components/CustomSelect';
 import SEO from '../components/SEO';
-import { getAvailableTimes, isDateValid, getTodayDateString, isDayClosed, isRestaurantOpenNow, isReservationTimeValid } from '../utils/reservationUtils';
+import { getAvailableTimes, isDateValid, getTodayDateString, isDayClosed, isRestaurantOpenNow, isReservationTimeValid, getDefaultReservationDateTime } from '../utils/reservationUtils';
 import { CONTACT_INFO } from '../constants/contact';
 
 export default function Reservations() {
@@ -22,8 +22,9 @@ export default function Reservations() {
   const [lastReservation, setLastReservation] = useState<Reservation | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
+  const defaultDateTime = getDefaultReservationDateTime();
   const [formData, setFormData] = useState({
-    name: '', email: '', date: '', time: '12:30',
+    name: '', email: '', date: defaultDateTime.date, time: defaultDateTime.time,
     guests: 2, preference: 'Indiferente' as const,
     hasPet: false, notes: '', acceptPolicies: false,
   });
@@ -212,7 +213,8 @@ export default function Reservations() {
               onClick={() => {
                 setSubmitted(false);
                 setLastReservation(null);
-                setFormData({ name: '', email: '', date: '', time: '12:30', guests: 2, preference: 'Indiferente', hasPet: false, notes: '', acceptPolicies: false });
+                const newDefault = getDefaultReservationDateTime();
+                setFormData({ name: '', email: '', date: newDefault.date, time: newDefault.time, guests: 2, preference: 'Indiferente', hasPet: false, notes: '', acceptPolicies: false });
                 setPhone('');
               }}
               className="text-primary dark:text-slate-300 text-sm font-medium hover:text-coastal-sea transition-colors flex items-center gap-2 group"
@@ -467,10 +469,10 @@ export default function Reservations() {
 
               <div className="space-y-5 md:space-y-8 pt-2 md:pt-8">
                 <div className="flex items-start gap-3">
-                  <input type="checkbox" id="policies" required className="mt-1 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/20 bg-slate-50 dark:bg-white/5 dark:border-white/10"
+                  <input type="checkbox" id="policies" required className="mt-0.5 md:mt-1 w-6 h-6 md:w-5 md:h-5 shrink-0 cursor-pointer rounded border-slate-300 text-primary focus:ring-primary/20 bg-slate-50 dark:bg-white/5 dark:border-white/10 transition-all hover:ring-2 hover:ring-primary/20"
                     checked={formData.acceptPolicies} onChange={e => handleChange('acceptPolicies', e.target.checked)} />
-                  <label htmlFor="policies" className="text-[11px] font-light text-slate-500 dark:text-slate-400 leading-relaxed cursor-pointer">
-                    {t('reservas.form.acceptTerms1')}<a href="/aviso-legal" target="_blank" className="text-primary dark:text-sky-400 hover:text-coastal-sea underline underline-offset-2">{t('reservas.form.terms')}</a>{t('reservas.form.acceptTerms2')}<a href="/privacidad" target="_blank" className="text-primary dark:text-sky-400 hover:text-coastal-sea underline underline-offset-2">{t('reservas.form.privacy')}</a>{t('reservas.form.acceptTerms3')}
+                  <label htmlFor="policies" className="text-[11px] font-light text-slate-500 dark:text-slate-400 leading-relaxed cursor-pointer select-none">
+                    {t('reservas.form.acceptTerms1')}<a href="/aviso-legal" target="_blank" className="text-primary dark:text-sky-400 hover:text-coastal-sea underline underline-offset-2 relative z-10">{t('reservas.form.terms')}</a>{t('reservas.form.acceptTerms2')}<a href="/privacidad" target="_blank" className="text-primary dark:text-sky-400 hover:text-coastal-sea underline underline-offset-2 relative z-10">{t('reservas.form.privacy')}</a>{t('reservas.form.acceptTerms3')}
                   </label>
                 </div>
 

@@ -202,3 +202,26 @@ export function isRestaurantOpenNow(): boolean {
     return false;
   }
 }
+
+/**
+ * Gets the next available date and its first available time slot.
+ * Returns { date: string, time: string }
+ */
+export function getDefaultReservationDateTime(): { date: string; time: string } {
+  const currentDate = new Date();
+  
+  // Check up to 30 days ahead to find the next available slot
+  for (let i = 0; i < 30; i++) {
+    const dateStr = currentDate.toLocaleDateString('en-CA', { timeZone: RESTAURANT_TIMEZONE });
+    const times = getAvailableTimes(dateStr, 15);
+    
+    if (times.length > 0) {
+      return { date: dateStr, time: times[0] };
+    }
+    
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  // Fallback if no dates are available
+  return { date: getTodayDateString(), time: '' };
+}

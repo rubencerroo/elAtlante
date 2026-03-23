@@ -20,6 +20,7 @@ import CookieBanner from './components/CookieBanner';
 import { useIdleTimer } from './hooks/useIdleTimer';
 import { isTabletAuthorized, setActiveStaffId, getActiveStaffId } from './services/authStore';
 import { useNavigate } from 'react-router-dom';
+import { loadTables } from './utils/tableConfig';
 
 function PWASetup() {
   const { pathname } = useLocation();
@@ -157,6 +158,10 @@ function AppLayout() {
 }
 
 function App() {
+  useEffect(() => {
+    loadTables();
+  }, []);
+
   return (
     <Router>
       <ScrollToTop />

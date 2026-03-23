@@ -6,7 +6,7 @@ import { addReservation } from '../services/reservationStore';
 import GuestCounter from './GuestCounter';
 import Calendar from './Calendar';
 import CustomSelect from './CustomSelect';
-import { getAvailableTimes, isDateValid, getTodayDateString } from '../utils/reservationUtils';
+import { getAvailableTimes, isDateValid, getTodayDateString, getDefaultReservationDateTime } from '../utils/reservationUtils';
 
 interface ManualReservationModalProps {
   onClose: () => void;
@@ -15,15 +15,15 @@ interface ManualReservationModalProps {
 
 export default function ManualReservationModal({ onClose, onSave }: ManualReservationModalProps) {
   const today = getTodayDateString();
-  const initialAvailableTimes = getAvailableTimes(today, 15);
+  const defaultDateTime = getDefaultReservationDateTime();
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    date: today,
-    time: initialAvailableTimes.length > 0 ? initialAvailableTimes[0] : '12:30',
+    date: defaultDateTime.date,
+    time: defaultDateTime.time,
     guests: 2,
     preference: 'Indiferente' as any,
     hasPet: false,

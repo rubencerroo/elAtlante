@@ -19,7 +19,7 @@ export interface Reservation {
   status: ReservationStatus;
   createdAt: string; // ISO
   tableNumber?: number;
-  assignedTables?: string; // comma-separated table IDs (e.g. "1,7" for combined tables)
+  assignedTables?: number[]; // array of table IDs (e.g. [1,7] for combined tables)
   seatedAt?: string; // ISO – when seated
   isWalkIn?: boolean;
 
@@ -81,7 +81,7 @@ function mapToReservation(data: any): Reservation {
     status: data.status,
     createdAt: data.created_at,
     tableNumber: data.table_number,
-    assignedTables: data.assigned_tables || (data.table_number ? String(data.table_number) : undefined),
+    assignedTables: data.assigned_tables || (data.table_number ? [data.table_number] : undefined),
     seatedAt: data.seated_at,
     isWalkIn: data.is_walk_in,
     source: data.source,
@@ -137,7 +137,7 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
     notes: r.notes,
     status: r.status || 'pending',
     table_number: r.tableNumber,
-    assigned_tables: r.assignedTables || (r.tableNumber ? String(r.tableNumber) : null),
+    assigned_tables: r.assignedTables || (r.tableNumber ? [r.tableNumber] : null),
     is_walk_in: r.isWalkIn || false,
     source: r.source || 'website',
     utm_source: r.utmSource,
@@ -168,7 +168,7 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
     const result = await assignTable(r.date, r.time, r.guests, r.preference, r.hasPet);
     if (result) {
       newR.table_number = result.tableNumber;
-      newR.assigned_tables = result.allTableIds || String(result.tableNumber);
+      newR.assigned_tables = result.allTableIds || [result.tableNumber];
       if (result.combinedNote) {
         newR.notes = newR.notes ? `${newR.notes} ${result.combinedNote}` : result.combinedNote;
       }
@@ -216,7 +216,7 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
   return reservation;
 }
 
-export async function addWalkIn(guests: number, tableNumber: number, name: string, assignedTables?: string): Promise<Reservation | null> {
+export async function addWalkIn(guests: number, tableNumber: number, name: string, assignedTables?: number[]): Promise<Reservation | null> {
   const now = new Date();
   const newR = {
     booking_number: generateBookingNumber(),
@@ -231,7 +231,7 @@ export async function addWalkIn(guests: number, tableNumber: number, name: strin
     status: 'seated',
     seated_at: now.toISOString(),
     table_number: tableNumber,
-    assigned_tables: assignedTables || String(tableNumber),
+    assigned_tables: assignedTables || [tableNumber],
     is_walk_in: true,
     source: 'walk-in',
   };
@@ -297,7 +297,7 @@ export async function updateReservation(id: string, updates: Partial<Reservation
     dbUpdates.table_number = updates.tableNumber;
     // Also update assigned_tables if not explicitly provided
     if (updates.assignedTables === undefined) {
-      dbUpdates.assigned_tables = String(updates.tableNumber);
+      dbUpdates.assigned_tables = [updates.tableNumber];
     }
   }
   if (updates.assignedTables !== undefined) dbUpdates.assigned_tables = updates.assignedTables;
@@ -375,6 +375,82 @@ export async function getStats(dateStr?: string): Promise<ReservationStats> {
     cancelled: list.filter(r => r.status === 'cancelled').length,
     noShow: list.filter(r => r.status === 'no-show').length,
     totalGuestsToday: list.filter(r => r.status !== 'cancelled' && r.status !== 'no-show').reduce((sum, r) => sum + r.guests, 0),
+  };
+}
+
+export interface WaitAndMealMetrics {
+  avgWaitTime: number; // in minutes
+  avgMealDuration: number; // in minutes
+}
+
+export async function getWaitAndMealMetrics(dateStr?: string): Promise<WaitAndMealMetrics> {
+  const isAll = !dateStr || dateStr === 'all';
+  
+  let query = supabase
+    .from('reservation_status_logs')
+    .select(`
+      *,
+      reservations!inner(date)
+    `);
+
+  if (!isAll) {
+    query = query.eq('reservations.date', dateStr);
+  }
+
+  const { data, error } = await query;
+
+  if (error || !data) {
+    console.error('Error fetching wait and meal metrics:', error);
+    return { avgWaitTime: 0, avgMealDuration: 0 };
+  }
+
+  // Group by reservation
+  const logsByRes: Record<string, any[]> = {};
+  data.forEach(log => {
+    if (!logsByRes[log.reservation_id]) logsByRes[log.reservation_id] = [];
+    logsByRes[log.reservation_id].push(log);
+  });
+
+  let totalWaitTime = 0;
+  let waitCount = 0;
+  let totalMealDuration = 0;
+  let mealCount = 0;
+
+  Object.values(logsByRes).forEach(resLogs => {
+    // Sort logs by changed_at
+    resLogs.sort((a, b) => new Date(a.changed_at).getTime() - new Date(b.changed_at).getTime());
+
+    let pendingOrWaitingAt: number | null = null;
+    let seatedAt: number | null = null;
+    let completedAt: number | null = null;
+
+    resLogs.forEach(log => {
+      // For wait time: from (pending or waiting) to seated
+      if ((log.new_status === 'pending' || log.new_status === 'waiting') && !pendingOrWaitingAt) {
+        pendingOrWaitingAt = new Date(log.changed_at).getTime();
+      }
+      if (log.new_status === 'seated') {
+        seatedAt = new Date(log.changed_at).getTime();
+      }
+      if (log.new_status === 'completed') {
+        completedAt = new Date(log.changed_at).getTime();
+      }
+    });
+
+    if (pendingOrWaitingAt && seatedAt && seatedAt > pendingOrWaitingAt) {
+      totalWaitTime += (seatedAt - pendingOrWaitingAt);
+      waitCount++;
+    }
+
+    if (seatedAt && completedAt && completedAt > seatedAt) {
+      totalMealDuration += (completedAt - seatedAt);
+      mealCount++;
+    }
+  });
+
+  return {
+    avgWaitTime: waitCount > 0 ? Math.round(totalWaitTime / waitCount / 60000) : 0,
+    avgMealDuration: mealCount > 0 ? Math.round(totalMealDuration / mealCount / 60000) : 0
   };
 }
 
@@ -585,8 +661,9 @@ export async function saveClientMeta(meta: ClientMeta): Promise<void> {
 /**
  * Parse assigned_tables string (e.g. "1,7") into array of numbers.
  */
-export function parseAssignedTables(assigned: string | null | undefined): number[] {
+export function parseAssignedTables(assigned: number[] | string | null | undefined): number[] {
   if (!assigned) return [];
+  if (Array.isArray(assigned)) return assigned;
   return assigned.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
 }
 
@@ -770,7 +847,7 @@ async function assignTable(
   guests: number,
   preference: string,
   hasPet: boolean
-): Promise<{ tableNumber: number; combinedNote?: string; allTableIds: string } | undefined> {
+): Promise<{ tableNumber: number; combinedNote?: string; allTableIds: number[] } | undefined> {
   const occupiedIds = await getOccupiedTableIds(date, time);
   const candidateAreas = getAreasForPreference(preference, hasPet);
 
@@ -806,7 +883,7 @@ async function trySwapForPreference(
   guests: number,
   preferredAreas: AreaId[],
   occupiedIds: Set<number>
-): Promise<{ tableNumber: number; combinedNote?: string; allTableIds: string } | undefined> {
+): Promise<{ tableNumber: number; combinedNote?: string; allTableIds: number[] } | undefined> {
   const { data: candidates, error } = await supabase
     .from('reservations')
     .select('id, table_number, time, guests, preference')

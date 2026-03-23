@@ -136,9 +136,9 @@ export function findMinimalCombo(tables: TableDef[], guests: number): TableDef[]
 /**
  * Build result from a list of assigned tables.
  */
-export function buildResult(tables: TableDef[]): { tableNumber: number; combinedNote?: string; allTableIds: string } {
+export function buildResult(tables: TableDef[]): { tableNumber: number; combinedNote?: string; allTableIds: number[] } {
   const sorted = [...tables].sort((a, b) => a.id - b.id);
-  const allIds = sorted.map(t => t.id).join(',');
+  const allIds = sorted.map(t => t.id);
   if (sorted.length === 1) {
     return { tableNumber: sorted[0].id, allTableIds: allIds };
   }
@@ -158,7 +158,7 @@ export function assignTablePure(
   preference: string,
   hasPet: boolean,
   occupiedIds: Set<number>
-): { tableNumber: number; combinedNote?: string; allTableIds: string } | undefined {
+): { tableNumber: number; combinedNote?: string; allTableIds: number[] } | undefined {
   const candidateAreas = getAreasForPreference(preference, hasPet);
 
   for (const areaId of candidateAreas) {

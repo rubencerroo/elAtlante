@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getReservationsForDate, updateReservation, addWalkIn, getOccupiedTables, getShiftNote, getClientProfiles, addToWaitList, parseAssignedTables, type Reservation, type ReservationStatus, type ClientProfile } from '../services/reservationStore';
+import { getReservationsForDate, updateReservation, addWalkIn, getOccupiedTables, getShiftNote, getClientProfiles, addToWaitList, parseAssignedTables, getWaitAndMealMetrics, type Reservation, type ReservationStatus, type ClientProfile, type WaitAndMealMetrics } from '../services/reservationStore';
 import { signOut, getStaffRole, getSession, isTabletAuthorized, getActiveStaffId } from '../services/authStore';
 import TableSelector from '../components/TableSelector';
 import GuestCounter from '../components/GuestCounter';
@@ -73,10 +73,11 @@ export default function WaiterPanel() {
   const [walkInTables, setWalkInTables] = useState<number[]>([]);
   const [walkInPreference, setWalkInPreference] = useState<string>('Indiferente');
   const [walkInPet, setWalkInPet] = useState(false);
-  const [walkInRecommendation, setWalkInRecommendation] = useState<{ tableNumber: number; combinedNote?: string; allTableIds?: string } | null>(null);
+  const [walkInRecommendation, setWalkInRecommendation] = useState<{ tableNumber: number; combinedNote?: string; allTableIds?: number[] } | null>(null);
   const [occupiedTables, setOccupiedTables] = useState<number[]>([]);
   const [shiftNote, setShiftNote] = useState<string | null>(null);
   const [clientProfiles, setClientProfiles] = useState<ClientProfile[]>([]);
+  const [metrics, setMetrics] = useState<WaitAndMealMetrics | null>(null);
   const today = new Date().toISOString().split('T')[0];
   const prevCountRef = useRef(0);
   const [authChecked, setAuthChecked] = useState(false);
@@ -108,17 +109,19 @@ export default function WaiterPanel() {
   }, [navigate]);
 
   const reload = useCallback(async () => {
-    const [data, occTables, note, profiles] = await Promise.all([
+    const [data, occTables, note, profiles, metricsData] = await Promise.all([
       getReservationsForDate(today),
       getOccupiedTables(today),
       getShiftNote(today),
-      getClientProfiles()
+      getClientProfiles(),
+      getWaitAndMealMetrics(today)
     ]);
     
     setReservations(data);
     setOccupiedTables(occTables);
     setShiftNote(note);
     setClientProfiles(profiles);
+    setMetrics(metricsData);
 
     // Sound notification if new reservations appeared
     const activeCount = data.filter(r => r.status !== 'cancelled' && r.status !== 'completed').length;
@@ -163,7 +166,7 @@ export default function WaiterPanel() {
 
   const currentList = grouped[tab];
 
-  const handleStatus = async (id: string, status: ReservationStatus, tableNumber?: number, assignedTables?: string) => {
+  const handleStatus = async (id: string, status: ReservationStatus, tableNumber?: number, assignedTables?: number[]) => {
     const payload: Partial<Reservation> = { status };
     if (tableNumber) payload.tableNumber = tableNumber;
     if (assignedTables) payload.assignedTables = assignedTables;
@@ -174,7 +177,7 @@ export default function WaiterPanel() {
 
   const handleWalkIn = async () => {
     if (walkInTables.length > 0 && walkInGuests > 0 && walkInName.trim()) {
-      await addWalkIn(walkInGuests, walkInTables[0], walkInName.trim(), walkInTables.join(','));
+      await addWalkIn(walkInGuests, walkInTables[0], walkInName.trim(), walkInTables);
       setWalkInName('');
       setWalkInGuests(2);
       setWalkInTables([]);
@@ -306,6 +309,26 @@ export default function WaiterPanel() {
             </button>
           ))}
         </div>
+
+        {/* Global Stats bar for staff */}
+        {metrics && (metrics.avgWaitTime > 0 || metrics.avgMealDuration > 0) && (
+          <div className="flex gap-2 bg-white/[0.02] border border-white/5 rounded-2xl p-2.5">
+            <div className="flex-1 flex items-center justify-center gap-2 border-r border-white/5">
+              <span className="text-amber-400 text-sm">⏱</span>
+              <div>
+                <p className="text-[8px] uppercase tracking-widest text-slate-500 font-bold leading-none">Espera Media</p>
+                <p className="text-sm font-black text-slate-300">{metrics.avgWaitTime} <span className="text-[10px] font-normal text-slate-500">min</span></p>
+              </div>
+            </div>
+            <div className="flex-1 flex items-center justify-center gap-2">
+              <span className="text-purple-400 text-sm">🍽</span>
+              <div>
+                <p className="text-[8px] uppercase tracking-widest text-slate-500 font-bold leading-none">Comida Media</p>
+                <p className="text-sm font-black text-slate-300">{metrics.avgMealDuration} <span className="text-[10px] font-normal text-slate-500">min</span></p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Reservation Cards */}
@@ -458,7 +481,7 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
   waitList: Reservation[];
   addToWaitList: (name: string, guests: number, phone?: string, preference?: string, hasPet?: boolean) => void;
   removeFromWaitList: (id: string) => void;
-  onSeat: (id: string, guests: number, tableNumber: number, assignedTables?: string) => void;
+  onSeat: (id: string, guests: number, tableNumber: number, assignedTables?: number[]) => void;
   occupiedTables: number[];
   reservedTables: number[];
   clientProfiles: ClientProfile[];
@@ -469,7 +492,7 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
   const [waitPet, setWaitPet] = useState(false);
   const [seatingId, setSeatingId] = useState<string | null>(null);
   const [seatingTables, setSeatingTables] = useState<number[]>([]);
-  const [seatingRecommendation, setSeatingRecommendation] = useState<{ tableNumber: number; combinedNote?: string; allTableIds?: string } | null>(null);
+  const [seatingRecommendation, setSeatingRecommendation] = useState<{ tableNumber: number; combinedNote?: string; allTableIds?: number[] } | null>(null);
 
   // Auto-recommend table when seating modal opens
   useEffect(() => {
@@ -635,7 +658,7 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
                 onClick={() => {
                   const item = waitList.find(w => w.id === seatingId);
                   if (item && seatingTables.length > 0) {
-                    onSeat(item.id, item.guests, seatingTables[0], seatingTables.join(','));
+                    onSeat(item.id, item.guests, seatingTables[0], seatingTables);
                   }
                   setSeatingId(null);
                   setSeatingTables([]);
@@ -659,7 +682,7 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
 
 export type SwipeableCardProps = {
   reservation: Reservation;
-  handleStatus: (id: string, status: ReservationStatus, tableNumber?: number, assignedTables?: string) => void;
+  handleStatus: (id: string, status: ReservationStatus, tableNumber?: number, assignedTables?: number[]) => void;
   occupiedTables: number[];
   reservedTables: number[];
   profile?: ClientProfile;
@@ -768,7 +791,7 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, reservedT
                   className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg px-2.5 py-1.5 text-sm font-bold transition-all active:scale-95"
                   title="Cambiar mesa"
                 >
-                  {r.assignedTables && r.assignedTables.includes(',') ? 'Mesas ' : 'Mesa '}{r.assignedTables || r.tableNumber}
+                  {r.assignedTables && r.assignedTables.length > 1 ? 'Mesas ' : 'Mesa '}{r.assignedTables ? r.assignedTables.join(', ') : r.tableNumber}
                 </button>
               )}
               <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${sc.color}`}>{sc.label}</span>
@@ -817,7 +840,7 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, reservedT
               <button 
                 onClick={() => {
                   if (selectedChangeTables.length > 0) {
-                    handleStatus(r.id, r.status === 'seated' ? 'seated' : 'confirmed', selectedChangeTables[0], selectedChangeTables.join(','));
+                    handleStatus(r.id, r.status === 'seated' ? 'seated' : 'confirmed', selectedChangeTables[0], selectedChangeTables);
                   }
                   setShowTableSelector(false);
                 }}

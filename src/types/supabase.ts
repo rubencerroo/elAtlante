@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.4"
+  }
   public: {
     Tables: {
       client_meta: {
@@ -14,30 +19,27 @@ export type Database = {
           allergies: string | null
           created_at: string | null
           custom_notes: string | null
-          email: string
+          email: string | null
           favorite_wine: string | null
-          id: string
-          phone: string | null
+          phone: string
           updated_at: string | null
         }
         Insert: {
           allergies?: string | null
           created_at?: string | null
           custom_notes?: string | null
-          email: string
+          email?: string | null
           favorite_wine?: string | null
-          id?: string
-          phone?: string | null
+          phone: string
           updated_at?: string | null
         }
         Update: {
           allergies?: string | null
           created_at?: string | null
           custom_notes?: string | null
-          email?: string
+          email?: string | null
           favorite_wine?: string | null
-          id?: string
-          phone?: string | null
+          phone?: string
           updated_at?: string | null
         }
         Relationships: []
@@ -47,28 +49,68 @@ export type Database = {
           content: string
           created_at: string | null
           id: string
+          resolved: boolean | null
           role: string
           type: string
+          user_email: string | null
         }
         Insert: {
           content: string
           created_at?: string | null
           id?: string
+          resolved?: boolean | null
           role: string
           type: string
+          user_email?: string | null
         }
         Update: {
           content?: string
           created_at?: string | null
           id?: string
+          resolved?: boolean | null
           role?: string
           type?: string
+          user_email?: string | null
         }
         Relationships: []
       }
+      reservation_status_logs: {
+        Row: {
+          changed_at: string | null
+          id: string
+          new_status: Database["public"]["Enums"]["reservation_status"]
+          old_status: Database["public"]["Enums"]["reservation_status"] | null
+          reservation_id: string
+        }
+        Insert: {
+          changed_at?: string | null
+          id?: string
+          new_status: Database["public"]["Enums"]["reservation_status"]
+          old_status?: Database["public"]["Enums"]["reservation_status"] | null
+          reservation_id: string
+        }
+        Update: {
+          changed_at?: string | null
+          id?: string
+          new_status?: Database["public"]["Enums"]["reservation_status"]
+          old_status?: Database["public"]["Enums"]["reservation_status"] | null
+          reservation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservation_status_logs_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reservations: {
         Row: {
+          assigned_tables: string | null
           booking_number: string
+          cancellation_reason: string | null
           created_at: string | null
           date: string
           email: string | null
@@ -76,17 +118,26 @@ export type Database = {
           has_pet: boolean | null
           id: string
           is_walk_in: boolean | null
+          language: string | null
           name: string
           notes: string | null
           phone: string
-          preference: Database["public"]["Enums"]["reservation_preference"]
+          preference:
+            | Database["public"]["Enums"]["reservation_preference"]
+            | null
           seated_at: string | null
-          status: Database["public"]["Enums"]["reservation_status"]
+          source: string | null
+          status: Database["public"]["Enums"]["reservation_status"] | null
           table_number: number | null
           time: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
         }
         Insert: {
+          assigned_tables?: string | null
           booking_number: string
+          cancellation_reason?: string | null
           created_at?: string | null
           date: string
           email?: string | null
@@ -94,17 +145,26 @@ export type Database = {
           has_pet?: boolean | null
           id?: string
           is_walk_in?: boolean | null
+          language?: string | null
           name: string
           notes?: string | null
           phone: string
-          preference?: Database["public"]["Enums"]["reservation_preference"]
+          preference?:
+            | Database["public"]["Enums"]["reservation_preference"]
+            | null
           seated_at?: string | null
-          status?: Database["public"]["Enums"]["reservation_status"]
+          source?: string | null
+          status?: Database["public"]["Enums"]["reservation_status"] | null
           table_number?: number | null
           time: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Update: {
+          assigned_tables?: string | null
           booking_number?: string
+          cancellation_reason?: string | null
           created_at?: string | null
           date?: string
           email?: string | null
@@ -112,47 +172,166 @@ export type Database = {
           has_pet?: boolean | null
           id?: string
           is_walk_in?: boolean | null
+          language?: string | null
           name?: string
           notes?: string | null
           phone?: string
-          preference?: Database["public"]["Enums"]["reservation_preference"]
+          preference?:
+            | Database["public"]["Enums"]["reservation_preference"]
+            | null
           seated_at?: string | null
-          status?: Database["public"]["Enums"]["reservation_status"]
+          source?: string | null
+          status?: Database["public"]["Enums"]["reservation_status"] | null
           table_number?: number | null
           time?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
+      shift_notes: {
+        Row: {
+          content: string
+          created_at: string | null
+          date: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          date: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          date?: string
         }
         Relationships: []
       }
       staff_profiles: {
         Row: {
           created_at: string | null
-          first_name: string
+          display_name: string | null
+          email: string
           id: string
-          last_name: string
+          password_hash: string | null
+          pin: string | null
           role: string
         }
         Insert: {
           created_at?: string | null
-          first_name: string
+          display_name?: string | null
+          email: string
           id: string
-          last_name: string
-          role?: string
+          password_hash?: string | null
+          pin?: string | null
+          role: string
         }
         Update: {
           created_at?: string | null
-          first_name?: string
+          display_name?: string | null
+          email?: string
           id?: string
-          last_name?: string
+          password_hash?: string | null
+          pin?: string | null
           role?: string
+        }
+        Relationships: []
+      }
+      tables: {
+        Row: {
+          area: string
+          capacity: number
+          id: string
+          table_number: number
+          zone_type: Database["public"]["Enums"]["zone_type"]
+        }
+        Insert: {
+          area: string
+          capacity: number
+          id?: string
+          table_number: number
+          zone_type: Database["public"]["Enums"]["zone_type"]
+        }
+        Update: {
+          area?: string
+          capacity?: number
+          id?: string
+          table_number?: number
+          zone_type?: Database["public"]["Enums"]["zone_type"]
         }
         Relationships: []
       }
     }
     Views: {
-      [_ in never]: never
+      staff_public: {
+        Row: {
+          created_at: string | null
+          display_name: string | null
+          email: string | null
+          id: string | null
+          role: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_name?: string | null
+          email?: string | null
+          id?: string | null
+          role?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_name?: string | null
+          email?: string | null
+          id?: string | null
+          role?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_staff_public_safe: {
+        Args: never
+        Returns: {
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          role: string
+        }[]
+      }
+      invite_staff_custom: {
+        Args: {
+          p_display_name: string
+          p_email: string
+          p_password: string
+          p_role: string
+        }
+        Returns: Json
+      }
+      is_owner: { Args: never; Returns: boolean }
+      is_requesting_staff_owner: { Args: never; Returns: boolean }
+      is_staff: { Args: never; Returns: boolean }
+      login_staff: {
+        Args: { p_email: string; p_password: string }
+        Returns: Json
+      }
+      update_staff_password: {
+        Args: { p_new_password: string; p_staff_id: string }
+        Returns: Json
+      }
+      update_staff_pin_custom: {
+        Args: { p_pin: string; p_staff_id: string }
+        Returns: Json
+      }
+      verify_staff_pin: {
+        Args: { p_pin: string; p_staff_id: string }
+        Returns: boolean
+      }
+      verify_staff_pin_custom: {
+        Args: { p_pin: string; p_staff_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       reservation_preference:
@@ -168,6 +347,7 @@ export type Database = {
         | "cancelled"
         | "no-show"
         | "waiting"
+      zone_type: "interior" | "exterior" | "mesas_altas"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -175,27 +355,33 @@ export type Database = {
   }
 }
 
-type PublicSchema = Database[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
-  PublicTableNameOrOptions extends
-    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
-    | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
-        PublicSchema["Views"])
-    ? (PublicSchema["Tables"] &
-        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -203,20 +389,24 @@ export type Tables<
     : never
 
 export type TablesInsert<
-  PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -224,20 +414,24 @@ export type TablesInsert<
     : never
 
 export type TablesUpdate<
-  PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -245,30 +439,58 @@ export type TablesUpdate<
     : never
 
 export type Enums<
-  PublicEnumNameOrOptions extends
-    | keyof PublicSchema["Enums"]
-    | { schema: keyof Database },
-  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = PublicEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
-    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof PublicSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
-    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
+export const Constants = {
+  public: {
+    Enums: {
+      reservation_preference: [
+        "Indiferente",
+        "Interior",
+        "Terraza exterior",
+        "Mesas altas",
+      ],
+      reservation_status: [
+        "pending",
+        "confirmed",
+        "seated",
+        "completed",
+        "cancelled",
+        "no-show",
+        "waiting",
+      ],
+      zone_type: ["interior", "exterior", "mesas_altas"],
+    },
+  },
+} as const

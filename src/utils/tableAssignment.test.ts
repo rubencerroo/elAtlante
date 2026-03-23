@@ -11,7 +11,7 @@ import {
   TABLES,
   getTablesInArea,
   getAreasForPreference,
-  TOTAL_CAPACITY,
+  getTotalCapacity,
 } from './tableConfig';
 
 // ────────────────────────────────────────
@@ -24,7 +24,7 @@ describe('tableConfig', () => {
   });
 
   it('total capacity should be 105', () => {
-    expect(TOTAL_CAPACITY).toBe(105);
+    expect(getTotalCapacity()).toBe(105);
   });
 
   it('Salón Grande has 7 tables (6×4 + 1×2 = 26 seats)', () => {

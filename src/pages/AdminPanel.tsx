@@ -3,9 +3,9 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   getReservations, updateReservation, getStats, deleteReservation,
-  getOccupancyByHour, getStatusDistribution, getWeeklyComparison, getNoShowRate,
+  getOccupancyByHour, getStatusDistribution, getWeeklyComparison, getNoShowRate, getWaitAndMealMetrics,
   getClientProfiles, getClientMeta, saveClientMeta, generateCSV, getOccupiedTables, getShiftNote, saveShiftNote, getFeedbacks, updateFeedbackStatus, deleteFeedback,
-  type Reservation, type ReservationStatus, type ReservationStats, type ClientProfile, type ClientMeta
+  type Reservation, type ReservationStatus, type ReservationStats, type ClientProfile, type ClientMeta, type WaitAndMealMetrics
 } from '../services/reservationStore';
 import { signOut, getStaffRole, getSession, getStaffProfiles, inviteStaff, deleteStaff, updateStaffProfile, isTabletAuthorized, authorizeTablet, deauthorizeTablet, getActiveStaffId, type StaffProfile, type StaffRole } from '../services/authStore';
 
@@ -47,6 +47,7 @@ export default function AdminPanel() {
   const [statusData, setStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
   const [weeklyComp, setWeeklyComp] = useState<{ thisWeek: number; lastWeek: number; change: number }>({ thisWeek: 0, lastWeek: 0, change: 0 });
   const [noShowRate, setNoShowRate] = useState(0);
+  const [metrics, setMetrics] = useState<WaitAndMealMetrics | null>(null);
   const [clientProfiles, setClientProfiles] = useState<ClientProfile[]>([]);
   const [occupiedTables, setOccupiedTables] = useState<number[]>([]);
   const [shiftNote, setShiftNote] = useState('');
@@ -130,7 +131,7 @@ export default function AdminPanel() {
 
   const fetchDashboardData = useCallback(async (showLoading = true) => {
     if (showLoading) setLoading(true);
-    const [resData, statsData, occData, distData, weeklyData, nsRate, profiles, occTables, note] = await Promise.all([
+    const [resData, statsData, occData, distData, weeklyData, nsRate, profiles, occTables, note, metricsData] = await Promise.all([
       getReservations(),
       getStats(filterDate),
       getOccupancyByHour(filterDate === 'all' ? new Date().toISOString().split('T')[0] : filterDate),
@@ -139,7 +140,8 @@ export default function AdminPanel() {
       getNoShowRate(),
       getClientProfiles(),
       getOccupiedTables(filterDate === 'all' ? new Date().toISOString().split('T')[0] : filterDate),
-      getShiftNote(filterDate === 'all' ? new Date().toISOString().split('T')[0] : filterDate)
+      getShiftNote(filterDate === 'all' ? new Date().toISOString().split('T')[0] : filterDate),
+      getWaitAndMealMetrics(filterDate)
     ]);
 
     setReservations(resData);
@@ -148,6 +150,7 @@ export default function AdminPanel() {
     setStatusData(distData);
     setWeeklyComp(weeklyData);
     setNoShowRate(nsRate);
+    setMetrics(metricsData);
     setClientProfiles(profiles);
     setOccupiedTables(occTables);
     setShiftNote(note || '');
@@ -364,7 +367,7 @@ export default function AdminPanel() {
 
         {/* Tab Content */}
         {activeTab === 'kanban' && <StatusKanban filtered={filtered} handleStatus={handleStatus} handleDelete={handleDelete} handleAssignTable={handleAssignTable} showTableSelector={showTableSelector} setShowTableSelector={setShowTableSelector} occupiedTables={occupiedTables} draggedId={draggedId} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} />}
-        {activeTab === 'dashboard' && <DashboardView filterDate={filterDate} setFilterDate={setFilterDate} reservations={reservations} occupancyData={occupancyData} statusData={statusData} weeklyComp={weeklyComp} noShowRate={noShowRate} shiftNote={shiftNote} setShiftNote={setShiftNote} handleSaveNote={handleSaveNote} savingNote={savingNote} />}
+        {activeTab === 'dashboard' && <DashboardView filterDate={filterDate} setFilterDate={setFilterDate} reservations={reservations} occupancyData={occupancyData} statusData={statusData} weeklyComp={weeklyComp} noShowRate={noShowRate} metrics={metrics} shiftNote={shiftNote} setShiftNote={setShiftNote} handleSaveNote={handleSaveNote} savingNote={savingNote} />}
         {activeTab === 'crm' && <CRMView search={crmSearch} setSearch={setCrmSearch} selectedClient={selectedClient} setSelectedClient={setSelectedClient} clientProfiles={clientProfiles} />}
         {activeTab === 'staff' && <StaffView showAlert={showAlert} />}
         {activeTab === 'feedback' && <FeedbackView feedbacks={feedbacks} onReload={fetchDashboardData} currentUserEmail={currentUserEmail} showAlert={showAlert} />}
@@ -400,7 +403,7 @@ export default function AdminPanel() {
 // ═══════════════════════════════════════════════
 
 function DashboardView({ 
-  filterDate, setFilterDate, reservations, occupancyData, statusData, weeklyComp, noShowRate,
+  filterDate, setFilterDate, reservations, occupancyData, statusData, weeklyComp, noShowRate, metrics,
   shiftNote, setShiftNote, handleSaveNote, savingNote
 }: { 
   filterDate: string;
@@ -410,6 +413,7 @@ function DashboardView({
   statusData: { name: string; value: number; color: string }[];
   weeklyComp: { thisWeek: number; lastWeek: number; change: number };
   noShowRate: number;
+  metrics: WaitAndMealMetrics | null;
   shiftNote: string;
   setShiftNote: (note: string) => void;
   handleSaveNote: () => void;
@@ -455,13 +459,13 @@ function DashboardView({
   return (
     <div className="space-y-8">
       {/* KPI Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
         <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
-          <p className="text-slate-500 text-xs uppercase tracking-wider">No Show Rate</p>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">No Show Rate</p>
           <p className={`text-3xl font-black ${noShowRate > 15 ? 'text-red-400' : 'text-emerald-400'}`}>{noShowRate}%</p>
         </div>
         <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
-          <p className="text-slate-500 text-xs uppercase tracking-wider">Esta semana</p>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Esta semana</p>
           <div className="flex items-end gap-2">
             <p className="text-3xl font-black text-white">{weeklyComp.thisWeek}</p>
             <span className={`text-sm font-bold mb-1 ${weeklyComp.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -469,17 +473,31 @@ function DashboardView({
             </span>
           </div>
         </div>
-        <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
-          <p className="text-slate-500 text-xs uppercase tracking-wider">Semana pasada</p>
+        <div className="bg-white/5 border border-white/5 rounded-2xl p-5 hidden md:block">
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Semana pasada</p>
           <p className="text-3xl font-black text-slate-400">{weeklyComp.lastWeek}</p>
         </div>
         <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
-          <p className="text-slate-500 text-xs uppercase tracking-wider">Media comensales</p>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Comensales/Res</p>
           <p className="text-3xl font-black text-blue-400">
             {reservations.filter(r => r.status !== 'cancelled' && r.status !== 'no-show').length 
               ? (reservations.filter(r => r.status !== 'cancelled' && r.status !== 'no-show').reduce((s, r) => s + r.guests, 0) / 
                  reservations.filter(r => r.status !== 'cancelled' && r.status !== 'no-show').length).toFixed(1) 
               : '0'}
+          </p>
+        </div>
+        <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Espera Media</p>
+          <p className="text-3xl font-black text-amber-400">
+            {metrics?.avgWaitTime || 0}
+            <span className="text-xs font-normal text-slate-500 ml-1">min</span>
+          </p>
+        </div>
+        <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Duración Comida</p>
+          <p className="text-3xl font-black text-purple-400">
+            {metrics?.avgMealDuration || 0}
+            <span className="text-xs font-normal text-slate-500 ml-1">min</span>
           </p>
         </div>
       </div>

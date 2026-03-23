@@ -1,7 +1,8 @@
 /**
- * Static table configuration for El Atlante restaurant.
- * Each table has an ID, capacity, area, and type classification.
+ * Dynamic table configuration for El Atlante restaurant.
+ * Tables are loaded from the database on startup.
  */
+import { supabase } from '../services/supabase';
 
 export type AreaId =
   | 'salon_grande'
@@ -36,64 +37,29 @@ export const AREAS: AreaDef[] = [
   { id: 'terraza_izquierda',  label: 'Terraza Izquierda',  zoneType: 'mesas_altas' },
 ];
 
-// ── All 43 tables ──
+// ── Tables ──
 
-export const TABLES: TableDef[] = [
-  // Salón Grande: 6x4 + 1x2
-  { id: 1,  capacity: 4, area: 'salon_grande' },
-  { id: 2,  capacity: 4, area: 'salon_grande' },
-  { id: 3,  capacity: 4, area: 'salon_grande' },
-  { id: 4,  capacity: 4, area: 'salon_grande' },
-  { id: 5,  capacity: 4, area: 'salon_grande' },
-  { id: 6,  capacity: 4, area: 'salon_grande' },
-  { id: 7,  capacity: 2, area: 'salon_grande' },
+export let TABLES: TableDef[] = [];
 
-  // Salón Derecha: 7x2
-  { id: 8,  capacity: 2, area: 'salon_derecha' },
-  { id: 9,  capacity: 2, area: 'salon_derecha' },
-  { id: 10, capacity: 2, area: 'salon_derecha' },
-  { id: 11, capacity: 2, area: 'salon_derecha' },
-  { id: 12, capacity: 2, area: 'salon_derecha' },
-  { id: 13, capacity: 2, area: 'salon_derecha' },
-  { id: 14, capacity: 2, area: 'salon_derecha' },
+export async function loadTables() {
+  const { data, error } = await supabase
+    .from('tables')
+    .select('*')
+    .order('table_number', { ascending: true });
 
-  // Salón Izquierda: 1x4 + 3x2
-  { id: 15, capacity: 4, area: 'salon_izquierda' },
-  { id: 16, capacity: 2, area: 'salon_izquierda' },
-  { id: 17, capacity: 2, area: 'salon_izquierda' },
-  { id: 18, capacity: 2, area: 'salon_izquierda' },
+  if (error) {
+    console.error('Error loading tables from DB:', error);
+    return;
+  }
 
-  // Terraza Principal: 11x2
-  { id: 19, capacity: 2, area: 'terraza_principal' },
-  { id: 20, capacity: 2, area: 'terraza_principal' },
-  { id: 21, capacity: 2, area: 'terraza_principal' },
-  { id: 22, capacity: 2, area: 'terraza_principal' },
-  { id: 23, capacity: 2, area: 'terraza_principal' },
-  { id: 24, capacity: 2, area: 'terraza_principal' },
-  { id: 25, capacity: 2, area: 'terraza_principal' },
-  { id: 26, capacity: 2, area: 'terraza_principal' },
-  { id: 27, capacity: 2, area: 'terraza_principal' },
-  { id: 28, capacity: 2, area: 'terraza_principal' },
-  { id: 29, capacity: 2, area: 'terraza_principal' },
-
-  // Terraza Derecha: 10x2
-  { id: 30, capacity: 2, area: 'terraza_derecha' },
-  { id: 31, capacity: 2, area: 'terraza_derecha' },
-  { id: 32, capacity: 2, area: 'terraza_derecha' },
-  { id: 33, capacity: 2, area: 'terraza_derecha' },
-  { id: 34, capacity: 2, area: 'terraza_derecha' },
-  { id: 35, capacity: 2, area: 'terraza_derecha' },
-  { id: 36, capacity: 2, area: 'terraza_derecha' },
-  { id: 37, capacity: 2, area: 'terraza_derecha' },
-  { id: 38, capacity: 2, area: 'terraza_derecha' },
-  { id: 39, capacity: 2, area: 'terraza_derecha' },
-
-  // Terraza Izquierda (Mesas Altas): 1x4 + 3x3
-  { id: 40, capacity: 4, area: 'terraza_izquierda' },
-  { id: 41, capacity: 3, area: 'terraza_izquierda' },
-  { id: 42, capacity: 3, area: 'terraza_izquierda' },
-  { id: 43, capacity: 3, area: 'terraza_izquierda' },
-];
+  if (data) {
+    TABLES = data.map(d => ({
+      id: d.table_number,
+      capacity: d.capacity,
+      area: d.area as AreaId
+    }));
+  }
+}
 
 // ── Helpers ──
 
@@ -155,5 +121,6 @@ export function getAreasForPreference(preference: string, hasPet: boolean): Area
 
 /**
  * Total capacity of the restaurant.
+ * Function now since TABLES is dynamically loaded.
  */
-export const TOTAL_CAPACITY = TABLES.reduce((sum, t) => sum + t.capacity, 0);
+export const getTotalCapacity = () => TABLES.reduce((sum, t) => sum + t.capacity, 0);
