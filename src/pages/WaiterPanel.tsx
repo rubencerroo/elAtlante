@@ -199,10 +199,11 @@ export default function WaiterPanel() {
     reload();
   };
 
-  const handleSeatFromWaitlist = async (waitlistId: string, _guests: number, tableNumber: number) => {
+  const handleSeatFromWaitlist = async (waitlistId: string, _guests: number, tableNumber: number, assignedTables?: number[]) => {
     await updateReservation(waitlistId, { 
       status: 'seated', 
-      tableNumber
+      tableNumber,
+      assignedTables
     });
     reload();
   };
@@ -703,6 +704,26 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, reservedT
   const isTimeWarning = r.status === 'seated' && seatedMinutes > 120;
   const isTimeCritical = r.status === 'seated' && seatedMinutes > 150;
 
+  // Track if we open selector to change tables or to seat the person
+  const [selectorIntent, setSelectorIntent] = useState<'seating' | 'changing'>('changing');
+  const [seatingRecommendation, setSeatingRecommendation] = useState<{ tableNumber: number; combinedNote?: string; allTableIds?: number[] } | null>(null);
+
+  // Auto-recommend table when seating mode is activated and no tables are selected
+  useEffect(() => {
+    if (showTableSelector && selectorIntent === 'seating' && selectedChangeTables.length === 0) {
+      const allUnavailableSet = new Set([...occupiedTables, ...reservedTables]);
+      const result = assignTablePure(r.guests, r.preference || 'Indiferente', r.hasPet || false, allUnavailableSet);
+      if (result && result.allTableIds) {
+        setSeatingRecommendation(result);
+        setSelectedChangeTables(parseAssignedTables(result.allTableIds));
+      } else {
+        setSeatingRecommendation(null);
+      }
+    } else if (!showTableSelector) {
+      setSeatingRecommendation(null);
+    }
+  }, [showTableSelector, selectorIntent, r.guests, r.preference, r.hasPet, occupiedTables, reservedTables, selectedChangeTables.length]);
+
   const handleTouchStart = (e: React.TouchEvent) => {
     // Only allow swipe for pending or confirmed reservations
     if (r.status !== 'pending' && r.status !== 'confirmed') return;
@@ -734,7 +755,10 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, reservedT
       if (swipeX > 0) {
         // Swipe right → Confirm or Seat
         if (r.status === 'pending') handleStatus(r.id, 'confirmed');
-        else if (r.status === 'confirmed') setShowTableSelector(true);
+        else if (r.status === 'confirmed') {
+          setSelectorIntent('seating');
+          setShowTableSelector(true);
+        }
       } else {
         // Swipe left → Cancel or No Show
         if (r.status !== 'completed' && r.status !== 'cancelled' && r.status !== 'no-show' && r.status !== 'seated') {
@@ -787,7 +811,10 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, reservedT
             <div className="flex items-center gap-2 flex-shrink-0">
               {(r.assignedTables || r.tableNumber) && (
                 <button 
-                  onClick={() => setShowTableSelector(true)}
+                  onClick={() => {
+                    setSelectorIntent('changing');
+                    setShowTableSelector(true);
+                  }}
                   className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg px-2.5 py-1.5 text-sm font-bold transition-all active:scale-95"
                   title="Cambiar mesa"
                 >
@@ -830,6 +857,14 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, reservedT
           {/* Table selector */}
           {showTableSelector && (
             <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 block">
+                Mesa {seatingRecommendation ? '(auto-seleccionada, puedes cambiar)' : ''}
+              </label>
+              {seatingRecommendation && seatingRecommendation.combinedNote && (
+                <div className="mb-2 p-2 bg-primary/10 border border-primary/20 rounded-lg text-xs text-primary/80">
+                  <span className="font-bold">Sugerencia múltiple:</span> {seatingRecommendation.combinedNote}
+                </div>
+              )}
               <TableSelector 
                 occupiedTables={occupiedTables.filter(t => !selectedChangeTables.includes(t))} 
                 reservedTables={reservedTables.filter(t => !selectedChangeTables.includes(t))}
@@ -840,14 +875,15 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, reservedT
               <button 
                 onClick={() => {
                   if (selectedChangeTables.length > 0) {
-                    handleStatus(r.id, r.status === 'seated' ? 'seated' : 'confirmed', selectedChangeTables[0], selectedChangeTables);
+                    const nextStatus = selectorIntent === 'seating' ? 'seated' : r.status;
+                    handleStatus(r.id, nextStatus as ReservationStatus, selectedChangeTables[0], selectedChangeTables);
                   }
                   setShowTableSelector(false);
                 }}
                 disabled={selectedChangeTables.length === 0}
                 className="w-full mt-4 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
               >
-                ✓ Aplicar
+                {selectorIntent === 'seating' ? '✓ Confirmar y sentar' : '✓ Aplicar cambios'}
               </button>
             </div>
           )}
@@ -861,7 +897,10 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, reservedT
               </button>
             )}
             {(r.status === 'pending' || r.status === 'confirmed') && !showTableSelector && (
-              <button onClick={() => setShowTableSelector(true)}
+              <button onClick={() => {
+                setSelectorIntent('seating');
+                setShowTableSelector(true);
+              }}
                 className="flex-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-xl py-3 text-sm font-medium transition-all active:scale-95">
                 🪑 Sentar en mesa
               </button>

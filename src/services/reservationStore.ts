@@ -811,7 +811,7 @@ async function getOccupiedTableIds(date: string, time: string): Promise<Set<numb
     .from('reservations')
     .select('table_number, assigned_tables, time')
     .eq('date', date)
-    .not('status', 'in', '(cancelled,no-show,completed)')
+    .not('status', 'in', ['cancelled', 'no-show', 'completed'])
     .not('table_number', 'is', null);
 
   if (error) {
