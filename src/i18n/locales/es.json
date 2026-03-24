@@ -13,7 +13,8 @@
     "titulo2": "de San Cristóbal",
     "subtitulo": "Tradición marinera y el producto más fresco de la lonja en un entorno inigualable frente al Atlántico.",
     "cta": "Reservar Mesa",
-    "ctaCarta": "Ver la Carta"
+    "ctaCarta": "Ver la Carta",
+    "siguenos": "Síguenos"
   },
   "nosotros": {
     "label": "Sobre Nosotros",
@@ -46,13 +47,18 @@
     "martesMiercoles": "Martes & Miércoles",
     "juevesSabado": "Jueves - Sábado",
     "domingo": "Domingo",
-    "cerrado": "Cerrado"
+    "cerrado": "Cerrado",
+    "title": "Vente a vernos",
+    "reserveTitle": "¿Quieres asegurar tu mesa?",
+    "reserveBtn": "Reserva Online"
   },
   "contacto": {
     "ubicacionLabel": "Ubicación",
     "direccion": "Calle Marina, 81\nBarrio Marinero de San Cristóbal\nLas Palmas de G.C.",
     "verRuta": "Ver ruta en Google Maps",
-    "contactoLabel": "Contacto Directo"
+    "contactoLabel": "Contacto Directo",
+    "socialLabel": "Redes Sociales",
+    "callConsultation": "Llámanos para consultas directas"
   },
   "mapa": {
     "titulo": "Te esperamos\nen el Paseo",

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import SEO from '../components/SEO';
 import heroImage from '../assets/elatlantePaisaje.jpg';
 import { CONTACT_INFO } from '../constants/contact';
@@ -111,6 +112,50 @@ export default function Home() {
             </div>
           </div>
       </section>
+      
+      {/* Social Media Bar */}
+      <div className="relative z-20 bg-slate-50 dark:bg-background-dark py-12 lg:py-16 border-t border-slate-200 dark:border-white/10">
+        <div className="max-w-[1400px] mx-auto px-6 flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
+          <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400 dark:text-slate-500 opacity-80">
+            {t('hero.siguenos')}
+          </span>
+          <div className="flex items-center gap-10">
+            <motion.a 
+              href="https://www.instagram.com/restaurante_elatlante" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center gap-4 group"
+            >
+              <div className="size-11 flex items-center justify-center rounded-2xl bg-white dark:bg-white/5 border border-slate-100 dark:border-white/5 text-slate-600 dark:text-slate-400 shadow-sm group-hover:bg-gradient-to-tr group-hover:from-[#f9ce34] group-hover:via-[#ee2a7b] group-hover:to-[#6228d7] group-hover:text-white group-hover:border-transparent group-hover:shadow-xl group-hover:shadow-pink-500/20 transition-all duration-500">
+                <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+                </svg>
+              </div>
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-slate-100 group-hover:text-[#ee2a7b] transition-colors">Instagram</span>
+            </motion.a>
+
+            <motion.a 
+              href="https://www.facebook.com/elatlantedesancristobal/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center gap-4 group"
+            >
+              <div className="size-11 flex items-center justify-center rounded-2xl bg-white dark:bg-white/5 border border-slate-100 dark:border-white/5 text-slate-600 dark:text-slate-400 shadow-sm group-hover:bg-[#1877f2] group-hover:text-white group-hover:border-[#1877f2] group-hover:shadow-xl group-hover:shadow-blue-500/20 transition-all duration-500">
+                <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                </svg>
+              </div>
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-slate-100 group-hover:text-[#1877f2] transition-colors">Facebook</span>
+            </motion.a>
+          </div>
+        </div>
+      </div>
 
       {/* About Us Section */}
       <section className="px-6 lg:px-28 py-24 @container overflow-hidden" id="nosotros">
@@ -152,70 +197,130 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Info & Hours - Integrated Layout */}
-      <section className="py-24 lg:py-32 px-6 lg:px-28 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-white/5">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
-          <div className="space-y-10">
-            <div className="mb-8">
-              <h1 className="text-primary font-bold tracking-[0.4em] uppercase text-[10px]">{t('horarios.label')}</h1>
-            </div>
+      {/* Info & Hours - Abyssal Elegance (Stitch Design) */}
+      <section className="py-24 lg:py-40 px-6 lg:px-28 bg-[#FBFBF9] dark:bg-background-dark relative overflow-hidden">
+        {/* Editorial Decorative Background Elements */}
+        <div className="absolute top-0 right-0 w-[40%] h-[120%] bg-slate-50 dark:bg-white/[0.02] -z-10 translate-x-1/4 -skew-x-12 border-l border-slate-100 dark:border-white/5" />
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24">
             
-            <div className="space-y-0 divide-y divide-slate-100 dark:divide-white/5">
-              {[
-                { day: t('horarios.lunes'), hours: '12:30 - 23:00' },
-                { day: t('horarios.martesMiercoles'), hours: t('horarios.cerrado'), highlight: true },
-                { day: t('horarios.juevesSabado'), hours: '12:30 - 23:00' },
-                { day: t('horarios.domingo'), hours: '12:30 - 16:30' }
-              ].map((item, idx) => (
-                <div key={idx} className="flex justify-between items-center py-5 first:pt-0">
-                  <span className={`font-bold uppercase tracking-wider text-sm ${item.highlight ? 'text-primary' : 'text-slate-900 dark:text-slate-100'}`}>{item.day}</span>
-                  <span className={`font-normal text-lg ${item.highlight ? 'text-primary' : 'text-slate-500 dark:text-slate-400'}`}>{item.hours}</span>
+            {/* Title & Description Column */}
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="lg:col-span-5 space-y-10"
+            >
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <span className="text-primary dark:text-sky-400 font-bold tracking-[0.5em] uppercase text-[9px]">{t('horarios.label')}</span>
+                  <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest ${isOpen ? 'bg-emerald-50 border-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400' : 'bg-red-50 border-red-100 text-red-600 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400'}`}>
+                    <span className={`size-1 rounded-full ${isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+                    {isOpen ? t('hero.abierto') : t('hero.cerrado')}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="lg:pl-16 lg:border-l border-slate-100 dark:border-white/5">
-            <div className="space-y-14">
-              <div>
-                <span className="text-slate-400 font-bold tracking-widest uppercase text-[10px] mb-4 block">{t('contacto.ubicacionLabel')}</span>
-                <p className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 leading-snug" style={{ whiteSpace: 'pre-line' }}>
-                  {t('contacto.direccion')}
+                <h2 className="text-5xl md:text-7xl font-serif text-slate-900 dark:text-slate-100 leading-[1.1] italic -tracking-wide">
+                  {t('horarios.title')}
+                </h2>
+                <p className="text-slate-500 dark:text-slate-400 font-light text-lg max-w-sm leading-relaxed">
+                  Disfruta del auténtico sabor del Atlántico en un entorno privilegiado, donde el horizonte se funde con la gastronomía.
                 </p>
-                <a 
-                  href="https://www.google.com/maps/search/?api=1&query=El+Atlante+San+Cristobal+Las+Palmas" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="inline-block mt-8 px-6 py-3 bg-slate-900 dark:bg-primary text-white text-xs font-bold uppercase tracking-widest rounded-full hover:scale-105 transition-all"
-                >
-                  {t('contacto.verRuta')}
-                </a>
               </div>
 
-              <div>
-                <span className="text-slate-400 font-bold tracking-widest uppercase text-[10px] mb-4 block">{t('contacto.contactoLabel')}</span>
-                <p className="text-2xl md:text-3xl font-black tracking-tight text-primary">
-                  {isOpen ? CONTACT_INFO.landline.display : CONTACT_INFO.mobile.display}
-                </p>
-                <div className="flex gap-8 mt-6">
-                   <a 
-                     href="https://www.instagram.com/restaurante_elatlante" 
-                     target="_blank" 
-                     rel="noopener noreferrer" 
-                     className="text-slate-500 hover:text-primary transition-colors font-bold uppercase tracking-widest text-xs"
-                   >
-                     Instagram
-                   </a>
-                   <a 
-                     href="https://www.facebook.com/elatlantedesancristobal/" 
-                     target="_blank" 
-                     rel="noopener noreferrer" 
-                     className="text-slate-500 hover:text-primary transition-colors font-bold uppercase tracking-widest text-xs"
-                   >
-                     Facebook
-                   </a>
-                </div>
+              <div className="pt-6">
+                <Link to="/reservar" className="group inline-flex items-center gap-4 text-slate-900 dark:text-white">
+                  <div className="size-14 bg-slate-900 dark:bg-white flex items-center justify-center transition-transform group-hover:scale-110">
+                    <svg className="size-5 text-white dark:text-slate-900" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    </svg>
+                  </div>
+                  <span className="text-[11px] font-bold uppercase tracking-[0.3em] group-hover:text-primary transition-colors">
+                    {t('horarios.reserveBtn')}
+                  </span>
+                </Link>
               </div>
+            </motion.div>
+
+            {/* Content Display Column */}
+            <div className="lg:col-span-7 space-y-20 lg:pt-8">
+              {/* Hours Grid */}
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="space-y-8"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-10">
+                  {[
+                    { day: t('horarios.lunes'), hours: '12:30 - 23:00' },
+                    { day: t('horarios.martesMiercoles'), hours: t('horarios.cerrado'), highlight: true },
+                    { day: t('horarios.juevesSabado'), hours: '12:30 - 23:00' },
+                    { day: t('horarios.domingo'), hours: '12:30 - 16:30' }
+                  ].map((item, idx) => (
+                    <div key={idx} className="space-y-1 group">
+                      <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3 transition-colors group-hover:border-primary">
+                        <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${item.highlight ? 'text-primary' : 'text-slate-400 dark:text-slate-500'}`}>
+                          {item.day}
+                        </span>
+                        {item.highlight && <span className="size-1 bg-primary rounded-full"></span>}
+                      </div>
+                      <div className={`text-xl font-light pt-2 transition-all duration-300 group-hover:pl-1 ${item.highlight ? 'text-primary italic font-medium' : 'text-slate-800 dark:text-slate-200'}`}>
+                        {item.hours}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Contact Info */}
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-12"
+              >
+                <div className="space-y-4">
+                  <span className="text-slate-400 dark:text-slate-500 font-bold tracking-[0.4em] uppercase text-[9px] block">
+                    {t('contacto.ubicacionLabel')}
+                  </span>
+                  <h4 className="text-2xl font-serif text-slate-900 dark:text-slate-100 leading-tight">
+                    {t('contacto.direccion')}
+                  </h4>
+                  <a 
+                    href="https://www.google.com/maps/search/?api=1&query=El+Atlante+San+Cristobal+Las+Palmas" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="inline-flex items-center gap-2 text-primary dark:text-sky-400 font-bold uppercase text-[9px] tracking-[0.2em] group border-b border-transparent hover:border-primary pb-1 transition-all"
+                  >
+                    {t('contacto.verRuta')}
+                    <svg className="size-3 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    </svg>
+                  </a>
+                </div>
+
+                <div className="space-y-4">
+                  <span className="text-slate-400 dark:text-slate-500 font-bold tracking-[0.4em] uppercase text-[9px] block">
+                    {t('contacto.contactoLabel')}
+                  </span>
+                  <a 
+                    href={isOpen ? CONTACT_INFO.landline.link : CONTACT_INFO.mobile.link}
+                    className="text-2xl font-serif text-slate-900 dark:text-slate-100 hover:text-primary transition-colors block leading-tight"
+                  >
+                    {isOpen ? CONTACT_INFO.landline.display : CONTACT_INFO.mobile.display}
+                  </a>
+                  <div className="flex gap-4 pt-1">
+                    <a href="https://www.instagram.com/restaurante_elatlante" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-pink-500 transition-colors">
+                      <svg className="size-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                    </a>
+                    <a href="https://www.facebook.com/elatlantedesancristobal/" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-blue-500 transition-colors">
+                      <svg className="size-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    </a>
+                  </div>
+                </div>
+              </motion.div>
             </div>
           </div>
         </div>

@@ -13,7 +13,8 @@
     "titulo2": "de San Cristóbal",
     "subtitulo": "Maritime tradition and the freshest catch in an unrivalled setting facing the Atlantic.",
     "cta": "Book a Table",
-    "ctaCarta": "View Menu"
+    "ctaCarta": "View Menu",
+    "siguenos": "Follow Us"
   },
   "nosotros": {
     "label": "About Us",
@@ -46,13 +47,18 @@
     "martesMiercoles": "Tuesday & Wednesday",
     "juevesSabado": "Thursday - Saturday",
     "domingo": "Sunday",
-    "cerrado": "Closed"
+    "cerrado": "Closed",
+    "title": "Come visit us",
+    "reserveTitle": "Want to secure your table?",
+    "reserveBtn": "Book Online"
   },
   "contacto": {
     "ubicacionLabel": "Location",
     "direccion": "Calle Marina, 81\nSan Cristóbal Seafront\nLas Palmas de G.C.",
     "verRuta": "Get directions on Google Maps",
-    "contactoLabel": "Direct Contact"
+    "contactoLabel": "Direct Contact",
+    "socialLabel": "Social Media",
+    "callConsultation": "Call us for direct inquiries"
   },
   "mapa": {
     "titulo": "We await you\nat the Promenade",

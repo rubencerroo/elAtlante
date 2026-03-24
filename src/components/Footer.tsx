@@ -26,7 +26,7 @@ export default function Footer() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-16 border-b border-slate-100 dark:border-white/5 pb-10 md:pb-16 mb-8 md:mb-12 relative z-10">
         <div>
           <div className="flex items-center gap-4 mb-6">
-            <div className="h-25">
+            <div className="h-14 md:h-30">
               <picture>
                 <source srcSet={logoWhite} media="(prefers-color-scheme: dark)" />
                 <img
