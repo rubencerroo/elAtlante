@@ -461,7 +461,7 @@ function DashboardView({
       {/* KPI Row */}
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
         <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
-          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">No Show Rate</p>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">No Show Rate (30d)</p>
           <p className={`text-3xl font-black ${noShowRate > 15 ? 'text-red-400' : 'text-emerald-400'}`}>{noShowRate}%</p>
         </div>
         <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
@@ -478,7 +478,7 @@ function DashboardView({
           <p className="text-3xl font-black text-slate-400">{weeklyComp.lastWeek}</p>
         </div>
         <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
-          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Comensales/Res</p>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Comensales/Res (Día)</p>
           <p className="text-3xl font-black text-blue-400">
             {reservations.filter(r => r.status !== 'cancelled' && r.status !== 'no-show').length 
               ? (reservations.filter(r => r.status !== 'cancelled' && r.status !== 'no-show').reduce((s, r) => s + r.guests, 0) / 
@@ -487,14 +487,14 @@ function DashboardView({
           </p>
         </div>
         <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
-          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Espera Media</p>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Espera Media (Día)</p>
           <p className="text-3xl font-black text-amber-400">
             {metrics?.avgWaitTime || 0}
             <span className="text-xs font-normal text-slate-500 ml-1">min</span>
           </p>
         </div>
         <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
-          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Duración Comida</p>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Media Comida (Día)</p>
           <p className="text-3xl font-black text-purple-400">
             {metrics?.avgMealDuration || 0}
             <span className="text-xs font-normal text-slate-500 ml-1">min</span>

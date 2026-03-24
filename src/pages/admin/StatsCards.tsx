@@ -14,7 +14,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
           <div className="p-2 bg-white/5 rounded-lg text-slate-400">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
           </div>
-          <p className="text-slate-500 text-[10px] font-bold tracking-widest uppercase">Reservas Hoy</p>
+          <p className="text-slate-500 text-[10px] font-bold tracking-widest uppercase">Reservas del día</p>
         </div>
         <p className="text-3xl font-black text-white group-hover:scale-105 transition-transform origin-left">{stats.totalToday}</p>
       </div>
