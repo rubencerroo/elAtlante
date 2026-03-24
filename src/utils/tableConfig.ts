@@ -101,14 +101,18 @@ export function getAreasForPreference(preference: string, hasPet: boolean): Area
     case 'Terraza exterior':
       return [
         'terraza_principal', 'terraza_derecha',
-        // fallback
-        'terraza_izquierda', 'salon_grande', 'salon_derecha', 'salon_izquierda',
+        // fallback to interior
+        'salon_grande', 'salon_derecha', 'salon_izquierda',
+        // absolutely last resort: high tables (different seating style)
+        'terraza_izquierda',
       ];
     case 'Mesas altas':
       return [
         'terraza_izquierda',
-        // fallback
-        'terraza_principal', 'terraza_derecha', 'salon_grande', 'salon_derecha', 'salon_izquierda',
+        // fallback to interior
+        'salon_grande', 'salon_derecha', 'salon_izquierda',
+        // absolutely last resort: regular terrace
+        'terraza_principal', 'terraza_derecha',
       ];
     case 'Indiferente':
     default:
