@@ -243,7 +243,7 @@ export default function AdminPanel() {
           <td><strong>${r.time}</strong></td>
           <td>${r.name}${r.hasPet ? ' 🐾' : ''}</td>
           <td>${r.guests}</td>
-          <td>${r.tableNumber || '—'}</td>
+          <td>${r.assignedTables && r.assignedTables.length > 0 ? r.assignedTables.join(', ') : (r.tableNumber || '—')}</td>
           <td>${r.preference}</td>
           <td><span class="status ${r.status}">${STATUS_CONFIG[r.status].label}</span></td>
           <td>${r.notes || '—'}</td>

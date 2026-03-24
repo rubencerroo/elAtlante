@@ -90,7 +90,11 @@ function KanbanCard({ reservation: r, handleStatus, handleDelete, handleAssignTa
           <span className="font-mono">{r.time}</span>
           <span>👥 {r.guests}</span>
           <span>{r.preference === 'Terraza exterior' ? '☀️' : r.preference === 'Interior' ? '🏠' : r.preference === 'Mesas altas' ? '🪑' : '🔄'}</span>
-          {r.tableNumber && <span className="text-primary font-bold">M{r.tableNumber}</span>}
+          {(r.assignedTables || r.tableNumber) && (
+            <span className="text-primary font-bold">
+              M{r.assignedTables && r.assignedTables.length > 0 ? r.assignedTables.join(', ') : r.tableNumber}
+            </span>
+          )}
         </div>
         {r.notes && <p className="text-[11px] text-amber-300/70 mt-1.5 truncate">📝 {r.notes}</p>}
       </button>

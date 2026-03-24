@@ -136,16 +136,12 @@ export function findMinimalCombo(tables: TableDef[], guests: number): TableDef[]
 /**
  * Build result from a list of assigned tables.
  */
-export function buildResult(tables: TableDef[]): { tableNumber: number; combinedNote?: string; allTableIds: number[] } {
+export function buildResult(tables: TableDef[]): { tableNumber: number; allTableIds: number[] } {
   const sorted = [...tables].sort((a, b) => a.id - b.id);
   const allIds = sorted.map(t => t.id);
-  if (sorted.length === 1) {
-    return { tableNumber: sorted[0].id, allTableIds: allIds };
-  }
   return {
     tableNumber: sorted[0].id,
     allTableIds: allIds,
-    combinedNote: `[Mesas combinadas: ${sorted.map(t => t.id).join(', ')}]`,
   };
 }
 
@@ -158,7 +154,7 @@ export function assignTablePure(
   preference: string,
   hasPet: boolean,
   occupiedIds: Set<number>
-): { tableNumber: number; combinedNote?: string; allTableIds: number[] } | undefined {
+): { tableNumber: number; allTableIds: number[] } | undefined {
   const candidateAreas = getAreasForPreference(preference, hasPet);
 
   for (const areaId of candidateAreas) {

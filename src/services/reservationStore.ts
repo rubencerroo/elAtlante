@@ -77,7 +77,7 @@ function mapToReservation(data: any): Reservation {
     guests: data.guests,
     preference: data.preference,
     hasPet: data.has_pet,
-    notes: data.notes || '',
+    notes: (data.notes || '').replace(/\[Mesas combinadas:.*?\]/g, '').trim(),
     status: data.status,
     createdAt: data.created_at,
     tableNumber: data.table_number,
@@ -164,16 +164,13 @@ export async function addReservation(r: Omit<Reservation, 'id' | 'bookingNumber'
   */
 
   // ── Automatic Table Assignment ──
-  if (!newR.table_number) {
-    const result = await assignTable(r.date, r.time, r.guests, r.preference, r.hasPet);
-    if (result) {
-      newR.table_number = result.tableNumber;
-      newR.assigned_tables = result.allTableIds || [result.tableNumber];
-      if (result.combinedNote) {
-        newR.notes = newR.notes ? `${newR.notes} ${result.combinedNote}` : result.combinedNote;
+    if (!newR.table_number) {
+      const result = await assignTable(r.date, r.time, r.guests, r.preference, r.hasPet);
+      if (result) {
+        newR.table_number = result.tableNumber;
+        newR.assigned_tables = result.allTableIds;
       }
     }
-  }
 
   const { data, error } = await supabase
     .from('reservations')
@@ -847,7 +844,7 @@ async function assignTable(
   guests: number,
   preference: string,
   hasPet: boolean
-): Promise<{ tableNumber: number; combinedNote?: string; allTableIds: number[] } | undefined> {
+): Promise<{ tableNumber: number; allTableIds: number[] } | undefined> {
   const occupiedIds = await getOccupiedTableIds(date, time);
   const candidateAreas = getAreasForPreference(preference, hasPet);
 
@@ -883,7 +880,7 @@ async function trySwapForPreference(
   guests: number,
   preferredAreas: AreaId[],
   occupiedIds: Set<number>
-): Promise<{ tableNumber: number; combinedNote?: string; allTableIds: number[] } | undefined> {
+): Promise<{ tableNumber: number; allTableIds: number[] } | undefined> {
   const { data: candidates, error } = await supabase
     .from('reservations')
     .select('id, table_number, time, guests, preference')
@@ -921,27 +918,10 @@ async function trySwapForPreference(
       const fitForCandidate = findBestFitInArea(fbArea, candidate.guests, occupiedIds);
       if (fitForCandidate) {
         const newTableForCandidate = fitForCandidate.sort((a, b) => a.id - b.id)[0].id;
-        const combinedNoteCandidate = fitForCandidate.length > 1
-          ? `[Mesas combinadas: ${fitForCandidate.map(t => t.id).join(', ')}]`
-          : undefined;
-
         const updatePayload: any = { 
           table_number: newTableForCandidate, 
-          assigned_tables: fitForCandidate.map(t => t.id).join(',') 
+          assigned_tables: fitForCandidate.map(t => t.id)
         };
-        if (combinedNoteCandidate) {
-          const { data: existing } = await supabase
-            .from('reservations')
-            .select('notes')
-            .eq('id', candidate.id)
-            .single();
-
-          const existingNotes = existing?.notes || '';
-          const cleanNotes = existingNotes.replace(/\[Mesas combinadas:.*?\]/g, '').trim();
-          updatePayload.notes = cleanNotes
-            ? `${cleanNotes} ${combinedNoteCandidate}`
-            : combinedNoteCandidate;
-        }
 
         await supabase
           .from('reservations')
