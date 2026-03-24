@@ -26,37 +26,34 @@ export default function Footer() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-16 border-b border-slate-100 dark:border-white/5 pb-10 md:pb-16 mb-8 md:mb-12 relative z-10">
         <div>
           <div className="flex items-center gap-4 mb-6">
-            <div className="h-10">
+            <div className="h-25">
               <picture>
                 <source srcSet={logoWhite} media="(prefers-color-scheme: dark)" />
-                <img 
-                  src={logoBlack} 
-                  alt="El Atlante" 
-                  className="h-full w-auto object-contain dark:hidden" 
+                <img
+                  src={logoBlack}
+                  alt="El Atlante"
+                  className="h-full w-auto object-contain dark:hidden"
                 />
-                <img 
-                  src={logoWhite} 
-                  alt="El Atlante" 
-                  className="h-full w-auto object-contain hidden dark:block" 
+                <img
+                  src={logoWhite}
+                  alt="El Atlante"
+                  className="h-full w-auto object-contain hidden dark:block"
                 />
               </picture>
             </div>
           </div>
-          <p className="text-slate-500 dark:text-slate-400 font-light leading-relaxed">
-            {t('footer.honoring')}
-          </p>
         </div>
         <div>
           <h4 className="font-bold text-sm uppercase tracking-[0.3em] mb-5 md:mb-8 text-primary dark:text-sky-400">{t('footer.navigation')}</h4>
           <ul className="space-y-4 text-slate-600 dark:text-slate-400 font-light">
             <li><Link className="hover:text-primary dark:hover:text-white transition-colors" to="/">{t('nav.inicio')}</Link></li>
             <li>
-              <a 
-                className="hover:text-primary dark:hover:text-white transition-colors" 
-                href={i18n.language.startsWith('en') 
+              <a
+                className="hover:text-primary dark:hover:text-white transition-colors"
+                href={i18n.language.startsWith('en')
                   ? (document.documentElement.classList.contains('dark') ? '/assets/pdf/carta_en_dark.pdf' : '/assets/pdf/carta_en.pdf')
                   : (document.documentElement.classList.contains('dark') ? '/assets/pdf/carta_es_dark.pdf' : '/assets/pdf/carta_es.pdf')
-                } 
+                }
                 target="_blank" rel="noopener noreferrer">
                 {t('nav.carta')}
               </a>
@@ -79,10 +76,10 @@ export default function Footer() {
         <p>© {new Date().getFullYear()} El Atlante de San Cristóbal</p>
         <div className="flex flex-col items-center md:items-end gap-4">
           <div className="flex gap-6 md:gap-8">
-            <a 
-              className="hover:text-primary dark:hover:text-sky-400 transition-colors flex items-center gap-2" 
-              href="https://www.instagram.com/restaurante_elatlante" 
-              target="_blank" 
+            <a
+              className="hover:text-primary dark:hover:text-sky-400 transition-colors flex items-center gap-2"
+              href="https://www.instagram.com/restaurante_elatlante"
+              target="_blank"
               rel="noopener noreferrer"
             >
               <svg className="size-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -90,10 +87,10 @@ export default function Footer() {
               </svg>
               Instagram
             </a>
-            <a 
-              className="hover:text-primary dark:hover:text-sky-400 transition-colors flex items-center gap-2" 
-              href="https://www.facebook.com/elatlantedesancristobal/" 
-              target="_blank" 
+            <a
+              className="hover:text-primary dark:hover:text-sky-400 transition-colors flex items-center gap-2"
+              href="https://www.facebook.com/elatlantedesancristobal/"
+              target="_blank"
               rel="noopener noreferrer"
             >
               <svg className="size-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

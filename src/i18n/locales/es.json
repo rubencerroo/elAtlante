@@ -135,10 +135,28 @@
       "disclaimer2": "Le enviaremos un email tan pronto como procesemos su mesa.",
       "calendar": {
         "months": [
-          "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-          "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+          "Enero",
+          "Febrero",
+          "Marzo",
+          "Abril",
+          "Mayo",
+          "Junio",
+          "Julio",
+          "Agosto",
+          "Septiembre",
+          "Octubre",
+          "Noviembre",
+          "Diciembre"
         ],
-        "days": ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
+        "days": [
+          "Lun",
+          "Mar",
+          "Mié",
+          "Jue",
+          "Vie",
+          "Sáb",
+          "Dom"
+        ],
         "available": "Disponible",
         "closed": "Cerrado"
       },
@@ -151,7 +169,6 @@
     }
   },
   "footer": {
-    "honoring": "Honrando la tradición pesquera de San Cristóbal con el producto más fresco del Atlántico.",
     "navigation": "Navegación",
     "contact": "Contacto",
     "legal": "Legal",
