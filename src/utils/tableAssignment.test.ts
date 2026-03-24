@@ -288,19 +288,19 @@ describe('findMinimalCombo', () => {
 // ────────────────────────────────────────
 
 describe('buildResult', () => {
-  it('single table — no combined note', () => {
+  it('single table — allTableIds contains it', () => {
     const result = buildResult([{ id: 5, capacity: 4, area: 'salon_grande' }]);
     expect(result.tableNumber).toBe(5);
-    expect(result.combinedNote).toBeUndefined();
+    expect(result.allTableIds).toEqual([5]);
   });
 
-  it('multiple tables — combined note with sorted IDs', () => {
+  it('multiple tables — allTableIds sorted', () => {
     const result = buildResult([
       { id: 7, capacity: 2, area: 'salon_grande' },
       { id: 3, capacity: 4, area: 'salon_grande' },
     ]);
     expect(result.tableNumber).toBe(3); // lowest ID
-    expect(result.combinedNote).toBe('[Mesas combinadas: 3, 7]');
+    expect(result.allTableIds).toEqual([3, 7]);
   });
 });
 
@@ -372,7 +372,7 @@ describe('assignTablePure', () => {
   it('picks 4-cap table for 4 guests over combining two 2s', () => {
     const result = assignTablePure(4, 'Interior', false, new Set());
     expect(result).toBeDefined();
-    expect(result!.combinedNote).toBeUndefined(); // Single table
+    expect(result!.allTableIds).toHaveLength(1); // Single table
     // Should be one of the 4-cap tables (1-6 or 15)
     const table = TABLES.find(t => t.id === result!.tableNumber);
     expect(table!.capacity).toBe(4);
@@ -384,14 +384,13 @@ describe('assignTablePure', () => {
     // Should combine: 4+2=6 is optimal
     // Either has combinedNote or single table with cap >= 6 (none exist single here)
     // salon_grande max single = 4, so must combine
-    expect(result!.combinedNote).toBeDefined();
-    expect(result!.combinedNote).toContain('Mesas combinadas');
+    expect(result!.allTableIds.length).toBeGreaterThan(1);
   });
 
   it('combines optimally: 10 guests, fills salon_grande first', () => {
     const result = assignTablePure(10, 'Interior', false, new Set());
     expect(result).toBeDefined();
-    expect(result!.combinedNote).toBeDefined();
+    expect(result!.allTableIds.length).toBeGreaterThan(1);
   });
 
   it('Indiferente picks salon_grande first (interior-first order)', () => {
@@ -405,7 +404,7 @@ describe('assignTablePure', () => {
     const result = assignTablePure(20, 'Interior', false, new Set());
     expect(result).toBeDefined();
     // salon_grande has 26 seats — can fit 20 by combining all 7 tables
-    expect(result!.combinedNote).toBeDefined();
+    expect(result!.allTableIds.length).toBeGreaterThan(1);
   });
 
   it('large party exceeding single area falls to combining across areas if needed', () => {
@@ -424,7 +423,7 @@ describe('assignTablePure', () => {
   it('26 guests fit in salon_grande by combining all tables', () => {
     const result = assignTablePure(26, 'Interior', false, new Set());
     expect(result).toBeDefined();
-    expect(result!.combinedNote).toBeDefined();
+    expect(result!.allTableIds.length).toBeGreaterThan(1);
   });
 
   it('with some interior occupied, still finds the best available', () => {
