@@ -94,7 +94,7 @@
       "contact": "Contacto",
       "date": "Fecha",
       "time": "Horario",
-      "guests": "Invitados",
+      "guests": "Comensales",
       "person": "persona",
       "people": "personas",
       "location": "Ubicación",
@@ -115,7 +115,7 @@
       "dateClosedError": "El restaurante está cerrado este día. Por favor, selecciona otra fecha.",
       "time": "Hora",
       "closedThisDay": "Cerrado este día",
-      "guestsAmount": "Invitados",
+      "guestsAmount": "Comensales",
       "groupWarning": "Para grupos de más de 8 personas, le recomendamos contactarnos vía telefónica.",
       "zonePreference": "Preferencia de Zona",
       "zones": {

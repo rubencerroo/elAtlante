@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import SEO from '../components/SEO';
 import heroImage from '../assets/elatlantePaisaje.jpg';
+import AboutSlider from '../components/AboutSlider';
 import { CONTACT_INFO } from '../constants/contact';
 import { isRestaurantOpenNow } from '../utils/reservationUtils';
 
@@ -160,9 +161,9 @@ export default function Home() {
 
       {/* About Us Section */}
       <section className="px-6 lg:px-28 py-24 @container overflow-hidden" id="nosotros">
-        <div className="flex flex-col lg:flex-row gap-16 items-center">
+        <div className="flex flex-col-reverse lg:flex-row gap-16 items-center">
           <div className="flex-1 w-full relative">
-            <div className="aspect-[16/10] rounded-2xl md:rounded-[2.5rem] bg-cover bg-center shadow-[0_30px_80px_-15px_rgba(0,0,0,0.25)] border border-white dark:border-white/5" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDHN_4hnzs64uVTD9pNvyjzMd0gmF4u7d9jlcgGRfAeXVF6xYmg615NSyZS8rGp-W024Q6a7_VHAgETZykcP6iOmw5Q_bM7W4ySND3PfvJ0dKZeFEnZF7doKn5ut9QjDorkWL-tX8aPlHIukSpo6etujfLfe3dPBQuh8rfJoeS4UG_U9KSG3Y8sWtncAfSc0vaVFDKhnSKbOSMbQEx7lxCR4ub3_jIV_J89xZN_YklPuNB5zQlixYXbykzNRiO5ihIRGpKeVAtcraQ')" }}></div>
+            <AboutSlider />
           </div>
           <div className="flex flex-col gap-8 flex-1">
             <div className="flex flex-col gap-3">
