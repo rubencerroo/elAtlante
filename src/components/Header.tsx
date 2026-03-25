@@ -124,7 +124,7 @@ export default function Header() {
             {navLink('carta', t('nav.carta'), pdfUrl, false, true)}
           </nav>
           <Link to="/" className="absolute left-1/2 -translate-x-1/2">
-            <img src={logoWhite} alt="El Atlante" className="h-30 w-auto object-contain" />
+            <img src={logoWhite} alt="El Atlante" className="h-20 w-auto object-contain" />
           </Link>
           <div className="flex items-center gap-5 flex-1 justify-end">
             <div className="flex items-center gap-3">
