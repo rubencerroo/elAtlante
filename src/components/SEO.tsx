@@ -24,7 +24,7 @@ const SEO = ({
   twitterImage,
 }: SEOProps) => {
   const siteName = 'El Atlante de San Cristóbal';
-  const fullTitle = title ? `${title} | ${siteName}` : `${siteName} | Sabor del Mar`;
+  const fullTitle = title && title !== siteName ? `${title} | ${siteName}` : siteName;
   const domain = 'https://elatlantedesancristobal.com';
   const fullCanonical = canonical ? `${domain}${canonical}` : domain;
 

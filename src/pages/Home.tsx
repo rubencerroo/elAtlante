@@ -33,7 +33,6 @@ export default function Home() {
   return (
     <>
       <SEO
-        title="Sabor del Mar en San Cristóbal"
         description="Tradición pesquera y producto Km 0 en un entorno inigualable frente al Atlántico. Disfruta del mejor pescado fresco en Las Palmas."
         ogImage="/og-image.jpg"
       />

@@ -33,8 +33,8 @@ const ComingSoon: React.FC<ComingSoonProps> = ({ onUnlock }) => {
   return (
     <div className="fixed inset-0 z-[9999] flex flex-col lg:flex-row bg-background-light dark:bg-background-dark overflow-x-hidden overflow-y-auto font-sans">
       <SEO
-        title="Próximamente | El Atlante"
-        description="Estamos preparando algo espectacular en El Atlante de San Cristóbal. Sabor del mar y tradición marinera."
+        title="Próximamente"
+        description="Estamos preparando algo espectacular en El Atlante de San Cristóbal. Tradición marinera frente al mar."
       />
 
       {/* Left Column: Visual & Brand Branding */}
