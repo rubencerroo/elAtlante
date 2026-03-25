@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -13,7 +13,6 @@ import ConfirmReservation from './pages/ConfirmReservation';
 import LegalNotice from './pages/LegalNotice';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import CookiePolicy from './pages/CookiePolicy';
-import ComingSoon from './pages/ComingSoon';
 import NotFound from './pages/NotFound';
 import { registerSW } from 'virtual:pwa-register';
 import CookieBanner from './components/CookieBanner';
@@ -109,19 +108,7 @@ function AppLayout() {
     enabled: isAdmin && isTabletAuthorized() && pathname !== '/admin'
   });
   
-  // Protection logic
-  const [isUnlocked, setIsUnlocked] = useState(() => {
-    return localStorage.getItem('el_atlante_unlocked') === 'true';
-  });
-
-  const handleUnlock = () => {
-    localStorage.setItem('el_atlante_unlocked', 'true');
-    setIsUnlocked(true);
-  };
-
-  if (!isUnlocked) {
-    return <ComingSoon onUnlock={handleUnlock} />;
-  }
+  // Protection logic removed to allow SEO indexing
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background-dark font-['Work_Sans',sans-serif] selection:bg-primary selection:text-white">

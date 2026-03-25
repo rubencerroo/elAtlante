@@ -57,7 +57,9 @@ export default function Home() {
           "url": "https://elatlantedesancristobal.com",
           "telephone": CONTACT_INFO.landline.raw,
           "servesCuisine": "Canaria, Pescado, Mariscos",
-          "priceRange": "$$",
+          "priceRange": "€€",
+          "menu": "https://elatlantedesancristobal.com/carta",
+          "description": "Restaurante especializado en pescado fresco y gastronomía canaria en San Cristóbal, Las Palmas. Tradición pesquera y producto Km 0 con terraza frente al mar.",
           "openingHoursSpecification": [
             {
               "@type": "OpeningHoursSpecification",
