@@ -214,19 +214,38 @@ export default function Home() {
               className="lg:col-span-5 space-y-10"
             >
               <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <span className="text-primary dark:text-sky-400 font-bold tracking-[0.5em] uppercase text-[9px]">{t('horarios.label')}</span>
-                  <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest ${isOpen ? 'bg-emerald-50 border-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400' : 'bg-red-50 border-red-100 text-red-600 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400'}`}>
-                    <span className={`size-1 rounded-full ${isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
-                    {isOpen ? t('hero.abierto') : t('hero.cerrado')}
+
+
+                <div className="relative w-full h-[300px] md:h-[360px] mt-8 rounded-3xl overflow-hidden shadow-[0_15px_40px_-15px_rgba(0,0,0,0.15)] border border-slate-200 dark:border-white/10 group transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.2)] hover:border-slate-300 dark:hover:border-white/20">
+                  {/* Tint Overlay to match site aesthetic */}
+                  <div className="absolute inset-0 bg-primary/5 dark:bg-accent-blue/10 pointer-events-none mix-blend-multiply dark:mix-blend-color z-10 transition-opacity duration-700 opacity-100 group-hover:opacity-0 ring-1 ring-inset ring-black/5 dark:ring-white/5"></div>
+
+                  {/* Hide Google Maps UI by boldly pushing negative margins - specifically top to hide reviews */}
+                  <div className="absolute -top-[125px] -left-[40px] w-[calc(100%+80px)] h-[calc(100%+170px)] md:-top-[140px] md:h-[calc(100%+190px)] pointer-events-none">
+                    <iframe
+                      src="https://maps.google.com/maps?q=Restaurante+El+Atlante+de+San+Cristóbal,+Las+Palmas&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                      className="w-full h-full grayscale-[40%] sepia-[15%] opacity-90 dark:invert dark:grayscale-[20%] dark:hue-rotate-[190deg] dark:contrast-[110%] dark:brightness-95 dark:opacity-85 transition-all duration-700 ease-in-out group-hover:grayscale-0 group-hover:sepia-0 group-hover:opacity-100 dark:group-hover:invert-0 dark:group-hover:hue-rotate-0 dark:group-hover:brightness-100 dark:group-hover:contrast-100"
+                      style={{ border: 0 }}
+                      allowFullScreen={false}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade">
+                    </iframe>
                   </div>
+
+                  {/* Elegant Floating Badge (Always Visible, Centered Bottom) */}
+                  <a
+                    href="https://www.google.com/maps/search/?api=1&query=Restaurante+El+Atlante+de+San+Cristobal+Las+Palmas"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute bottom-5 left-1/2 -translate-x-1/2 w-max max-w-[90%] z-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-5 py-3 rounded-full shadow-xl border border-slate-200 dark:border-white/10 text-[10px] md:text-xs font-black uppercase tracking-[0.15em] text-slate-800 dark:text-slate-100 flex items-center justify-center gap-2.5 transition-all duration-500 ease-out hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:border-primary hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <svg className="size-4 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                    </svg>
+                    <span className="truncate">{t('contacto.verRuta', 'VER RUTA EN GOOGLE MAPS')}</span>
+                  </a>
                 </div>
-                <h2 className="text-5xl md:text-7xl font-serif text-slate-900 dark:text-slate-100 leading-[1.1] italic -tracking-wide">
-                  {t('horarios.title')}
-                </h2>
-                <p className="text-slate-500 dark:text-slate-400 font-light text-lg max-w-sm leading-relaxed">
-                  Disfruta del auténtico sabor del Atlántico en un entorno privilegiado, donde el horizonte se funde con la gastronomía.
-                </p>
               </div>
 
               <div className="pt-6">
@@ -252,6 +271,13 @@ export default function Home() {
                 viewport={{ once: true }}
                 className="space-y-8"
               >
+                <div className="flex items-center gap-4 pb-4">
+                  <span className="text-primary dark:text-sky-400 font-bold tracking-[0.5em] uppercase text-[12px]">{t('horarios.label')}</span>
+                  <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest ${isOpen ? 'bg-emerald-50 border-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400' : 'bg-red-50 border-red-100 text-red-600 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400'}`}>
+                    <span className={`size-1 rounded-full ${isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+                    {isOpen ? t('hero.abierto') : t('hero.cerrado')}
+                  </div>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-10">
                   {[
                     { day: t('horarios.lunes'), hours: '12:30 - 23:00' },
@@ -289,17 +315,7 @@ export default function Home() {
                   <h3 className="text-2xl font-serif text-slate-900 dark:text-slate-100 leading-tight">
                     {t('contacto.direccion')}
                   </h3>
-                  <a
-                    href="https://www.google.com/maps/search/?api=1&query=El+Atlante+San+Cristobal+Las+Palmas"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-primary dark:text-sky-400 font-bold uppercase text-[9px] tracking-[0.2em] group border-b border-transparent hover:border-primary pb-1 transition-all"
-                  >
-                    {t('contacto.verRuta')}
-                    <svg className="size-3 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                    </svg>
-                  </a>
+
                 </div>
 
                 <div className="space-y-4">
