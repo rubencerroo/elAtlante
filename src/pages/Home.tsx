@@ -136,7 +136,7 @@ export default function Home() {
                   <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
                 </svg>
               </div>
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-slate-100 group-hover:text-[#ee2a7b] transition-colors">Instagram</span>
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-slate-100 group-hover:text-[#ee2a7b] transition-colors">Seguir en Instagram</span>
             </motion.a>
 
             <motion.a
@@ -152,7 +152,7 @@ export default function Home() {
                   <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
                 </svg>
               </div>
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-slate-100 group-hover:text-[#1877f2] transition-colors">Facebook</span>
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-slate-100 group-hover:text-[#1877f2] transition-colors">Seguir en Facebook</span>
             </motion.a>
           </div>
         </div>
@@ -180,7 +180,7 @@ export default function Home() {
                   <svg className="size-7" fill="currentColor" viewBox="0 -960 960 960"><path d="M440-160v-487L216-431l-56-57 280-280 280 280-56 57-224-216v487h-80Z" /></svg>
                 </div>
                 <div>
-                  <h4 className="font-bold text-base text-slate-900 dark:text-slate-100 uppercase tracking-tight mb-1">{t('nosotros.pilar1Titulo')}</h4>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 uppercase tracking-tight mb-1">{t('nosotros.pilar1Titulo')}</h3>
                   <p className="text-slate-500 dark:text-slate-400 font-light text-sm max-w-sm">{t('nosotros.pilar1Desc')}</p>
                 </div>
               </div>
@@ -189,7 +189,7 @@ export default function Home() {
                   <svg className="size-7" fill="currentColor" viewBox="0 -960 960 960"><path d="M280-80v-366q-51-14-85.5-56.5T160-600v-280h80v280h40v-280h80v280h40v-280h80v280q0 55-34.5 97.5T360-446v366h-80Zm400 0v-320H560v-280q0-83 58.5-141.5T760-880v800h-80Z" /></svg>
                 </div>
                 <div>
-                  <h4 className="font-bold text-base text-slate-900 dark:text-slate-100 uppercase tracking-tight mb-1">{t('nosotros.pilar2Titulo')}</h4>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 uppercase tracking-tight mb-1">{t('nosotros.pilar2Titulo')}</h3>
                   <p className="text-slate-500 dark:text-slate-400 font-light text-sm max-w-sm">{t('nosotros.pilar2Desc')}</p>
                 </div>
               </div>
@@ -286,9 +286,9 @@ export default function Home() {
                   <span className="text-slate-400 dark:text-slate-500 font-bold tracking-[0.4em] uppercase text-[9px] block">
                     {t('contacto.ubicacionLabel')}
                   </span>
-                  <h4 className="text-2xl font-serif text-slate-900 dark:text-slate-100 leading-tight">
+                  <h3 className="text-2xl font-serif text-slate-900 dark:text-slate-100 leading-tight">
                     {t('contacto.direccion')}
-                  </h4>
+                  </h3>
                   <a
                     href="https://www.google.com/maps/search/?api=1&query=El+Atlante+San+Cristobal+Las+Palmas"
                     target="_blank"
