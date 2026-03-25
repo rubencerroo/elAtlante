@@ -402,19 +402,21 @@ export default function Reservations() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12 items-end">
-                <div className="flex flex-col gap-2 md:gap-4 group">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12">
+                <div className="flex flex-col gap-2 md:gap-4 group h-full justify-between">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.time')} <span className="text-coastal-sea">*</span></label>
-                  <CustomSelect
-                    value={formData.time}
-                    onChange={v => handleChange('time', v)}
-                    options={getAvailableTimes(formData.date, 15).map(time => ({ value: time, label: `${time} h` }))}
-                    placeholder={t('reservas.form.closedThisDay')}
-                  />
+                  <div className="flex-1 flex flex-col justify-end">
+                    <CustomSelect
+                      value={formData.time}
+                      onChange={v => handleChange('time', v)}
+                      options={getAvailableTimes(formData.date, 15).map(time => ({ value: time, label: `${time} h` }))}
+                      placeholder={t('reservas.form.closedThisDay')}
+                    />
+                  </div>
                 </div>
-                <div className="flex flex-col gap-2 md:gap-4 group relative">
+                <div className="flex flex-col gap-2 md:gap-4 group relative h-full justify-between">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.guestsAmount')}</label>
-                  <div className="border-b border-slate-100 dark:border-white/5 group-focus-within:border-primary dark:group-focus-within:border-slate-400 pb-2 transition-all">
+                  <div className="border-b border-slate-100 dark:border-white/5 group-focus-within:border-primary dark:group-focus-within:border-slate-400 pb-2 transition-all flex-1 flex flex-col justify-end">
                     <GuestCounter
                       value={formData.guests}
                       onChange={n => handleChange('guests', n)}

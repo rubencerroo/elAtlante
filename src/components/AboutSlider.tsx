@@ -42,9 +42,22 @@ export default function AboutSlider() {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${images[currentIndex]}')` }}
-        />
+          className="absolute inset-0 overflow-hidden"
+        >
+          {/* Blurred Background Layer */}
+          <div 
+            className="absolute inset-[-10%] bg-cover bg-center blur-2xl opacity-60 dark:opacity-40"
+            style={{ backgroundImage: `url('${images[currentIndex]}')` }}
+          />
+          {/* Subtle dark overlay for better text contrast if needed */}
+          <div className="absolute inset-0 bg-black/10 dark:bg-black/30" />
+          
+          {/* Sharp Foreground Image */}
+          <div 
+            className="absolute inset-0 bg-contain bg-center bg-no-repeat"
+            style={{ backgroundImage: `url('${images[currentIndex]}')` }}
+          />
+        </motion.div>
       </AnimatePresence>
 
       {/* Navigation arrows (visible on hover or focus) */}
