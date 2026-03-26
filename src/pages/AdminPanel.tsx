@@ -14,8 +14,11 @@ import StatusKanban from './admin/StatusKanban';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import FeedbackButton from '../components/FeedbackButton';
 import logoWhite from '../assets/logowhite.png';
+import logoBlack from '../assets/logoblack.png';
 import { AlertModal } from '../components/AlertModal';
 import ManualReservationModal from '../components/ManualReservationModal';
+import { AdminThemeProvider, useAdminTheme } from '../contexts/AdminThemeContext';
+import ThemeToggle from '../components/admin/ThemeToggle';
 
 // ── Status config ──
 const STATUS_CONFIG: Record<ReservationStatus, { label: string; color: string; bg: string }> = {
@@ -33,7 +36,16 @@ type AdminTab = 'kanban' | 'dashboard' | 'crm' | 'staff' | 'feedback';
 
 
 export default function AdminPanel() {
+  return (
+    <AdminThemeProvider>
+      <AdminPanelInner />
+    </AdminThemeProvider>
+  );
+}
+
+function AdminPanelInner() {
   const navigate = useNavigate();
+  const { isDark } = useAdminTheme();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<AdminTab>('kanban');
@@ -285,7 +297,7 @@ export default function AdminPanel() {
 
   if (!authChecked) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--admin-bg)' }}>
         <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
@@ -298,25 +310,27 @@ export default function AdminPanel() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen" style={{ background: 'var(--admin-bg)', color: 'var(--admin-text)' }}>
       {/* Top Bar */}
-      <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/5">
+      <header className="sticky top-0 z-50 backdrop-blur-xl border-b" style={{ background: 'var(--admin-header-bg)', borderColor: 'var(--admin-border)' }}>
         <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <div className="h-8 transition-transform hover:scale-105">
-              <img src={logoWhite} alt="El Atlante" className="h-full w-auto object-contain" />
+              <img src={isDark ? logoWhite : logoBlack} alt="El Atlante" className="h-full w-auto object-contain" />
             </div>
             <div>
-              <h1 className="text-sm font-bold">Panel Dueño</h1>
-              <p className="text-slate-500 text-[10px] uppercase tracking-widest leading-none">Restaurante</p>
+              <h1 className="text-sm font-bold" style={{ color: 'var(--admin-text)' }}>Panel Dueño</h1>
+              <p className="text-[10px] uppercase tracking-widest leading-none" style={{ color: 'var(--admin-text-muted)' }}>Restaurante</p>
             </div>
           </div>
           
           {/* Tabs */}
-          <nav className="hidden md:flex items-center gap-1 bg-white/5 rounded-xl p-1">
+          <nav className="hidden md:flex items-center gap-1 rounded-xl p-1" style={{ background: 'var(--admin-bg-elevated)' }}>
             {tabs.map(t => (
               <button key={t.key} onClick={() => setActiveTab(t.key)}
-                className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${activeTab === t.key ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white'}`}>
+                className={`px-4 py-2 rounded-lg text-xs font-medium transition-all`}
+                style={activeTab === t.key ? { background: 'var(--admin-bg-hover)', color: 'var(--admin-text)' } : { color: 'var(--admin-text-secondary)' }}>
                 <span className="mr-1.5">{t.icon}</span>{t.label}
               </button>
             ))}
@@ -324,7 +338,7 @@ export default function AdminPanel() {
 
           <div className="flex items-center gap-6">
             <FeedbackButton role="admin" />
-            <button onClick={logout} className="text-slate-400 hover:text-red-400 text-sm flex items-center gap-2 transition-colors">
+            <button onClick={logout} className="text-sm flex items-center gap-2 transition-colors hover:text-red-400" style={{ color: 'var(--admin-text-secondary)' }}>
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 -960 960 960"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>
               Salir
             </button>
@@ -332,10 +346,11 @@ export default function AdminPanel() {
         </div>
 
         {/* Mobile tabs */}
-        <div className="md:hidden flex border-t border-white/5 overflow-x-auto no-scrollbar">
+        <div className="md:hidden flex overflow-x-auto no-scrollbar" style={{ borderTop: '1px solid var(--admin-border)' }}>
           {tabs.map(t => (
             <button key={t.key} onClick={() => setActiveTab(t.key)}
-              className={`flex-1 py-3 px-2 text-center text-[10px] font-medium transition-all whitespace-nowrap ${activeTab === t.key ? 'text-primary border-b-2 border-primary bg-white/5' : 'text-slate-500'}`}>
+              className={`flex-1 py-3 px-2 text-center text-[10px] font-medium transition-all whitespace-nowrap ${activeTab === t.key ? 'text-primary border-b-2 border-primary' : ''}`}
+              style={activeTab === t.key ? { background: 'var(--admin-bg-elevated)' } : { color: 'var(--admin-text-muted)' }}>
               <span className="block text-lg mb-1">{t.icon}</span>
               {t.label}
             </button>
@@ -350,16 +365,16 @@ export default function AdminPanel() {
         {/* Filters */}
         <div className="flex flex-wrap gap-4 items-center mb-8">
           <input type="date" value={filterDate} onChange={e => setFilterDate(e.target.value)}
-            className="bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50" />
+            className="rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50" style={{ background: 'var(--admin-bg-input)', border: '1px solid var(--admin-border)', color: 'var(--admin-text)' }} />
 
           <div className="ml-auto flex gap-2">
             <button onClick={() => setShowAddModal(true)} className="bg-primary hover:bg-primary/90 text-white rounded-xl px-4 py-2.5 text-sm font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary/20">
               ➕ Nueva Reserva
             </button>
-            <button onClick={exportPDF} className="bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5 rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2">
+            <button onClick={exportPDF} className="rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2" style={{ background: 'var(--admin-bg-elevated)', border: '1px solid var(--admin-border)', color: 'var(--admin-text-secondary)' }}>
               📄 PDF
             </button>
-            <button onClick={exportCSV} className="bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5 rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2">
+            <button onClick={exportCSV} className="rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2" style={{ background: 'var(--admin-bg-elevated)', border: '1px solid var(--admin-border)', color: 'var(--admin-text-secondary)' }}>
               📊 CSV
             </button>
           </div>
@@ -373,7 +388,7 @@ export default function AdminPanel() {
         {activeTab === 'feedback' && <FeedbackView feedbacks={feedbacks} onReload={fetchDashboardData} currentUserEmail={currentUserEmail} showAlert={showAlert} />}
 
         {loading && (
-          <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center z-[100]">
+          <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-[100]" style={{ background: 'var(--admin-loading-bg)' }}>
             <div className="flex flex-col items-center gap-4">
               <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
               <p className="text-xs font-bold uppercase tracking-widest text-primary">Actualizando datos...</p>
@@ -460,24 +475,24 @@ function DashboardView({
     <div className="space-y-8">
       {/* KPI Row */}
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
-        <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
+        <div className="rounded-2xl p-5" style={{ background: 'var(--admin-bg-elevated)', border: '1px solid var(--admin-border)' }}>
           <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">No Show Rate (30d)</p>
           <p className={`text-3xl font-black ${noShowRate > 15 ? 'text-red-400' : 'text-emerald-400'}`}>{noShowRate}%</p>
         </div>
-        <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
+        <div className="rounded-2xl p-5" style={{ background: 'var(--admin-bg-elevated)', border: '1px solid var(--admin-border)' }}>
           <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Esta semana</p>
           <div className="flex items-end gap-2">
-            <p className="text-3xl font-black text-white">{weeklyComp.thisWeek}</p>
+            <p className="text-3xl font-black" style={{ color: 'var(--admin-text)' }}>{weeklyComp.thisWeek}</p>
             <span className={`text-sm font-bold mb-1 ${weeklyComp.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
               {weeklyComp.change >= 0 ? '↑' : '↓'}{Math.abs(weeklyComp.change)}%
             </span>
           </div>
         </div>
-        <div className="bg-white/5 border border-white/5 rounded-2xl p-5 hidden md:block">
+        <div className="rounded-2xl p-5 hidden md:block" style={{ background: 'var(--admin-bg-elevated)', border: '1px solid var(--admin-border)' }}>
           <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Semana pasada</p>
           <p className="text-3xl font-black text-slate-400">{weeklyComp.lastWeek}</p>
         </div>
-        <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
+        <div className="rounded-2xl p-5" style={{ background: 'var(--admin-bg-elevated)', border: '1px solid var(--admin-border)' }}>
           <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Comensales/Res (Día)</p>
           <p className="text-3xl font-black text-blue-400">
             {reservations.filter(r => r.status !== 'cancelled' && r.status !== 'no-show').length 
@@ -486,14 +501,14 @@ function DashboardView({
               : '0'}
           </p>
         </div>
-        <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
+        <div className="rounded-2xl p-5" style={{ background: 'var(--admin-bg-elevated)', border: '1px solid var(--admin-border)' }}>
           <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Espera Media (Día)</p>
           <p className="text-3xl font-black text-amber-400">
             {metrics?.avgWaitTime || 0}
             <span className="text-xs font-normal text-slate-500 ml-1">min</span>
           </p>
         </div>
-        <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
+        <div className="rounded-2xl p-5" style={{ background: 'var(--admin-bg-elevated)', border: '1px solid var(--admin-border)' }}>
           <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Media Comida (Día)</p>
           <p className="text-3xl font-black text-purple-400">
             {metrics?.avgMealDuration || 0}
@@ -505,7 +520,7 @@ function DashboardView({
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Occupancy by hour */}
-        <div className="lg:col-span-2 bg-white/[0.03] border border-white/5 rounded-2xl p-6">
+        <div className="lg:col-span-2 rounded-2xl p-6" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
           <h3 className="text-sm font-semibold mb-4">Ocupación por hora</h3>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={occupancyData}>
@@ -523,7 +538,7 @@ function DashboardView({
         </div>
 
         {/* Status distribution */}
-        <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-6">
+        <div className="rounded-2xl p-6" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
           <h3 className="text-sm font-semibold mb-4">Estado de reservas</h3>
           {statusData.length > 0 ? (
             <>
@@ -558,7 +573,7 @@ function DashboardView({
       {/* Charts Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Booking Sources */}
-        <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-6">
+        <div className="rounded-2xl p-6" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
           <h3 className="text-sm font-semibold mb-4">Orígenes</h3>
           {sourceData.length > 0 ? (
             <>
@@ -590,7 +605,7 @@ function DashboardView({
         </div>
 
         {/* Forecast */}
-        <div className="lg:col-span-2 bg-white/[0.03] border border-white/5 rounded-2xl p-6">
+        <div className="lg:col-span-2 rounded-2xl p-6" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
           <h3 className="text-sm font-semibold mb-4">Previsión 7 días (visión global)</h3>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={forecastData}>
@@ -609,11 +624,11 @@ function DashboardView({
       </div>
 
       {/* Shift Notes */}
-      <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-6 mb-8 flex flex-col">
+      <div className="rounded-2xl p-6 mb-8 flex flex-col" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
         <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
           <div className="flex items-center gap-4">
             <h3 className="text-sm font-semibold">Notas del Turno</h3>
-            <div className="flex items-center gap-2 bg-white/5 border border-white/5 rounded-lg px-2 py-1">
+            <div className="flex items-center gap-2 rounded-lg px-2 py-1" style={{ background: 'var(--admin-bg-elevated)', border: '1px solid var(--admin-border)' }}>
               <span className="text-[10px] text-slate-500 font-bold uppercase">Día:</span>
               <input 
                 type="date" 
@@ -634,7 +649,8 @@ function DashboardView({
           value={shiftNote}
           onChange={(e) => setShiftNote(e.target.value)}
           placeholder="Anota aquí las incidencias, clientes VIP que vienen hoy, o tareas pendientes para los camareros..."
-          className="w-full h-32 bg-slate-900/50 border border-white/5 rounded-xl p-4 text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-primary/50 resize-none"
+          className="w-full h-32 rounded-xl p-4 text-sm placeholder:text-slate-600 focus:outline-none focus:border-primary/50 resize-none"
+          style={{ background: 'var(--admin-bg-input)', border: '1px solid var(--admin-border)', color: 'var(--admin-text-secondary)' }}
         ></textarea>
         <div className="mt-3 flex items-center gap-2 text-[10px] text-slate-500">
           <span>💡</span>
@@ -692,11 +708,12 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
       {/* Client List */}
       <div className="lg:col-span-1 space-y-4">
         <input type="text" placeholder="Buscar cliente…" value={search} onChange={e => setSearch(e.target.value)}
-          className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary/50" />
+          className="w-full rounded-xl px-4 py-2.5 text-sm placeholder:text-slate-500 focus:outline-none focus:border-primary/50" style={{ background: 'var(--admin-bg-input)', border: '1px solid var(--admin-border)', color: 'var(--admin-text)' }} />
         <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
           {filteredClients.map(c => (
             <button key={c.phone || c.email || c.name} onClick={() => setSelectedClient(c)}
-              className={`w-full text-left bg-white/[0.03] hover:bg-white/[0.06] border rounded-xl px-4 py-3 transition-all ${selectedClient?.phone === c.phone && c.phone ? 'border-primary/30 bg-primary/5' : 'border-white/5'}`}>
+              className={`w-full text-left rounded-xl px-4 py-3 transition-all`}
+              style={{ background: selectedClient?.phone === c.phone && c.phone ? 'var(--admin-bg-elevated)' : 'var(--admin-bg-card)', border: `1px solid ${selectedClient?.phone === c.phone && c.phone ? 'rgba(26,54,93,0.3)' : 'var(--admin-border)'}` }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-sm">{c.name}</span>
@@ -714,7 +731,7 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
       {/* Client Detail */}
       <div className="lg:col-span-2">
         {selectedClient ? (
-          <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-6 space-y-6">
+          <div className="rounded-2xl p-6 space-y-6" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-3">
@@ -728,21 +745,21 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white/5 rounded-xl p-4 text-center">
+              <div className="rounded-xl p-4 text-center" style={{ background: 'var(--admin-bg-elevated)' }}>
                 <p className="text-2xl font-black text-primary">{selectedClient.visitCount}</p>
-                <p className="text-[10px] text-slate-500 uppercase tracking-wider">Visitas</p>
+                <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--admin-text-secondary)' }}>Visitas</p>
               </div>
-              <div className="bg-white/5 rounded-xl p-4 text-center">
+                <div className="rounded-xl p-4 text-center" style={{ background: 'var(--admin-bg-elevated)' }}>
                 <p className="text-2xl font-black text-red-400">{selectedClient.noShowCount}</p>
-                <p className="text-[10px] text-slate-500 uppercase tracking-wider">No Shows</p>
+                <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--admin-text-muted)' }}>No Shows</p>
               </div>
-              <div className="bg-white/5 rounded-xl p-4 text-center">
+                <div className="rounded-xl p-4 text-center" style={{ background: 'var(--admin-bg-elevated)' }}>
                 <p className="text-2xl font-black text-amber-400">{selectedClient.favoriteTable || '—'}</p>
-                <p className="text-[10px] text-slate-500 uppercase tracking-wider">Mesa favorita</p>
+                <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--admin-text-muted)' }}>Mesa favorita</p>
               </div>
-              <div className="bg-white/5 rounded-xl p-4 text-center">
+                <div className="rounded-xl p-4 text-center" style={{ background: 'var(--admin-bg-elevated)' }}>
                 <p className="text-lg font-bold text-emerald-400">{selectedClient.favoritePreference || '—'}</p>
-                <p className="text-[10px] text-slate-500 uppercase tracking-wider">Preferencia</p>
+                <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--admin-text-muted)' }}>Preferencia</p>
               </div>
             </div>
 
@@ -754,7 +771,8 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
                   value={meta?.allergies || ''} 
                   onChange={e => setMeta(prev => prev ? { ...prev, allergies: e.target.value } : null)}
                   placeholder="Ej: Gluten, marisco..."
-                  className="w-full bg-white/5 border border-white/5 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 h-20 resize-none"
+                  className="w-full rounded-xl px-3 py-2 text-sm placeholder:text-slate-600 focus:outline-none focus:border-primary/50 h-20 resize-none"
+                  style={{ background: 'var(--admin-bg-input)', border: '1px solid var(--admin-border)', color: 'var(--admin-text)' }}
                 />
               </div>
               <div className="space-y-2">
@@ -763,7 +781,8 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
                   value={meta?.customNotes || ''} 
                   onChange={e => setMeta(prev => prev ? { ...prev, customNotes: e.target.value } : null)}
                   placeholder="Ej: Mesa cerca de ventana, vino preferido..."
-                  className="w-full bg-white/5 border border-white/5 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 h-20 resize-none"
+                  className="w-full rounded-xl px-3 py-2 text-sm placeholder:text-slate-600 focus:outline-none focus:border-primary/50 h-20 resize-none"
+                  style={{ background: 'var(--admin-bg-input)', border: '1px solid var(--admin-border)', color: 'var(--admin-text)' }}
                 />
               </div>
             </div>
@@ -782,14 +801,15 @@ function CRMView({ search, setSearch, selectedClient, setSelectedClient, clientP
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Historial de reservas</h3>
                 <div className="space-y-1.5 max-h-[150px] overflow-y-auto pr-2">
                   {selectedClient.allNotes.map((note, i) => (
-                    <div key={i} className="bg-white/5 rounded-lg px-3 py-2 text-xs text-amber-300/80">📅 {note}</div>
+                    <div key={i} className="rounded-lg px-3 py-2 text-xs" 
+                      style={{ background: 'var(--admin-bg-elevated)', color: 'var(--admin-text-secondary)' }}>📅 {note}</div>
                   ))}
                 </div>
               </div>
             )}
           </div>
         ) : (
-          <div className="flex items-center justify-center h-full text-slate-600 text-sm">
+          <div className="flex items-center justify-center h-full text-sm" style={{ color: 'var(--admin-text-muted)' }}>
             Selecciona un cliente para ver su perfil
           </div>
         )}
@@ -854,7 +874,7 @@ function FeedbackView({ feedbacks, onReload, currentUserEmail, showAlert }: {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center bg-white/[0.03] border border-white/5 rounded-2xl px-6 py-4">
+      <div className="flex justify-between items-center rounded-2xl px-6 py-4" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
         <div>
           <h3 className="text-sm font-bold">Feedback del Sistema</h3>
           <p className="text-[10px] text-slate-500 uppercase tracking-widest">Informes de errores y sugerencias</p>
@@ -865,15 +885,15 @@ function FeedbackView({ feedbacks, onReload, currentUserEmail, showAlert }: {
       </div>
       
       {sortedFeedbacks.length === 0 ? (
-        <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-12 text-center">
+        <div className="rounded-2xl p-12 text-center" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
           <span className="text-4xl block mb-4">🔇</span>
           <p className="text-slate-500 text-sm italic">No hay feedback registrado aún en el sistema.</p>
         </div>
       ) : (
-        <div className="bg-white/[0.03] border border-white/5 rounded-2xl overflow-hidden">
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
           <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="border-b border-white/5 bg-white/[0.02]">
+              <tr className="border-b" style={{ borderColor: 'var(--admin-border)', background: 'var(--admin-bg-elevated)' }}>
                 <th className="px-6 py-4 font-bold text-slate-500 text-[10px] uppercase tracking-wider">Estado</th>
                 <th className="px-6 py-4 font-bold text-slate-500 text-[10px] uppercase tracking-wider">Tipo</th>
                 <th className="px-6 py-4 font-bold text-slate-500 text-[10px] uppercase tracking-wider">Mensaje</th>
@@ -881,9 +901,10 @@ function FeedbackView({ feedbacks, onReload, currentUserEmail, showAlert }: {
                 {isDev && <th className="px-6 py-4 font-bold text-slate-500 text-[10px] uppercase tracking-wider text-right">Acción</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y" style={{ borderColor: 'var(--admin-border)' }}>
               {sortedFeedbacks.map((f) => (
-                <tr key={f.id} className={`group hover:bg-white/[0.02] transition-colors ${f.resolved ? 'opacity-60' : ''}`}>
+                <tr key={f.id} className={`group transition-colors ${f.resolved ? 'opacity-60' : ''}`}
+                  style={{ background: 'var(--admin-bg-card)' }}>
                   <td className="px-6 py-4">
                     {f.resolved ? (
                       <span className="flex items-center gap-1.5 text-emerald-400 font-bold text-[10px] uppercase">
@@ -904,7 +925,7 @@ function FeedbackView({ feedbacks, onReload, currentUserEmail, showAlert }: {
                       {f.type === 'bug' ? '🐞 Bug' : '💡 Sugerencia'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-slate-300 max-w-md">
+                  <td className="px-6 py-4 max-w-md" style={{ color: 'var(--admin-text)' }}>
                     <p className="line-clamp-2 italic">"{f.content}"</p>
                   </td>
                   <td className="px-6 py-4">
@@ -1051,7 +1072,7 @@ function StaffView({ showAlert }: {
       {/* Tablet Mode Toggle for Owners */}
       <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+          <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--admin-text)' }}>
             <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 -960 960 960"><path d="M480-440q-59 0-99.5-40.5T340-580q0-59 40.5-99.5T480-720q59 0 99.5 40.5T620-580q0 59-40.5 99.5T480-440Zm0-80q26 0 43-17t17-43q0-26-17-43t-43-17q-26 0-43 17t-17 43q0 26 17 43t43 17Zm0 440q-139-35-229.5-159.5T160-516v-244l320-120 320 120v244q0 152-90.5 276.5T480-80Zm0-400Z"/></svg>
             Modo Tablet (Acceso PIN)
           </h3>
@@ -1080,7 +1101,7 @@ function StaffView({ showAlert }: {
       </div>
 
       {/* Invite Form */}
-      <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-6">
+      <div className="rounded-2xl p-6" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
         <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">➕ Invitar nuevo miembro</h3>
         <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 space-y-1.5">
@@ -1091,7 +1112,8 @@ function StaffView({ showAlert }: {
               value={inviteEmail}
               onChange={e => setInviteEmail(e.target.value)}
               placeholder="email@ejemplo.com"
-              className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
+              className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50"
+              style={{ background: 'var(--admin-bg-input)', border: '1px solid var(--admin-border)', color: 'var(--admin-text)' }}
             />
           </div>
           <div className="space-y-1.5">
@@ -1099,7 +1121,8 @@ function StaffView({ showAlert }: {
             <select
               value={inviteRole}
               onChange={e => setInviteRole(e.target.value as StaffRole)}
-              className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50 appearance-none min-w-[140px]"
+              className="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 appearance-none min-w-[140px]"
+              style={{ background: 'var(--admin-bg-input)', borderColor: 'var(--admin-border)', color: 'var(--admin-text)' }}
             >
               <option value="waiter">🍽 Camarero</option>
               <option value="owner">⭐ Dueño</option>
@@ -1114,7 +1137,8 @@ function StaffView({ showAlert }: {
               value={invitePassword}
               onChange={e => setInvitePassword(e.target.value)}
               placeholder="Min. 6 caracteres"
-              className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
+              className="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50"
+              style={{ background: 'var(--admin-bg-input)', borderColor: 'var(--admin-border)', color: 'var(--admin-text)' }}
             />
           </div>
           <div className="flex items-end">
@@ -1143,7 +1167,7 @@ function StaffView({ showAlert }: {
         )}
       </div>
       {/* Staff List */}
-      <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-6">
+      <div className="rounded-2xl p-6" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
         <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">👥 Equipo actual</h3>
         {loadingStaff ? (
           <div className="flex justify-center py-8">
@@ -1154,7 +1178,7 @@ function StaffView({ showAlert }: {
         ) : (
           <div className="space-y-4">
             {staff.map(s => (
-              <div key={s.id} className="flex flex-col bg-white/[0.04] border border-white/5 rounded-xl overflow-hidden">
+              <div key={s.id} className="flex flex-col rounded-xl overflow-hidden" style={{ background: 'var(--admin-bg-elevated)', border: '1px solid var(--admin-border)' }}>
                 <div className="flex items-center justify-between px-5 py-4">
                   <div className="flex items-center gap-4">
                     <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold ${
@@ -1190,14 +1214,15 @@ function StaffView({ showAlert }: {
                 </div>
 
                 {editingStaff === s.id && (
-                  <div className="px-5 pb-5 pt-2 border-t border-white/5 bg-white/[0.02] grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in slide-in-from-top-2">
+                  <div className="px-5 pb-5 pt-2 border-t grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in slide-in-from-top-2" style={{ borderColor: 'var(--admin-border)', background: 'var(--admin-bg-card)' }}>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Nombre Display</label>
                       <input
                         type="text"
                         value={editForm.display_name}
                         onChange={e => setEditForm({ ...editForm, display_name: e.target.value })}
-                        className="w-full bg-slate-900 border border-white/5 rounded-xl px-4 py-2 text-sm text-white"
+                        className="w-full border rounded-xl px-4 py-2 text-sm"
+                        style={{ background: 'var(--admin-bg-input)', borderColor: 'var(--admin-border)', color: 'var(--admin-text)' }}
                         placeholder="Ej: Juan C."
                       />
                     </div>
@@ -1208,7 +1233,8 @@ function StaffView({ showAlert }: {
                         maxLength={4}
                         value={editForm.pin}
                         onChange={e => setEditForm({ ...editForm, pin: e.target.value.replace(/\D/g, '') })}
-                        className="w-full bg-slate-900 border border-white/5 rounded-xl px-4 py-2 text-sm text-white"
+                        className="w-full rounded-xl px-4 py-2 text-sm"
+                        style={{ background: 'var(--admin-bg-input)', border: '1px solid var(--admin-border)', color: 'var(--admin-text)' }}
                         placeholder="••••"
                       />
                     </div>

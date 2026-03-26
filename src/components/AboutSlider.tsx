@@ -1,97 +1,177 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { motion } from 'framer-motion';
 
 // Use Vite's import.meta.glob to dynamically load all images from src/assets/slider
 const imageModules = import.meta.glob('../assets/slider/*.{jpg,jpeg,png,webp}', { eager: true });
 const rawImages = Object.values(imageModules).map((mod: any) => mod.default);
 
 export default function AboutSlider() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Fallback image if no images exist in the folder yet
-  const images = rawImages.length > 0 
+  // Original images
+  const baseImages = useMemo(() => rawImages.length > 0 
     ? rawImages 
     : [
         'https://lh3.googleusercontent.com/aida-public/AB6AXuDHN_4hnzs64uVTD9pNvyjzMd0gmF4u7d9jlcgGRfAeXVF6xYmg615NSyZS8rGp-W024Q6a7_VHAgETZykcP6iOmw5Q_bM7W4ySND3PfvJ0dKZeFEnZF7doKn5ut9QjDorkWL-tX8aPlHIukSpo6etujfLfe3dPBQuh8rfJoeS4UG_U9KSG3Y8sWtncAfSc0vaVFDKhnSKbOSMbQEx7lxCR4ub3_jIV_J89xZN_YklPuNB5zQlixYXbykzNRiO5ihIRGpKeVAtcraQ',
         'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=1600&h=1000',
         'https://images.unsplash.com/photo-1498654896293-37aacf113fd9?auto=format&fit=crop&q=80&w=1600&h=1000'
-      ];
+      ]
+  , []);
+
+  // For infinite loop: [last, ...images, first]
+  const images = useMemo(() => [baseImages[baseImages.length - 1], ...baseImages, baseImages[0]], [baseImages]);
+  const [currentIndex, setCurrentIndex] = useState(1);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
-    if (images.length <= 1) return;
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, 5000);
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const slideWidth = isMobile ? 85 : 70; // %
+  const numImages = baseImages.length;
+
+  const nextSlide = useCallback(() => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setCurrentIndex((prev) => prev + 1);
+  }, [isAnimating]);
+
+  const prevSlide = useCallback(() => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setCurrentIndex((prev) => prev - 1);
+  }, [isAnimating]);
+
+  const goToSlide = (idx: number) => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setCurrentIndex(idx + 1);
+  };
+
+  // Handle auto-slide
+  useEffect(() => {
+    if (numImages <= 1) return;
+    const interval = setInterval(nextSlide, 5000);
     return () => clearInterval(interval);
-  }, [images.length]);
+  }, [nextSlide, numImages]);
 
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % images.length);
+  // Infinite loop logic: handle jump after animation
+  const handleAnimationComplete = () => {
+    setIsAnimating(false);
+    if (currentIndex === 0) {
+      setCurrentIndex(numImages);
+    } else if (currentIndex === numImages + 1) {
+      setCurrentIndex(1);
+    }
   };
 
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
-  };
+  // Maps currentIndex to the indicator dots (0 to numImages-1)
+  const indicatorIndex = ((currentIndex - 1) % numImages + numImages) % numImages;
 
   return (
-    <div className="relative aspect-[16/10] w-full rounded-2xl md:rounded-[2.5rem] overflow-hidden shadow-[0_30px_80px_-15px_rgba(0,0,0,0.25)] border border-white dark:border-white/5 group bg-slate-100 dark:bg-black">
-      <AnimatePresence mode="popLayout" initial={false}>
+    <div className="relative w-full overflow-hidden py-10 md:py-16 group select-none bg-slate-50/50 dark:bg-black/20">
+      
+      {/* Main Track */}
+      <div className="relative overflow-visible">
         <motion.div
-          key={currentIndex}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="absolute inset-0 overflow-hidden"
+          className="flex items-center cursor-grab active:cursor-grabbing"
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          onDragStart={() => setIsAnimating(true)}
+          onDragEnd={(_, info) => {
+            setIsAnimating(false);
+            if (info.offset.x < -100) nextSlide();
+            else if (info.offset.x > 100) prevSlide();
+          }}
+          animate={{ x: `calc(50% - ${currentIndex * slideWidth}% - ${slideWidth / 2}%)` }}
+          transition={isAnimating ? { type: "spring", stiffness: 200, damping: 25, mass: 1 } : { duration: 0 }}
+          onAnimationComplete={handleAnimationComplete}
         >
-          {/* Blurred Background Layer */}
-          <div 
-            className="absolute inset-[-10%] bg-cover bg-center blur-2xl opacity-60 dark:opacity-40"
-            style={{ backgroundImage: `url('${images[currentIndex]}')` }}
-          />
-          {/* Subtle dark overlay for better text contrast if needed */}
-          <div className="absolute inset-0 bg-black/10 dark:bg-black/30" />
-          
-          {/* Sharp Foreground Image */}
-          <div 
-            className="absolute inset-0 bg-contain bg-center bg-no-repeat"
-            style={{ backgroundImage: `url('${images[currentIndex]}')` }}
-          />
+          {images.map((img, i) => {
+            // Calculate active state for clones correctly
+            const isActualCurrent = i === currentIndex || 
+              (currentIndex === 0 && i === numImages) || 
+              (currentIndex === numImages + 1 && i === 1);
+
+            return (
+              <motion.div
+                key={i}
+                className="flex-shrink-0 relative aspect-[16/9] md:aspect-[21/9] overflow-hidden shadow-2xl bg-slate-100 dark:bg-zinc-900"
+                style={{ 
+                  width: `${slideWidth}%`,
+                }}
+                animate={{
+                  scale: isActualCurrent ? 1 : 0.92,
+                  opacity: isActualCurrent ? 1 : 0.45,
+                  filter: isActualCurrent ? 'blur(0px)' : 'blur(2px)',
+                }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+              >
+                {/* Blurred background (letterbox fill) - High opacity and large blur for a clean look */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-center blur-3xl scale-125 opacity-70"
+                  style={{ backgroundImage: `url('${img}')` }}
+                />
+                
+                {/* Reference-style subtle light/dark overlay on the blur itself to keep it 'clean' */}
+                <div className="absolute inset-0 bg-white/10 dark:bg-black/20 z-0" />
+                
+                {/* Sharp foreground image without cropping */}
+                <img 
+                  src={img} 
+                  className="relative w-full h-full object-contain z-10 drop-shadow-2xl" 
+                  alt="" 
+                />
+
+                {/* Reference-style dark overlay for non-active slides */}
+                {!isActualCurrent && (
+                  <div className="absolute inset-0 bg-black/30 z-20 pointer-events-none" />
+                )}
+              </motion.div>
+            );
+          })}
         </motion.div>
-      </AnimatePresence>
+      </div>
 
-      {/* Navigation arrows (visible on hover or focus) */}
-      {images.length > 1 && (
+      {/* Navigation arrows (Reference style) */}
+      {numImages > 1 && (
         <>
-          <button
-            onClick={prevSlide}
-            className="absolute left-4 top-1/2 -translate-y-1/2 md:p-3 p-2 rounded-full bg-black/30 backdrop-blur-md text-white border border-white/20 opacity-0 group-hover:opacity-100 transition-all hover:bg-black/50 hover:scale-110 active:scale-95"
-            aria-label="Previous image"
-          >
-            <svg className="size-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button
-            onClick={nextSlide}
-            className="absolute right-4 top-1/2 -translate-y-1/2 md:p-3 p-2 rounded-full bg-black/30 backdrop-blur-md text-white border border-white/20 opacity-0 group-hover:opacity-100 transition-all hover:bg-black/50 hover:scale-110 active:scale-95"
-            aria-label="Next image"
-          >
-            <svg className="size-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+          <div className="absolute top-1/2 -translate-y-1/2 left-4 md:left-10 z-20">
+            <button
+              onClick={prevSlide}
+              className="md:p-5 p-4 rounded-full bg-white/20 backdrop-blur-md text-slate-900 dark:text-white shadow-xl border border-white/20 transition-all hover:bg-white/40 active:scale-95"
+              aria-label="Previous image"
+            >
+              <svg className="size-6 md:size-8" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          </div>
+          <div className="absolute top-1/2 -translate-y-1/2 right-4 md:right-10 z-20">
+            <button
+              onClick={nextSlide}
+              className="md:p-5 p-4 rounded-full bg-white/20 backdrop-blur-md text-slate-900 dark:text-white shadow-xl border border-white/20 transition-all hover:bg-white/40 active:scale-95"
+              aria-label="Next image"
+            >
+              <svg className="size-6 md:size-8" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
 
-          {/* Indicators */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-            {images.map((_, idx) => (
+          {/* Indicators Bar (Tesla/Apple style minimalist) */}
+          <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-20 flex gap-2 md:gap-3 items-center">
+            {baseImages.map((_, idx) => (
               <button
                 key={idx}
-                onClick={() => setCurrentIndex(idx)}
-                className={`transition-all duration-300 rounded-full ${
-                  idx === currentIndex 
-                  ? 'bg-white w-6 h-2 shadow-[0_0_8px_rgba(255,255,255,0.8)]' 
-                  : 'bg-white/50 w-2 h-2 hover:bg-white/80'
+                onClick={() => goToSlide(idx)}
+                className={`transition-all duration-700 ease-in-out rounded-full ${
+                  idx === indicatorIndex 
+                  ? 'bg-white w-8 h-1 md:w-10' // Active line
+                  : 'bg-white/40 w-1.5 h-1.5 md:w-2 md:h-2 hover:bg-white/60' // Inactive dot
                 }`}
                 aria-label={`Go to slide ${idx + 1}`}
               />

@@ -5,6 +5,127 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════
+   ADMIN PANEL THEME SYSTEM
+   ═══════════════════════════════════════════════ */
+
+.admin-theme-dark {
+  --admin-bg: #020617;
+  --admin-bg-card: rgba(255,255,255,0.03);
+  --admin-bg-elevated: rgba(255,255,255,0.05);
+  --admin-bg-input: rgba(255,255,255,0.05);
+  --admin-bg-hover: rgba(255,255,255,0.06);
+  --admin-text: #ffffff;
+  --admin-text-secondary: #94a3b8;
+  --admin-text-muted: #64748b;
+  --admin-text-heading: #ffffff;
+  --admin-border: rgba(255,255,255,0.05);
+  --admin-border-strong: rgba(255,255,255,0.10);
+  --admin-header-bg: rgba(2,6,23,0.8);
+  --admin-overlay: rgba(2,6,23,0.7);
+  --admin-modal-bg: #0f172a;
+  --admin-table-selector-bg: rgba(15,23,42,0.95);
+  --admin-loading-bg: rgba(2,6,23,0.5);
+  --admin-glow-opacity: 1;
+  color-scheme: dark;
+}
+
+.admin-theme-light {
+  --admin-bg: #f8fafc;
+  --admin-bg-card: #ffffff;
+  --admin-bg-elevated: #f1f5f9;
+  --admin-bg-input: #ffffff;
+  --admin-bg-hover: rgba(0,0,0,0.04);
+  --admin-text: #0f172a;
+  --admin-text-secondary: #475569;
+  --admin-text-muted: #94a3b8;
+  --admin-text-heading: #1e293b;
+  --admin-border: #e2e8f0;
+  --admin-border-strong: #cbd5e1;
+  --admin-header-bg: rgba(248,250,252,0.85);
+  --admin-overlay: rgba(0,0,0,0.4);
+  --admin-modal-bg: #ffffff;
+  --admin-table-selector-bg: rgba(255,255,255,0.97);
+  --admin-loading-bg: rgba(248,250,252,0.5);
+  --admin-glow-opacity: 0.4;
+  color-scheme: light;
+}
+
+/* Admin utility classes */
+.admin-bg { background-color: var(--admin-bg); }
+.admin-bg-card { background-color: var(--admin-bg-card); }
+.admin-bg-elevated { background-color: var(--admin-bg-elevated); }
+.admin-bg-input { background-color: var(--admin-bg-input); }
+.admin-bg-hover:hover { background-color: var(--admin-bg-hover); }
+.admin-text { color: var(--admin-text); }
+.admin-text-secondary { color: var(--admin-text-secondary); }
+.admin-text-muted { color: var(--admin-text-muted); }
+.admin-text-heading { color: var(--admin-text-heading); }
+.admin-border { border-color: var(--admin-border); }
+.admin-border-strong { border-color: var(--admin-border-strong); }
+
+/* Theme toggle button */
+.admin-theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--admin-bg-elevated);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.admin-theme-toggle:hover {
+  background: var(--admin-bg-hover);
+  color: var(--admin-text);
+  border-color: var(--admin-border-strong);
+}
+
+/* Recharts tooltip override for light mode */
+.admin-theme-light .recharts-default-tooltip {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
+.admin-theme-light .recharts-tooltip-label {
+  color: #475569 !important;
+}
+.admin-theme-light .recharts-tooltip-item {
+  color: #0f172a !important;
+}
+.admin-theme-light .recharts-cartesian-grid-horizontal line,
+.admin-theme-light .recharts-cartesian-grid-vertical line {
+  stroke: #e2e8f0 !important;
+}
+
+/* Phone input overrides for admin light mode */
+.admin-theme-light .phone-input-custom .react-international-phone-input {
+  color: #0f172a !important;
+}
+.admin-theme-light .phone-input-custom .react-international-phone-input::placeholder {
+  color: #94a3b8 !important;
+}
+.admin-theme-dark .phone-input-custom .react-international-phone-input {
+  color: #ffffff !important;
+}
+.admin-theme-dark .phone-input-custom .react-international-phone-input::placeholder {
+  color: #475569 !important;
+}
+
+/* Option elements in light mode admin */
+.admin-theme-light option {
+  background: #ffffff;
+  color: #0f172a;
+}
+.admin-theme-dark option {
+  background: #020617;
+  color: #ffffff;
+}
+
 @layer base {
   html, body {
     width: 100%;

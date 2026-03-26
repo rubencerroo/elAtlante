@@ -29,11 +29,12 @@ export default function StatusKanban({ filtered, handleStatus, handleDelete, han
         const cards = filtered.filter(r => r.status === col.status);
         return (
           <div key={col.status}
-            className={`bg-white/[0.02] rounded-2xl border border-white/5 border-t-4 ${col.color} min-h-[300px] transition-colors ${draggedId ? 'ring-1 ring-white/10' : ''}`}
+            className={`rounded-2xl border border-t-4 ${col.color} min-h-[300px] transition-colors ${draggedId ? 'ring-1 ring-white/10' : ''}`}
+            style={{ background: 'var(--admin-bg-card)', borderColor: 'var(--admin-border)' }}
             onDragOver={e => e.preventDefault()}
             onDrop={() => onDrop(col.status)}
           >
-            <div className="px-4 py-3 flex items-center justify-between border-b border-white/5">
+            <div className="px-4 py-3 flex items-center justify-between border-b" style={{ borderColor: 'var(--admin-border)' }}>
               <div className="flex items-center gap-2">
                 <span>{col.icon}</span>
                 <span className="text-sm font-semibold">{col.label}</span>
@@ -75,12 +76,13 @@ function KanbanCard({ reservation: r, handleStatus, handleDelete, handleAssignTa
       draggable
       onDragStart={() => onDragStart(r.id)}
       onDragEnd={onDragEnd}
-      className="bg-white/[0.04] hover:bg-white/[0.07] border border-white/5 rounded-xl cursor-grab active:cursor-grabbing transition-all duration-200 group relative"
+      className="hover:bg-hover border rounded-xl cursor-grab active:cursor-grabbing transition-all duration-200 group relative"
+      style={{ background: 'var(--admin-bg-input)', borderColor: 'var(--admin-border)' }}
     >
       <button onClick={() => setExpanded(!expanded)} className="w-full px-4 py-3 text-left">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-sm">{r.name}</span>
+            <span className="font-semibold text-sm" style={{ color: 'var(--admin-text)' }}>{r.name}</span>
             {r.isWalkIn && <span className="text-[9px] bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-full px-1.5 py-0.5 font-bold">WALK-IN</span>}
             {r.hasPet && <span className="text-xs">🐾</span>}
           </div>
@@ -100,7 +102,7 @@ function KanbanCard({ reservation: r, handleStatus, handleDelete, handleAssignTa
       </button>
 
       {expanded && (
-        <div className="px-4 pb-3 border-t border-white/5 pt-3 space-y-3">
+        <div className="px-4 pb-3 border-t pt-3 space-y-3" style={{ borderColor: 'var(--admin-border)' }}>
           <div className="grid grid-cols-2 gap-2 text-[11px]">
             <div><span className="text-slate-500">📧 </span>{r.email || '—'}</div>
             <div><span className="text-slate-500">📞 </span>{r.phone || '—'}</div>

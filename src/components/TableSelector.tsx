@@ -43,7 +43,7 @@ export default function TableSelector({
     
     switch (status) {
       case 'occupied':
-        return `${base} bg-white/5 border-white/5 text-slate-500 cursor-not-allowed opacity-40`;
+        return `${base} admin-bg-card admin-border text-slate-500 cursor-not-allowed opacity-40`;
       case 'reserved':
         return `${base} bg-amber-500/10 border-amber-500/30 text-amber-400 cursor-pointer hover:border-amber-400 hover:scale-105`;
       default:
@@ -55,16 +55,17 @@ export default function TableSelector({
   const currentTables = getTablesInArea(currentArea.id as AreaId);
 
   return (
-    <div className="bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-white/10 p-5 space-y-5">
+    <div className="backdrop-blur-xl rounded-2xl border p-5 space-y-5" 
+      style={{ background: 'var(--admin-table-selector-bg)', borderColor: 'var(--admin-border)' }}>
       <div className="flex items-center justify-between">
-        <h3 className="text-white font-semibold text-sm">Asignar Mesa</h3>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--admin-text)' }}>Asignar Mesa</h3>
         {onClose && (
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors text-xs">✕</button>
         )}
       </div>
 
       {/* Section Tabs - scrollable for 6 areas */}
-      <div className="flex bg-white/5 p-1 rounded-xl overflow-x-auto gap-0.5 custom-scrollbar">
+      <div className="flex p-1 rounded-xl overflow-x-auto gap-0.5 custom-scrollbar" style={{ background: 'var(--admin-bg-hover)' }}>
         {AREAS.map((area, idx) => (
           <button
             key={area.id}
@@ -103,10 +104,10 @@ export default function TableSelector({
       </div>
 
       {/* Legend */}
-      <div className="flex justify-between items-center pt-2 border-t border-white/5">
-        <div className="flex gap-3 text-[9px] text-slate-500 font-medium">
+      <div className="flex justify-between items-center pt-2 border-t" style={{ borderColor: 'var(--admin-border)' }}>
+        <div className="flex gap-3 text-[9px] font-medium" style={{ color: 'var(--admin-text-muted)' }}>
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded bg-emerald-500/40 border border-emerald-500/50"></span>Libre</span>
-          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded bg-white/10 border border-white/20"></span>Ocupada</span>
+          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded border" style={{ background: 'var(--admin-bg-hover)', borderColor: 'var(--admin-border-strong)' }}></span>Ocupada</span>
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded bg-amber-500/40 border border-amber-500/50"></span>Reserva</span>
         </div>
         <span className="text-[9px] text-slate-600 uppercase tracking-tighter">{currentArea.label}</span>

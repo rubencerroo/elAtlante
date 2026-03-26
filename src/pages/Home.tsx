@@ -116,7 +116,7 @@ export default function Home() {
       </section>
 
       {/* Social Media Bar */}
-      <div className="relative z-20 bg-slate-50 dark:bg-background-dark py-12 lg:py-16 border-t border-slate-200 dark:border-white/10">
+      <div className="relative z-20 bg-slate-50 dark:bg-background-dark py-10 lg:py-12 border-y border-slate-200/60 dark:border-white/5">
         <div className="max-w-[1400px] mx-auto px-6 flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
           <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400 dark:text-slate-500 opacity-80">
             {t('hero.siguenos')}
@@ -137,7 +137,7 @@ export default function Home() {
                   <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
                 </svg>
               </div>
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-slate-100 group-hover:text-[#ee2a7b] transition-colors">Seguir en Instagram</span>
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-slate-100 group-hover:text-[#ee2a7b] transition-colors">Instagram</span>
             </motion.a>
 
             <motion.a
@@ -153,66 +153,93 @@ export default function Home() {
                   <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
                 </svg>
               </div>
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-slate-100 group-hover:text-[#1877f2] transition-colors">Seguir en Facebook</span>
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-slate-100 group-hover:text-[#1877f2] transition-colors">Facebook</span>
             </motion.a>
           </div>
         </div>
       </div>
 
       {/* About Us Section */}
-      <section className="px-6 lg:px-28 py-24 @container overflow-hidden" id="nosotros">
-        <div className="flex flex-col-reverse lg:flex-row gap-16 items-center">
-          <div className="flex-1 w-full relative">
-            <AboutSlider />
-          </div>
-          <div className="flex flex-col gap-8 flex-1">
+      <section className="px-6 lg:px-28 pt-12 pb-20 @container overflow-hidden border-b border-slate-200/60 dark:border-white/5" id="nosotros">
+        <div className="max-w-4xl mx-auto flex flex-col gap-16">
+          <div className="flex flex-col gap-10">
             <div className="flex flex-col gap-3">
               <span className="text-primary font-bold tracking-[0.3em] uppercase text-xs">{t('nosotros.label')}</span>
-              <h2 className="text-slate-900 dark:text-slate-100 text-3xl md:text-4xl font-black leading-tight tracking-tight">
+              <h2 className="text-slate-900 dark:text-slate-100 text-3xl md:text-5xl font-black leading-tight tracking-tight">
                 {t('nosotros.titulo')} <span className="text-primary italic">{t('nosotros.tituloDestacado')}</span> {t('nosotros.tituloFin')}
               </h2>
             </div>
-            <p className="text-slate-700 dark:text-slate-300 text-base md:text-lg leading-relaxed font-light">
-              {t('nosotros.descripcion')}
-            </p>
-            <div className="space-y-8 mt-2">
-              <div className="flex items-start gap-5 group">
-                <div className="size-14 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/5 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-inner flex-shrink-0">
-                  <svg className="size-7" fill="currentColor" viewBox="0 -960 960 960"><path d="M440-160v-487L216-431l-56-57 280-280 280 280-56 57-224-216v487h-80Z" /></svg>
-                </div>
-                <div>
-                  <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 uppercase tracking-tight mb-1">{t('nosotros.pilar1Titulo')}</h3>
-                  <p className="text-slate-500 dark:text-slate-400 font-light text-sm max-w-sm">{t('nosotros.pilar1Desc')}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-5 group">
-                <div className="size-14 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/5 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-inner flex-shrink-0">
-                  <svg className="size-7" fill="currentColor" viewBox="0 -960 960 960"><path d="M280-80v-366q-51-14-85.5-56.5T160-600v-280h80v280h40v-280h80v280h40v-280h80v280q0 55-34.5 97.5T360-446v366h-80Zm400 0v-320H560v-280q0-83 58.5-141.5T760-880v800h-80Z" /></svg>
-                </div>
-                <div>
-                  <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 uppercase tracking-tight mb-1">{t('nosotros.pilar2Titulo')}</h3>
-                  <p className="text-slate-500 dark:text-slate-400 font-light text-sm max-w-sm">{t('nosotros.pilar2Desc')}</p>
-                </div>
+            <div className="space-y-6">
+              <p className="text-slate-700 dark:text-slate-300 text-lg md:text-xl leading-relaxed font-light">
+                {t('nosotros.descripcion1')}
+              </p>
+              <div className="w-16 h-px bg-primary/40" />
+              <div className="space-y-4">
+                <p className="text-slate-600 dark:text-slate-400 text-base md:text-lg leading-relaxed font-light">
+                  {t('nosotros.descripcion2')}
+                </p>
+                <p className="text-slate-500 dark:text-slate-400 text-base md:text-lg leading-relaxed font-light italic">
+                  {t('nosotros.descripcion3')}
+                </p>
               </div>
             </div>
           </div>
         </div>
+        <div className="w-full mt-16 lg:mt-24 relative">
+          <AboutSlider />
+        </div>
       </section>
 
       {/* Info & Hours - Abyssal Elegance (Stitch Design) */}
-      <section className="py-24 lg:py-40 px-6 lg:px-28 bg-[#FBFBF9] dark:bg-background-dark relative overflow-hidden">
+      <section className="pt-16 pb-32 px-6 lg:px-28 bg-[#FBFBF9] dark:bg-background-dark relative overflow-hidden">
         {/* Editorial Decorative Background Elements */}
         <div className="absolute top-0 right-0 w-[40%] h-[120%] bg-slate-50 dark:bg-white/[0.02] -z-10 translate-x-1/4 -skew-x-12 border-l border-slate-100 dark:border-white/5" />
 
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-x-24 lg:gap-y-20">
 
-            {/* Title & Description Column */}
+            {/* Hours Block - FIRST on Mobile */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="lg:col-span-7 order-1 lg:order-2 space-y-8"
+            >
+              <div className="flex items-center gap-4 pb-4">
+                <span className="text-primary dark:text-sky-400 font-bold tracking-[0.5em] uppercase text-[12px]">{t('horarios.label')}</span>
+                <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest ${isOpen ? 'bg-emerald-50 border-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400' : 'bg-red-50 border-red-100 text-red-600 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400'}`}>
+                  <span className={`size-1 rounded-full ${isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+                  {isOpen ? t('hero.abierto') : t('hero.cerrado')}
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-10">
+                {[
+                  { day: t('horarios.lunes'), hours: '12:30 - 23:00' },
+                  { day: t('horarios.martesMiercoles'), hours: t('horarios.cerrado'), highlight: true },
+                  { day: t('horarios.juevesSabado'), hours: '12:30 - 23:00' },
+                  { day: t('horarios.domingo'), hours: '12:30 - 16:30' }
+                ].map((item, idx) => (
+                  <div key={idx} className="space-y-1 group">
+                    <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3 transition-colors group-hover:border-primary">
+                      <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${item.highlight ? 'text-primary' : 'text-slate-400 dark:text-slate-500'}`}>
+                        {item.day}
+                      </span>
+                      {item.highlight && <span className="size-1 bg-primary rounded-full"></span>}
+                    </div>
+                    <div className={`text-xl font-light pt-2 transition-all duration-300 group-hover:pl-1 ${item.highlight ? 'text-primary italic font-medium' : 'text-slate-800 dark:text-slate-200'}`}>
+                      {item.hours}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Map Column - SECOND on Mobile, LEFT on Desktop */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="lg:col-span-5 space-y-10"
+              className="lg:col-span-5 lg:row-span-2 order-2 lg:order-1 flex flex-col gap-10"
             >
               <div className="space-y-6">
 
@@ -264,83 +291,44 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* Content Display Column */}
-            <div className="lg:col-span-7 space-y-20 lg:pt-8">
-              {/* Hours Grid */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="space-y-8"
-              >
-                <div className="flex items-center gap-4 pb-4">
-                  <span className="text-primary dark:text-sky-400 font-bold tracking-[0.5em] uppercase text-[12px]">{t('horarios.label')}</span>
-                  <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest ${isOpen ? 'bg-emerald-50 border-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400' : 'bg-red-50 border-red-100 text-red-600 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400'}`}>
-                    <span className={`size-1 rounded-full ${isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
-                    {isOpen ? t('hero.abierto') : t('hero.cerrado')}
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-10">
-                  {[
-                    { day: t('horarios.lunes'), hours: '12:30 - 23:00' },
-                    { day: t('horarios.martesMiercoles'), hours: t('horarios.cerrado'), highlight: true },
-                    { day: t('horarios.juevesSabado'), hours: '12:30 - 23:00' },
-                    { day: t('horarios.domingo'), hours: '12:30 - 16:30' }
-                  ].map((item, idx) => (
-                    <div key={idx} className="space-y-1 group">
-                      <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3 transition-colors group-hover:border-primary">
-                        <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${item.highlight ? 'text-primary' : 'text-slate-400 dark:text-slate-500'}`}>
-                          {item.day}
-                        </span>
-                        {item.highlight && <span className="size-1 bg-primary rounded-full"></span>}
-                      </div>
-                      <div className={`text-xl font-light pt-2 transition-all duration-300 group-hover:pl-1 ${item.highlight ? 'text-primary italic font-medium' : 'text-slate-800 dark:text-slate-200'}`}>
-                        {item.hours}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
+            {/* Contact Info - THIRD on Mobile */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-12 order-3 lg:order-3"
+            >
+              <div className="space-y-4">
+                <span className="text-slate-400 dark:text-slate-500 font-bold tracking-[0.4em] uppercase text-[9px] block">
+                  {t('contacto.ubicacionLabel')}
+                </span>
+                <h3 className="text-2xl font-serif text-slate-900 dark:text-slate-100 leading-tight">
+                  {t('contacto.direccion')}
+                </h3>
 
-              {/* Contact Info */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
-                className="grid grid-cols-1 md:grid-cols-2 gap-12"
-              >
-                <div className="space-y-4">
-                  <span className="text-slate-400 dark:text-slate-500 font-bold tracking-[0.4em] uppercase text-[9px] block">
-                    {t('contacto.ubicacionLabel')}
-                  </span>
-                  <h3 className="text-2xl font-serif text-slate-900 dark:text-slate-100 leading-tight">
-                    {t('contacto.direccion')}
-                  </h3>
+              </div>
 
-                </div>
-
-                <div className="space-y-4">
-                  <span className="text-slate-400 dark:text-slate-500 font-bold tracking-[0.4em] uppercase text-[9px] block">
-                    {t('contacto.contactoLabel')}
-                  </span>
-                  <a
-                    href={isOpen ? CONTACT_INFO.landline.link : CONTACT_INFO.mobile.link}
-                    className="text-2xl font-serif text-slate-900 dark:text-slate-100 hover:text-primary transition-colors block leading-tight"
-                  >
-                    {isOpen ? CONTACT_INFO.landline.display : CONTACT_INFO.mobile.display}
+              <div className="space-y-4">
+                <span className="text-slate-400 dark:text-slate-500 font-bold tracking-[0.4em] uppercase text-[9px] block">
+                  {t('contacto.contactoLabel')}
+                </span>
+                <a
+                  href={isOpen ? CONTACT_INFO.landline.link : CONTACT_INFO.mobile.link}
+                  className="text-2xl font-serif text-slate-900 dark:text-slate-100 hover:text-primary transition-colors block leading-tight"
+                >
+                  {isOpen ? CONTACT_INFO.landline.display : CONTACT_INFO.mobile.display}
+                </a>
+                <div className="flex gap-4 pt-1">
+                  <a href="https://www.instagram.com/restaurante_elatlante" target="_blank" rel="noopener noreferrer" aria-label="Síguenos en Instagram" className="text-slate-300 hover:text-pink-500 transition-colors">
+                    <svg className="size-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
                   </a>
-                  <div className="flex gap-4 pt-1">
-                    <a href="https://www.instagram.com/restaurante_elatlante" target="_blank" rel="noopener noreferrer" aria-label="Síguenos en Instagram" className="text-slate-300 hover:text-pink-500 transition-colors">
-                      <svg className="size-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
-                    </a>
-                    <a href="https://www.facebook.com/elatlantedesancristobal/" target="_blank" rel="noopener noreferrer" aria-label="Síguenos en Facebook" className="text-slate-300 hover:text-blue-500 transition-colors">
-                      <svg className="size-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
-                    </a>
-                  </div>
+                  <a href="https://www.facebook.com/elatlantedesancristobal/" target="_blank" rel="noopener noreferrer" aria-label="Síguenos en Facebook" className="text-slate-300 hover:text-blue-500 transition-colors">
+                    <svg className="size-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+                  </a>
                 </div>
-              </motion.div>
-            </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>

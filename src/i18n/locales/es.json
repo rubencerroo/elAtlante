@@ -18,14 +18,16 @@
   },
   "nosotros": {
     "label": "Sobre Nosotros",
-    "titulo": "Felicidad",
-    "tituloDestacado": "frente",
-    "tituloFin": "al mar.",
-    "descripcion": "Desde hace generaciones, nuestra familia ha vivido del y para el mar. En El Atlante, trasladamos esa pasión a cada plato, utilizando técnicas tradicionales y el producto más fresco de la lonja de San Cristóbal.",
-    "pilar1Titulo": "Producto Directo",
-    "pilar1Desc": "Sin intermediarios, de la lonja a tu mesa. Frescura en menos de 24h.",
-    "pilar2Titulo": "Cocina Brava",
-    "pilar2Desc": "Recetas con alma y potencia marina heredadas por décadas."
+    "titulo": "Calidad",
+    "tituloDestacado": "cercanía",
+    "tituloFin": "e identidad.",
+    "descripcion1": "Ubicado en San Cristóbal y con más de 15 años formando parte del barrio, El Atlante es un restaurante que ha construido su identidad sobre el buen producto, el trato cercano y una forma honesta de entender la cocina.",
+    "descripcion2": "Nuestra propuesta se apoya en la gastronomía canaria, con una especial atención al pescado y al marisco, sin perder de vista otros platos tradicionales que forman parte de nuestra esencia. Creemos en una cocina que respeta el producto, cuida los sabores y busca que cada visita se disfrute de principio a fin.",
+    "descripcion3": "A ello se suma un entorno privilegiado junto al mar, que convierte la experiencia en algo más que una comida. El Atlante es un lugar para compartir, disfrutar sin prisa y volver, con la tranquilidad de quien sabe que sigue encontrando calidad, cercanía e identidad propia.",
+    "pilar1Titulo": "Producto Local",
+    "pilar1Desc": "Pescado y marisco seleccionado con mimo, directo a tu mesa.",
+    "pilar2Titulo": "Cocina Honesta",
+    "pilar2Desc": "Respetamos el producto y cuidamos los sabores de siempre."
   },
   "carta": {
     "label": "Exclusividad",

@@ -54,10 +54,13 @@ export default function FeedbackButton({ role, className }: FeedbackButtonProps)
       </button>
 
       {isOpen && createPortal(
-        <div className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
-            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02] shrink-0">
-              <h2 className="font-bold text-white">Errores / Sugerencias</h2>
+        <div className="fixed inset-0 z-[9999] backdrop-blur-md flex items-center justify-center p-4"
+          style={{ background: 'var(--admin-overlay)' }}>
+          <div className="border rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]"
+            style={{ background: 'var(--admin-modal-bg)', borderColor: 'var(--admin-border)' }}>
+            <div className="px-6 py-4 border-b flex items-center justify-between"
+              style={{ background: 'var(--admin-bg-hover)', borderColor: 'var(--admin-border)' }}>
+              <h2 className="font-bold" style={{ color: 'var(--admin-text)' }}>Errores / Sugerencias</h2>
               <button onClick={() => setIsOpen(false)} className="text-slate-500 hover:text-white transition-colors">✕</button>
             </div>
 
@@ -95,14 +98,15 @@ export default function FeedbackButton({ role, className }: FeedbackButtonProps)
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Tu mensaje</label>
+                    <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--admin-text-muted)' }}>Tu mensaje</label>
                     <textarea
                       required
                       autoFocus
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
                       placeholder={type === 'bug' ? "Describe qué ha fallado..." : "Cuéntanos tu idea para mejorar..."}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 h-32 resize-none transition-all"
+                      className="w-full border rounded-2xl px-4 py-3 text-sm placeholder:text-slate-600 focus:outline-none focus:border-primary/50 h-32 resize-none transition-all"
+                      style={{ background: 'var(--admin-bg-input)', borderColor: 'var(--admin-border)', color: 'var(--admin-text)' }}
                     />
                   </div>
 
@@ -110,7 +114,8 @@ export default function FeedbackButton({ role, className }: FeedbackButtonProps)
                     <button
                       type="button"
                       onClick={() => setIsOpen(false)}
-                      className="flex-1 px-4 py-3 rounded-xl border border-white/10 text-slate-400 text-sm font-bold hover:bg-white/5 transition-colors"
+                      className="flex-1 px-4 py-3 rounded-xl border text-sm font-bold transition-colors"
+                      style={{ background: 'var(--admin-bg-hover)', borderColor: 'var(--admin-border)', color: 'var(--admin-text-secondary)' }}
                     >
                       Cancelar
                     </button>

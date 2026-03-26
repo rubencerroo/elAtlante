@@ -18,14 +18,16 @@
   },
   "nosotros": {
     "label": "About Us",
-    "titulo": "Happiness",
-    "tituloDestacado": "facing",
-    "tituloFin": "the sea.",
-    "descripcion": "For generations, our family has lived by and for the sea. At El Atlante, we bring that passion to every dish, using traditional techniques and the freshest produce from the San Cristóbal fish market.",
-    "pilar1Titulo": "Direct Produce",
-    "pilar1Desc": "No middlemen — straight from the fish market to your table. Fresh in under 24h.",
-    "pilar2Titulo": "Bold Kitchen",
-    "pilar2Desc": "Recipes with soul and maritime power, inherited over decades."
+    "titulo": "Quality,",
+    "tituloDestacado": "warmth",
+    "tituloFin": "& character.",
+    "descripcion1": "Located in San Cristóbal and part of the neighbourhood for over 15 years, El Atlante is a restaurant that has built its identity on great produce, genuine hospitality and an honest approach to cooking.",
+    "descripcion2": "Our cuisine is rooted in Canarian gastronomy, with a special focus on fish and seafood, while staying true to the traditional dishes that are part of our essence. We believe in a kitchen that respects the ingredients, honours the flavours and strives to make every visit enjoyable from start to finish.",
+    "descripcion3": "Add to that a privileged setting by the sea, and the experience becomes something more than just a meal. El Atlante is a place to share, to savour without haste and to return to — with the assurance that quality, warmth and a true sense of identity will always be here.",
+    "pilar1Titulo": "Local Produce",
+    "pilar1Desc": "Carefully selected fish and seafood, brought straight to your table.",
+    "pilar2Titulo": "Honest Kitchen",
+    "pilar2Desc": "We respect the ingredients and honour time-honoured flavours."
   },
   "carta": {
     "label": "Exclusivity",

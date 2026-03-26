@@ -34,19 +34,21 @@ export function AlertModal({ isOpen, title, message, type = 'info', onConfirm, o
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-300" 
+        className="absolute inset-0 backdrop-blur-sm animate-in fade-in duration-300" 
+        style={{ background: 'var(--admin-overlay)' }}
         onClick={onCancel || onConfirm}
       />
       
       {/* Modal Content */}
-      <div className="relative w-full max-w-sm bg-slate-900/90 border border-white/5 rounded-3xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-sm border rounded-3xl p-6 shadow-2xl animate-in zoom-in-95 duration-200"
+        style={{ background: 'var(--admin-modal-bg)', borderColor: 'var(--admin-border)' }}>
         <div className="text-center space-y-4">
           <div className={`text-4xl ${getTypeColor()}`}>
             {getIcon()}
           </div>
           <div className="space-y-1">
-            <h3 className="text-lg font-bold text-white">{title}</h3>
-            <p className="text-sm text-slate-400 leading-relaxed">{message}</p>
+            <h3 className="text-lg font-bold" style={{ color: 'var(--admin-text)' }}>{title}</h3>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--admin-text-secondary)' }}>{message}</p>
           </div>
         </div>
 
@@ -54,7 +56,8 @@ export function AlertModal({ isOpen, title, message, type = 'info', onConfirm, o
           {onCancel && (
             <button
               onClick={onCancel}
-              className="flex-1 px-4 py-3 rounded-xl border border-white/5 text-sm font-bold text-slate-300 hover:bg-white/5 transition-colors"
+              className="flex-1 px-4 py-3 rounded-xl border text-sm font-bold transition-colors"
+              style={{ background: 'var(--admin-bg-hover)', borderColor: 'var(--admin-border)', color: 'var(--admin-text-secondary)' }}
             >
               Cancelar
             </button>

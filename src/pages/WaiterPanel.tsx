@@ -6,9 +6,12 @@ import TableSelector from '../components/TableSelector';
 import GuestCounter from '../components/GuestCounter';
 import FeedbackButton from '../components/FeedbackButton';
 import logoWhite from '../assets/logowhite.png';
+import logoBlack from '../assets/logoblack.png';
 import ManualReservationModal from '../components/ManualReservationModal';
 import { assignTablePure } from '../utils/tableAssignment';
 import { getTableDef, getAreaDef } from '../utils/tableConfig';
+import { AdminThemeProvider, useAdminTheme } from '../contexts/AdminThemeContext';
+import ThemeToggle from '../components/admin/ThemeToggle';
 
 const STATUS_COLORS: Record<ReservationStatus, string> = {
   'pending': 'border-l-amber-400 bg-amber-400/5',
@@ -63,7 +66,16 @@ function formatDuration(minutes: number): string {
 }
 
 export default function WaiterPanel() {
+  return (
+    <AdminThemeProvider>
+      <WaiterPanelInner />
+    </AdminThemeProvider>
+  );
+}
+
+function WaiterPanelInner() {
   const navigate = useNavigate();
+  const { isDark } = useAdminTheme();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [tab, setTab] = useState<Tab>('upcoming');
   const [showWalkIn, setShowWalkIn] = useState(false);
@@ -260,29 +272,30 @@ export default function WaiterPanel() {
 
   if (!authChecked) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--admin-bg)' }}>
         <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen" style={{ background: 'var(--admin-bg)', color: 'var(--admin-text)' }}>
       {/* Top Bar */}
-      <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/5">
+      <header className="sticky top-0 z-50 backdrop-blur-xl border-b" style={{ background: 'var(--admin-header-bg)', borderColor: 'var(--admin-border)' }}>
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <div className="h-7">
-              <img src={logoWhite} alt="El Atlante" className="h-full w-auto object-contain" />
+              <img src={isDark ? logoWhite : logoBlack} alt="El Atlante" className="h-full w-auto object-contain" />
             </div>
             <div>
-              <h1 className="text-sm font-bold">Camarero</h1>
-              <p className="text-slate-500 text-[10px] uppercase tracking-tight">{today} · {currentTimeStr}</p>
+              <h1 className="text-sm font-bold" style={{ color: 'var(--admin-text)' }}>Camarero</h1>
+              <p className="text-[10px] uppercase tracking-tight" style={{ color: 'var(--admin-text-muted)' }}>{today} · {currentTimeStr}</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <FeedbackButton role="waiter" className="text-slate-500 hover:text-amber-400 text-xs flex items-center gap-1.5 transition-colors" />
-            <button onClick={logout} className="text-slate-500 hover:text-red-400 text-xs flex items-center gap-2 transition-colors">
+            <FeedbackButton role="waiter" className="text-slate-500 text-xs flex items-center gap-1.5 transition-colors hover:text-amber-400" />
+            <button onClick={logout} className="text-xs flex items-center gap-2 transition-colors hover:text-red-400" style={{ color: 'var(--admin-text-muted)' }}>
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 -960 960 960"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>
               Salir
             </button>
@@ -293,39 +306,40 @@ export default function WaiterPanel() {
       {/* Quick Stats & Notes */}
       <div className="max-w-3xl mx-auto px-4 py-4 space-y-4">
         {shiftNote && (
-          <div className="bg-amber-400/10 border border-amber-400/20 rounded-2xl p-4 flex gap-3">
+          <div className="rounded-2xl p-4 flex gap-3" style={{ background: 'var(--admin-bg-elevated)', border: '1px solid var(--admin-border)' }}>
             <span className="text-amber-400 text-lg">💡</span>
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-amber-500 mb-1">Notas del Turno</p>
-              <p className="text-sm text-slate-300">{shiftNote}</p>
+              <p className="text-sm" style={{ color: 'var(--admin-text-secondary)' }}>{shiftNote}</p>
             </div>
           </div>
         )}
         <div className="grid grid-cols-4 gap-2">
           {tabs.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
-              className={`rounded-2xl py-3 px-1 text-center transition-all border ${tab === t.key ? 'bg-white/[0.06] border-white/10' : 'bg-white/[0.02] border-transparent hover:bg-white/[0.04]'} ${t.blink ? 'animate-strong-blink text-purple-300' : ''}`}>
+              className={`rounded-2xl py-3 px-1 text-center transition-all border ${tab === t.key ? '' : 'border-transparent'} ${t.blink ? 'animate-strong-blink text-purple-300' : ''}`}
+              style={{ background: tab === t.key ? 'var(--admin-bg-elevated)' : 'var(--admin-bg-card)', borderColor: tab === t.key ? 'var(--admin-border)' : 'transparent' }}>
               <p className={`text-xl font-black ${t.color}`}>{t.count}</p>
-              <p className="text-slate-500 text-[9px] font-medium uppercase tracking-wider mt-1">{t.label}</p>
+              <p className="text-[9px] font-medium uppercase tracking-wider mt-1" style={{ color: 'var(--admin-text-muted)' }}>{t.label}</p>
             </button>
           ))}
         </div>
 
         {/* Global Stats bar for staff */}
         {metrics && (metrics.avgWaitTime > 0 || metrics.avgMealDuration > 0) && (
-          <div className="flex gap-2 bg-white/[0.02] border border-white/5 rounded-2xl p-2.5">
-            <div className="flex-1 flex items-center justify-center gap-2 border-r border-white/5">
+          <div className="flex gap-2 rounded-2xl p-2.5" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
+            <div className="flex-1 flex items-center justify-center gap-2 border-r" style={{ borderColor: 'var(--admin-border)' }}>
               <span className="text-amber-400 text-sm">⏱</span>
               <div>
-                <p className="text-[8px] uppercase tracking-widest text-slate-500 font-bold leading-none">Espera Media</p>
-                <p className="text-sm font-black text-slate-300">{metrics.avgWaitTime} <span className="text-[10px] font-normal text-slate-500">min</span></p>
+                <p className="text-[8px] uppercase tracking-widest font-bold leading-none" style={{ color: 'var(--admin-text-muted)' }}>Espera Media</p>
+                <p className="text-sm font-black" style={{ color: 'var(--admin-text)' }}>{metrics.avgWaitTime} <span className="text-[10px] font-normal" style={{ color: 'var(--admin-text-muted)' }}>min</span></p>
               </div>
             </div>
             <div className="flex-1 flex items-center justify-center gap-2">
               <span className="text-purple-400 text-sm">🍽</span>
               <div>
-                <p className="text-[8px] uppercase tracking-widest text-slate-500 font-bold leading-none">Comida Media</p>
-                <p className="text-sm font-black text-slate-300">{metrics.avgMealDuration} <span className="text-[10px] font-normal text-slate-500">min</span></p>
+                <p className="text-[8px] uppercase tracking-widest font-bold leading-none" style={{ color: 'var(--admin-text-muted)' }}>Comida Media</p>
+                <p className="text-sm font-black" style={{ color: 'var(--admin-text)' }}>{metrics.avgMealDuration} <span className="text-[10px] font-normal" style={{ color: 'var(--admin-text-muted)' }}>min</span></p>
               </div>
             </div>
           </div>
@@ -345,7 +359,7 @@ export default function WaiterPanel() {
             clientProfiles={clientProfiles}
           />
         ) : currentList.length === 0 ? (
-          <div className="text-center py-12 text-slate-500">
+          <div className="text-center py-12" style={{ color: 'var(--admin-text-muted)' }}>
             <p className="text-sm">No hay reservas en esta sección</p>
           </div>
         ) : (
@@ -357,9 +371,9 @@ export default function WaiterPanel() {
 
       {/* Walk-in Modal */}
       {showWalkIn && (
-        <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-end justify-center p-4 sm:items-center" onClick={() => setShowWalkIn(false)}>
-          <div className="bg-slate-900 border border-white/10 rounded-3xl p-6 w-full max-w-md space-y-5 animate-in max-h-[90vh] overflow-y-auto custom-scrollbar" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between sticky top-0 bg-slate-900 py-1 z-10 font-bold">
+        <div className="fixed inset-0 z-[100] backdrop-blur-sm flex items-end justify-center p-4 sm:items-center" onClick={() => setShowWalkIn(false)} style={{ background: 'var(--admin-overlay)' }}>
+          <div className="rounded-3xl p-6 w-full max-w-md space-y-5 animate-in max-h-[90vh] overflow-y-auto custom-scrollbar" onClick={e => e.stopPropagation()} style={{ background: 'var(--admin-modal-bg)', border: '1px solid var(--admin-border-strong)' }}>
+            <div className="flex items-center justify-between sticky top-0 py-1 z-10 font-bold" style={{ background: 'var(--admin-modal-bg)' }}>
               <h2 className="text-lg">+ Mesa Rápida</h2>
               <button onClick={() => setShowWalkIn(false)} className="text-slate-500 hover:text-white text-sm">✕</button>
             </div>
@@ -371,7 +385,8 @@ export default function WaiterPanel() {
                 value={walkInName} 
                 onChange={e => setWalkInName(e.target.value)} 
                 placeholder="Ej: Juan Pérez"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500/50" 
+                className="w-full rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500/50"
+                style={{ background: 'var(--admin-bg-input)', border: '1px solid var(--admin-border-strong)', color: 'var(--admin-text)' }} 
               />
             </div>
 
@@ -388,9 +403,9 @@ export default function WaiterPanel() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Preferencia</label>
-                <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                <div className="rounded-xl overflow-hidden" style={{ background: 'var(--admin-bg-input)', border: '1px solid var(--admin-border-strong)' }}>
                   <select value={walkInPreference} onChange={e => setWalkInPreference(e.target.value)}
-                    className="w-full bg-transparent px-4 py-3 text-sm text-white focus:outline-none appearance-none cursor-pointer">
+                    className="w-full bg-transparent px-4 py-3 text-sm focus:outline-none appearance-none cursor-pointer" style={{ color: 'var(--admin-text)' }}>
                     <option value="Indiferente">🔄 Indiferente</option>
                     <option value="Interior">🏠 Interior</option>
                     <option value="Terraza exterior">☀️ Terraza</option>
@@ -402,14 +417,15 @@ export default function WaiterPanel() {
                 <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mascota</label>
                 <div 
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
-                    walkInPet ? 'bg-amber-500/10 border-amber-500/30' : 'bg-white/5 border-white/10 hover:bg-white/[0.08]'
+                    walkInPet ? 'bg-amber-500/10 border-amber-500/30' : ''
                   }`}
+                  style={walkInPet ? {} : { background: 'var(--admin-bg-input)', borderColor: 'var(--admin-border-strong)' }}
                   onClick={() => setWalkInPet(!walkInPet)}
                 >
-                  <div className={`w-8 h-4 rounded-full relative transition-colors flex-shrink-0 ${walkInPet ? 'bg-amber-500' : 'bg-white/10'}`}>
+                  <div className={`w-8 h-4 rounded-full relative transition-colors flex-shrink-0 ${walkInPet ? 'bg-amber-500' : ''}`} style={{ background: !walkInPet ? 'var(--admin-bg-hover)' : undefined }}>
                     <div className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform duration-300 ${walkInPet ? 'translate-x-4' : 'translate-x-0'}`} />
                   </div>
-                  <span className="text-sm text-white">🐾</span>
+                  <span className="text-sm" style={{ color: 'var(--admin-text)' }}>🐾</span>
                 </div>
               </div>
             </div>
@@ -420,8 +436,8 @@ export default function WaiterPanel() {
                 <span className="text-emerald-400 text-lg">💡</span>
                 <div className="flex-1">
                   <p className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Mesa recomendada</p>
-                  <p className="text-sm text-slate-300">
-                    Mesa <strong className="text-emerald-300">{walkInRecommendation.tableNumber}</strong>
+                  <p className="text-sm" style={{ color: 'var(--admin-text-secondary)' }}>
+                    Mesa <strong className="text-emerald-500">{walkInRecommendation.tableNumber}</strong>
                     {(() => {
                       const tDef = getTableDef(walkInRecommendation.tableNumber);
                       if (!tDef) return null;
@@ -537,11 +553,12 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
 
   return (
     <div className="space-y-6">
-      <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5 space-y-4">
+      <div className="rounded-2xl p-5 space-y-4" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
         <div className="flex flex-col gap-4">
           <div className="flex gap-2">
             <input type="text" value={waitName} onChange={e => setWaitName(e.target.value)} placeholder="Nombre del cliente"
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50" />
+              className="flex-1 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50" 
+              style={{ background: 'var(--admin-bg-input)', border: '1px solid var(--admin-border)', color: 'var(--admin-text)' }} />
           </div>
           
           <div className="flex flex-col sm:flex-row gap-2">
@@ -549,12 +566,13 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
               value={waitGuests} 
               onChange={setWaitGuests} 
               max={20}
-              className="bg-white/5 border border-white/10 rounded-xl px-4 py-2"
+              className="admin-bg-input admin-border rounded-xl px-4 py-2"
             />
             <select
               value={waitPreference}
               onChange={(e) => setWaitPreference(e.target.value)}
-              className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
+              className="rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary/50"
+              style={{ background: 'var(--admin-bg-input)', border: '1px solid var(--admin-border)', color: 'var(--admin-text)' }}
             >
               <option value="Indiferente">Indiferente</option>
               <option value="Interior">Interior</option>
@@ -563,7 +581,8 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
             </select>
             <button
               onClick={() => setWaitPet(!waitPet)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all border ${waitPet ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-white/5 text-slate-400 border-white/10 hover:bg-white/10'}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all border ${waitPet ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : ''}`}
+              style={waitPet ? {} : { background: 'var(--admin-bg-input)', border: '1px solid var(--admin-border)', color: 'var(--admin-text-muted)' }}
               title="¿Lleva mascota?"
             >
               🐾 <span className="hidden sm:inline">Mascota</span>
@@ -582,8 +601,8 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
           </div>
         </div>
 
-        <div className="pt-4 border-t border-white/5">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4">Clientes esperando</h3>
+        <div className="pt-4 border-t" style={{ borderColor: 'var(--admin-border)' }}>
+          <h3 className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--admin-text-muted)' }}>Clientes esperando</h3>
           
           {waitList.length === 0 ? (
             <div className="text-center py-12 text-slate-600">
@@ -594,19 +613,20 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
               {sortedWaitList.map(({ reservation: w, originalIndex, canSeat }) => {
                 const profile = clientProfiles.find(p => p.email === w.email || p.phone === w.phone);
                 return (
-                  <div key={w.id} className={`bg-white/[0.04] border rounded-2xl px-5 py-4 flex items-center justify-between transition-colors ${canSeat ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'border-white/5'}`}>
+                  <div key={w.id} className={`border rounded-2xl px-5 py-4 flex items-center justify-between transition-colors ${canSeat ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : ''}`}
+                    style={{ background: 'var(--admin-bg-elevated)', borderColor: !canSeat ? 'var(--admin-border)' : undefined }}>
                     <div className="flex items-center gap-4">
                       <div className="relative">
                         <span className={`rounded-xl w-10 h-10 flex items-center justify-center font-black text-lg ${canSeat ? 'bg-emerald-500/20 text-emerald-400' : 'bg-primary/20 text-primary'}`}>{originalIndex}</span>
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className={`font-bold text-base ${canSeat ? 'text-emerald-400' : 'text-white'}`}>{w.name}</p>
+                          <p className="font-bold text-base" style={{ color: canSeat ? '#10b981' : 'var(--admin-text)' }}>{w.name}</p>
                           {profile?.isVIP && <span title="Cliente VIP" className="text-sm">⭐</span>}
                           {profile?.isProblem && <span title="Atención requerida" className="text-sm">⚠️</span>}
                           {canSeat && <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full px-2 py-0.5 font-bold uppercase tracking-wide ml-1">¡Mesa Disponible!</span>}
                         </div>
-                        <p className="text-xs text-slate-500 font-medium">
+                        <p className="text-xs font-medium" style={{ color: 'var(--admin-text-muted)' }}>
                           👥 {w.guests} · {w.preference === 'Terraza exterior' ? '☀️' : w.preference === 'Interior' ? '🏠' : w.preference === 'Mesas altas' ? '🪑' : '🔄'}
                           {w.hasPet && ' 🐾'} · {new Date(w.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                         </p>
@@ -630,12 +650,17 @@ function WaitListView({ waitList, addToWaitList, removeFromWaitList, onSeat, occ
 
       {/* Seating Modal */}
       {seatingId && (
-        <div className="fixed inset-0 z-[110] bg-black/70 backdrop-blur-sm flex items-end justify-center p-4 sm:items-center" onClick={() => setSeatingId(null)}>
-          <div className="bg-slate-900 border border-white/10 rounded-3xl p-6 w-full max-w-md space-y-5 animate-in max-h-[90vh] overflow-y-auto custom-scrollbar" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between sticky top-0 bg-slate-900 py-1 z-10">
+        <div className="fixed inset-0 z-[110] backdrop-blur-sm flex items-end justify-center p-4 sm:items-center" 
+          style={{ background: 'var(--admin-overlay)' }}
+          onClick={() => setSeatingId(null)}>
+          <div className="rounded-3xl p-6 w-full max-w-md space-y-5 animate-in max-h-[90vh] overflow-y-auto custom-scrollbar" 
+            style={{ background: 'var(--admin-modal-bg)', border: '1px solid var(--admin-border-strong)' }}
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between sticky top-0 py-1 z-10"
+              style={{ background: 'var(--admin-modal-bg)' }}>
               <div>
-                <h2 className="text-lg font-bold">Asignar Mesa</h2>
-                <p className="text-slate-500 text-xs">Para {waitList.find(w => w.id === seatingId)?.name}</p>
+                <h2 className="text-lg font-bold" style={{ color: 'var(--admin-text)' }}>Asignar Mesa</h2>
+                <p className="text-xs" style={{ color: 'var(--admin-text-muted)' }}>Para {waitList.find(w => w.id === seatingId)?.name}</p>
               </div>
               <button onClick={() => setSeatingId(null)} className="text-slate-500 hover:text-white text-sm">✕</button>
             </div>
@@ -785,24 +810,29 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, reservedT
 
       {/* Card */}
       <div
-        className={`relative border-l-4 ${STATUS_COLORS[r.status]} border border-white/5 rounded-2xl overflow-hidden transition-transform ${isTimeCritical ? 'ring-2 ring-red-500/50 animate-pulse' : isTimeWarning ? 'ring-2 ring-orange-500/40' : ''}`}
-        style={{ transform: `translateX(${swipeX}px)`, transition: swiping ? 'none' : 'transform 0.3s ease' }}
+        className={`relative border-l-4 ${STATUS_COLORS[r.status]} border rounded-2xl overflow-hidden transition-transform ${isTimeCritical ? 'ring-2 ring-red-500/50 animate-pulse' : isTimeWarning ? 'ring-2 ring-orange-500/40' : ''}`}
+        style={{ 
+          transform: `translateX(${swipeX}px)`, 
+          transition: swiping ? 'none' : 'transform 0.3s ease',
+          background: 'var(--admin-bg-card)',
+          borderColor: 'var(--admin-border)'
+        }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="px-5 py-4 space-y-3 bg-slate-950">
+        <div className="px-5 py-4 space-y-3" style={{ background: 'var(--admin-bg-card)' }}>
           {/* Top info */}
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-base">{r.name}</span>
+                <span className="font-semibold text-base" style={{ color: 'var(--admin-text)' }}>{r.name}</span>
                 {profile?.isVIP && <span title="Cliente VIP" className="text-sm">⭐</span>}
                 {profile?.isProblem && <span title="Atención requerida" className="text-sm">⚠️</span>}
                 {r.isWalkIn && <span className="text-[9px] bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-full px-1.5 py-0.5 font-bold">WALK-IN</span>}
                 {r.hasPet && <span title="Con mascota">🐾</span>}
               </div>
-              <div className="flex items-center gap-3 mt-1 text-sm text-slate-500">
+              <div className="flex items-center gap-3 mt-1 text-sm" style={{ color: 'var(--admin-text-muted)' }}>
                 <span className="font-mono text-base">{r.time}</span>
                 <span>👥 {r.guests}</span>
                 <span>{r.preference === 'Terraza exterior' ? '☀️ Terraza' : r.preference === 'Interior' ? '🏠 Interior' : r.preference === 'Mesas altas' ? '🪑 Mesas Altas' : '🔄'}</span>
@@ -827,11 +857,12 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, reservedT
 
           {/* Seated time warning */}
           {r.status === 'seated' && r.seatedAt && (
-            <div className={`flex items-center gap-2 text-xs rounded-xl px-3 py-2 ${isTimeCritical ? 'bg-red-500/10 text-red-400' : isTimeWarning ? 'bg-orange-500/10 text-orange-400' : 'bg-white/5 text-slate-400'}`}>
+            <div className={`flex items-center gap-2 text-xs rounded-xl px-3 py-2 ${isTimeCritical ? 'bg-red-500/10 text-red-400' : isTimeWarning ? 'bg-orange-500/10 text-orange-400' : ''}`}
+              style={{ background: !isTimeCritical && !isTimeWarning ? 'var(--admin-bg-input)' : undefined, color: !isTimeCritical && !isTimeWarning ? undefined : undefined }}>
               <span>⏱</span>
-              <span>Sentados hace {formatDuration(seatedMinutes)}</span>
+              <span style={{ color: !isTimeCritical && !isTimeWarning ? 'var(--admin-text-muted)' : undefined }}>Sentados hace {formatDuration(seatedMinutes)}</span>
               {/* Progress bar */}
-              <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden ml-2">
+              <div className="flex-1 h-1.5 rounded-full overflow-hidden ml-2" style={{ background: 'var(--admin-bg-elevated)' }}>
                 <div
                   className={`h-full rounded-full transition-all ${isTimeCritical ? 'bg-red-500' : isTimeWarning ? 'bg-orange-500' : 'bg-blue-500'}`}
                   style={{ width: `${Math.min(100, (seatedMinutes / 150) * 100)}%` }}
@@ -842,11 +873,11 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, reservedT
 
           {/* Notes */}
           {(r.notes || (profile && profile.allNotes.length > 0) || profile?.favoritePreference) && (
-            <div className="bg-white/5 rounded-xl px-3 py-2 text-sm text-amber-300/80 space-y-1">
+            <div className="rounded-xl px-3 py-2 text-sm space-y-1" style={{ background: 'var(--admin-bg-input)', color: 'var(--admin-text-secondary)' }}>
               {r.notes && <div>📝 {r.notes}</div>}
-              {profile?.favoritePreference && <div className="text-xs text-blue-300">💡 Prefiere: {profile.favoritePreference}</div>}
+              {profile?.favoritePreference && <div className="text-xs" style={{ color: 'var(--admin-text-muted)' }}>💡 Prefiere: {profile.favoritePreference}</div>}
               {profile && profile.allNotes.length > 0 && (
-                <div className="text-[10px] text-slate-400 pt-1 border-t border-white/5 mt-1">
+                <div className="text-[10px] pt-1 border-t mt-1" style={{ color: 'var(--admin-text-muted)', borderColor: 'var(--admin-border)' }}>
                   <strong>Historial CRM:</strong> {profile.allNotes.slice(0, 2).join(' | ')}
                   {profile.allNotes.length > 2 && ' ...'}
                 </div>
@@ -907,7 +938,8 @@ function SwipeableCard({ reservation: r, handleStatus, occupiedTables, reservedT
             )}
             {r.status === 'seated' && (
               <button onClick={() => handleStatus(r.id, 'completed')}
-                className="flex-1 bg-slate-500/10 hover:bg-slate-500/20 text-slate-300 border border-slate-500/20 rounded-xl py-3 text-sm font-medium transition-all active:scale-95">
+                className="flex-1 bg-slate-500/10 hover:bg-slate-500/20 border border-slate-500/20 rounded-xl py-3 text-sm font-medium transition-all active:scale-95"
+                style={{ color: 'var(--admin-text)' }}>
                 ✓ Servicio completado
               </button>
             )}

@@ -8,7 +8,8 @@ export default function StatsCards({ stats }: StatsCardsProps) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6 mb-8">
       {/* Total Reservas */}
-      <div className="relative group overflow-hidden bg-slate-900/40 backdrop-blur-md border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-all duration-300">
+      <div className="relative group overflow-hidden backdrop-blur-md border rounded-2xl p-5 transition-all duration-300"
+        style={{ background: 'var(--admin-bg-card)', borderColor: 'var(--admin-border)' }}>
         <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 blur-3xl -mr-12 -mt-12 rounded-full group-hover:bg-primary/20 transition-colors"></div>
         <div className="flex items-center gap-3 mb-3">
           <div className="p-2 bg-white/5 rounded-lg text-slate-400">
@@ -16,11 +17,12 @@ export default function StatsCards({ stats }: StatsCardsProps) {
           </div>
           <p className="text-slate-500 text-[10px] font-bold tracking-widest uppercase">Reservas del día</p>
         </div>
-        <p className="text-3xl font-black text-white group-hover:scale-105 transition-transform origin-left">{stats.totalToday}</p>
+        <p className="text-3xl font-black group-hover:scale-105 transition-transform origin-left" style={{ color: 'var(--admin-text)' }}>{stats.totalToday}</p>
       </div>
 
       {/* Total Comensales */}
-      <div className="relative group overflow-hidden bg-emerald-500/5 backdrop-blur-md border border-emerald-500/5 rounded-2xl p-5 hover:border-emerald-500/10 transition-all duration-300">
+      <div className="relative group overflow-hidden backdrop-blur-md border rounded-2xl p-5 transition-all duration-300"
+        style={{ background: 'rgba(16, 185, 129, 0.05)', borderColor: 'rgba(16, 185, 129, 0.05)' }}>
         <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 blur-3xl -mr-12 -mt-12 rounded-full group-hover:bg-emerald-500/20 transition-colors"></div>
         <div className="flex items-center gap-3 mb-3">
           <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">
@@ -31,8 +33,9 @@ export default function StatsCards({ stats }: StatsCardsProps) {
         <p className="text-3xl font-black text-emerald-400 group-hover:scale-105 transition-transform origin-left">{stats.totalGuestsToday}</p>
       </div>
 
-      {/* Sentados */}
-      <div className="relative group overflow-hidden bg-blue-500/5 backdrop-blur-md border border-blue-500/5 rounded-2xl p-5 hover:border-blue-500/10 transition-all duration-300">
+  {/* Sentados */}
+      <div className="relative group overflow-hidden backdrop-blur-md border rounded-2xl p-5 transition-all duration-300"
+        style={{ background: 'rgba(59, 130, 246, 0.05)', borderColor: 'rgba(59, 130, 246, 0.05)' }}>
         <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 blur-3xl -mr-12 -mt-12 rounded-full group-hover:bg-blue-500/20 transition-colors"></div>
         <div className="flex items-center gap-3 mb-3">
           <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
@@ -43,8 +46,9 @@ export default function StatsCards({ stats }: StatsCardsProps) {
         <p className="text-3xl font-black text-blue-400 group-hover:scale-105 transition-transform origin-left">{stats.seated}</p>
       </div>
 
-      {/* Pendientes */}
-      <div className="relative group overflow-hidden bg-amber-500/5 backdrop-blur-md border border-amber-500/5 rounded-2xl p-5 hover:border-amber-500/10 transition-all duration-300">
+  {/* Pendientes */}
+      <div className="relative group overflow-hidden backdrop-blur-md border rounded-2xl p-5 transition-all duration-300"
+        style={{ background: 'rgba(245, 158, 11, 0.05)', borderColor: 'rgba(245, 158, 11, 0.05)' }}>
         <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 blur-3xl -mr-12 -mt-12 rounded-full group-hover:bg-amber-500/20 transition-colors"></div>
         <div className="flex items-center gap-3 mb-3">
           <div className="p-2 bg-amber-500/10 rounded-lg text-amber-400">

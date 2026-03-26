@@ -106,20 +106,21 @@ export default function PinLoginView({ onSuccess, onCancel }: PinLoginViewProps)
             className="space-y-6"
           >
             <div className="text-center">
-              <h2 className="text-xl font-bold text-white mb-2">Selecciona tu perfil</h2>
-              <p className="text-slate-400 text-sm">Toca tu nombre para iniciar sesión</p>
+              <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--admin-text)' }}>Selecciona tu perfil</h2>
+              <p className="text-sm" style={{ color: 'var(--admin-text-secondary)' }}>Toca tu nombre para iniciar sesión</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               {profiles.map((profile) => (
                 <button
                   key={profile.id}
                   onClick={() => setSelectedStaff(profile)}
-                  className="p-6 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-primary/50 transition-all flex flex-col items-center gap-3 group"
+                  className="p-6 border rounded-2xl transition-all flex flex-col items-center gap-3 group"
+                  style={{ background: 'var(--admin-bg-card)', borderColor: 'var(--admin-border)' }}
                 >
                   <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xl group-hover:scale-110 transition-transform">
                     {(profile.display_name || profile.email)[0].toUpperCase()}
                   </div>
-                  <span className="text-white font-medium truncate w-full text-center">
+                  <span className="font-medium truncate w-full text-center" style={{ color: 'var(--admin-text)' }}>
                     {profile.display_name || profile.email.split('@')[0]}
                   </span>
                 </button>
@@ -127,7 +128,8 @@ export default function PinLoginView({ onSuccess, onCancel }: PinLoginViewProps)
             </div>
             <button
               onClick={onCancel}
-              className="w-full text-slate-500 hover:text-white text-sm underline transition-colors"
+              className="w-full text-sm underline transition-colors"
+              style={{ color: 'var(--admin-text-muted)' }}
             >
               Usar correo y contraseña
             </button>
@@ -150,8 +152,8 @@ export default function PinLoginView({ onSuccess, onCancel }: PinLoginViewProps)
                 </svg>
                 Volver
               </button>
-              <h2 className="text-2xl font-bold text-white">Hola, {selectedStaff.display_name || selectedStaff.email.split('@')[0]}</h2>
-              <p className="text-slate-400">Introduce tu PIN de 4 dígitos</p>
+              <h2 className="text-2xl font-bold" style={{ color: 'var(--admin-text)' }}>Hola, {selectedStaff.display_name || selectedStaff.email.split('@')[0]}</h2>
+              <p style={{ color: 'var(--admin-text-secondary)' }}>Introduce tu PIN de 4 dígitos</p>
             </div>
 
             {/* PIN Dots */}
@@ -162,8 +164,9 @@ export default function PinLoginView({ onSuccess, onCancel }: PinLoginViewProps)
                   className={`w-4 h-4 rounded-full border-2 transition-all duration-200 ${
                     pin.length > i 
                       ? 'bg-primary border-primary scale-110' 
-                      : 'border-white/20'
+                      : ''
                   } ${error ? 'border-red-500 bg-red-500/20' : ''}`}
+                  style={{ borderColor: pin.length > i ? undefined : 'var(--admin-border-strong)' }}
                 />
               ))}
             </div>
@@ -177,7 +180,8 @@ export default function PinLoginView({ onSuccess, onCancel }: PinLoginViewProps)
                   key={num}
                   onClick={() => handleNumberClick(num)}
                   disabled={loading}
-                  className="h-16 bg-white/5 hover:bg-white/10 active:bg-primary/20 text-white text-2xl font-light rounded-xl transition-all border border-white/5 active:border-primary/50"
+                  className="h-16 active:bg-primary/20 text-2xl font-light rounded-xl transition-all border active:border-primary/50"
+                  style={{ background: 'var(--admin-bg-input)', borderColor: 'var(--admin-border)', color: 'var(--admin-text)' }}
                 >
                   {num}
                 </button>
@@ -186,7 +190,8 @@ export default function PinLoginView({ onSuccess, onCancel }: PinLoginViewProps)
               <button
                 onClick={() => handleNumberClick('0')}
                 disabled={loading}
-                className="h-16 bg-white/5 hover:bg-white/10 active:bg-primary/20 text-white text-2xl font-light rounded-xl transition-all border border-white/5 active:border-primary/50"
+                className="h-16 active:bg-primary/20 text-2xl font-light rounded-xl transition-all border active:border-primary/50"
+                style={{ background: 'var(--admin-bg-input)', borderColor: 'var(--admin-border)', color: 'var(--admin-text)' }}
               >
                 0
               </button>
