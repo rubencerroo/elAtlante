@@ -107,8 +107,8 @@
     },
     "form": {
       "subtitle": "Reservaciones",
-      "titlePart1": "Tu mesa <br />en el ",
-      "titlePart2": "Atlántico",
+      "titlePart1": "Tu mesa en el ",
+      "titlePart2": "Atlante",
       "fullName": "Nombre Completo",
       "namePlaceholder": "Ej: Juan Pérez",
       "email": "Email",

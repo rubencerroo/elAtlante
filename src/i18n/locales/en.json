@@ -107,8 +107,8 @@
     },
     "form": {
       "subtitle": "Reservations",
-      "titlePart1": "Your table <br />at the ",
-      "titlePart2": "Atlantic",
+      "titlePart1": "Your table at the ",
+      "titlePart2": "Atlante",
       "fullName": "Full Name",
       "namePlaceholder": "e.g. John Doe",
       "email": "Email",
