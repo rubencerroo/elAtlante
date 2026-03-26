@@ -214,23 +214,27 @@ export default function Home() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-10">
                 {[
-                  { day: t('horarios.lunes'), hours: '12:30 - 23:00' },
-                  { day: t('horarios.martesMiercoles'), hours: t('horarios.cerrado'), highlight: true },
-                  { day: t('horarios.juevesSabado'), hours: '12:30 - 23:00' },
-                  { day: t('horarios.domingo'), hours: '12:30 - 16:30' }
-                ].map((item, idx) => (
-                  <div key={idx} className="space-y-1 group">
-                    <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3 transition-colors group-hover:border-primary">
-                      <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${item.highlight ? 'text-primary' : 'text-slate-400 dark:text-slate-500'}`}>
-                        {item.day}
-                      </span>
-                      {item.highlight && <span className="size-1 bg-primary rounded-full"></span>}
+                  { day: t('horarios.lunes'), hours: '12:30 - 23:00', days: [1] },
+                  { day: t('horarios.martesMiercoles'), hours: t('horarios.cerrado'), days: [2, 3] },
+                  { day: t('horarios.juevesSabado'), hours: '12:30 - 23:00', days: [4, 5, 6] },
+                  { day: t('horarios.domingo'), hours: '12:30 - 16:30', days: [0] }
+                ].map((item, idx) => {
+                  const currentDay = new Date().getDay();
+                  const isToday = item.days.includes(currentDay);
+                  return (
+                    <div key={idx} className="space-y-1 group">
+                      <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3 transition-colors group-hover:border-primary">
+                        <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isToday ? 'text-primary' : 'text-slate-400 dark:text-slate-500'}`}>
+                          {item.day}
+                        </span>
+                        {isToday && <span className="size-1 bg-primary rounded-full"></span>}
+                      </div>
+                      <div className={`text-xl font-light pt-2 transition-all duration-300 group-hover:pl-1 ${isToday ? 'text-primary italic font-medium' : 'text-slate-800 dark:text-slate-200'}`}>
+                        {item.hours}
+                      </div>
                     </div>
-                    <div className={`text-xl font-light pt-2 transition-all duration-300 group-hover:pl-1 ${item.highlight ? 'text-primary italic font-medium' : 'text-slate-800 dark:text-slate-200'}`}>
-                      {item.hours}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
 
