@@ -80,24 +80,41 @@ export default function Home() {
       {/* Hero Section */}
       <section className="@container" id="inicio">
         <div className="flex min-h-screen flex-col items-center justify-center p-6 relative overflow-hidden"
-          style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%), url('${heroImage}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+          style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.75) 100%), url('${heroImage}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+          
+          {/* Subtle radial darkening behind text for extra elegance and readability */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.4)_0%,transparent_70%)] pointer-events-none z-0" />
 
-
-          {/* Open/closed badge – floating */}
-          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20">
-            <span className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full backdrop-blur-md border shadow-sm ${isOpen ? 'bg-emerald-500/30 border-emerald-400/40 text-emerald-200' : 'bg-red-500/30 border-red-400/40 text-red-200'}`}>
-              <span className={`size-2 rounded-full ${isOpen ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
-              {isOpen ? t('hero.abierto') : t('hero.cerrado')}
-            </span>
-          </div>
           <div className="flex flex-col gap-6 text-center max-w-[850px] z-10 p-4">
-            <h1 className="text-white text-4xl md:text-6xl lg:text-7xl font-serif font-extrabold leading-tight tracking-tight drop-shadow-2xl">
-              {t('hero.titulo1')} <br />
-              <span className="italic opacity-90">{t('hero.titulo2')}</span>
-            </h1>
-            <p className="text-white/95 text-base md:text-xl font-light leading-relaxed max-w-2xl mx-auto drop-shadow-lg">
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="text-white text-3xl md:text-5xl lg:text-7xl font-serif font-extrabold leading-[1.2] md:leading-[1.1] tracking-tight drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] max-w-4xl mx-auto"
+            >
+              {i18n.language.startsWith('es') ? (
+                <>
+                  {t('hero.titulo1_pre')}
+                  <span className="canary-flag-hover cursor-default">{t('hero.titulo1_word')}</span>
+                </>
+              ) : (
+                <>
+                  <span className="canary-flag-hover cursor-default">{t('hero.titulo1_pre')}</span>
+                  {t('hero.titulo1_word')}
+                </>
+              )} <br />
+              <span className="italic font-medium opacity-90 text-white/90">
+                {t('hero.titulo2')}
+              </span>
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              className="text-white/90 text-sm md:text-lg lg:text-xl font-light leading-relaxed max-w-3xl mx-auto drop-shadow-lg px-4 md:px-8 tracking-wide"
+            >
               {t('hero.subtitulo')}
-            </p>
+            </motion.p>
             <div className="flex flex-wrap gap-4 justify-center mt-4">
               <Link to="/reservar" className="group flex min-w-[180px] cursor-pointer items-center justify-center rounded-full h-14 px-8 btn-primary-high text-xs font-black uppercase tracking-[0.15em] hover:scale-105 transition-all shadow-2xl">
                 {t('hero.cta')}

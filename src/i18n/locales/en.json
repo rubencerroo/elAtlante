@@ -9,9 +9,10 @@
   "hero": {
     "abierto": "Open now",
     "cerrado": "Closed",
-    "titulo1": "El Atlante",
-    "titulo2": "de San Cristóbal",
-    "subtitulo": "Maritime tradition and the freshest catch in an unrivalled setting facing the Atlantic.",
+    "titulo1_pre": "Canarian",
+    "titulo1_word": " tradition",
+    "titulo2": "facing the Atlantic",
+    "subtitulo": "Flavors born from the produce, the care, and a warm way of understanding the table.",
     "cta": "Book a Table",
     "ctaCarta": "View Menu",
     "siguenos": "Follow Us"

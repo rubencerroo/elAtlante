@@ -322,3 +322,30 @@
 .dark .phone-input-custom .react-international-phone-country-selector-dropdown__list-item-dial-code {
   color: #94a3b8 !important;
 }
+
+/* Canary Flag Hover Effect */
+.canary-flag-hover {
+  display: inline-block;
+  background-image: linear-gradient(
+    to right,
+    #ffffff 50%,
+    #ffffff 50%,
+    #ffffff 66.66%,
+    #0093d1 66.66%,
+    #0093d1 83.33%,
+    #f7e017 83.33%,
+    #f7e017 100%
+  );
+  background-size: 200% 100%;
+  background-position: 0% 0%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  transition: background-position 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.canary-flag-hover:hover {
+  background-position: 100% 0%;
+}
+
