@@ -272,7 +272,7 @@ export default function Reservations() {
           </div>
 
           {/* Right Column: Form */}
-          <div className="w-full lg:w-14/25 p-5 md:p-12 lg:p-20 relative bg-[#F9FAFB] dark:bg-transparent">
+          <div className="w-full lg:w-14/25 p-6 md:p-12 lg:p-20 relative dark:bg-transparent">
 
             {/* Mobile-only compact header */}
             <div className="lg:hidden mb-6">
@@ -282,233 +282,194 @@ export default function Reservations() {
               </h1>
             </div>
 
-            <form className="space-y-7 md:space-y-16" onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12 items-end">
-                <div className="flex flex-col gap-2 md:gap-4 group">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.fullName')} <span className="text-coastal-sea">*</span></label>
-                  <input className="bg-transparent text-base md:text-lg font-light text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/5 focus:border-primary dark:focus:border-slate-400 focus:ring-0 p-0 pb-2 md:pb-3 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600"
-                    placeholder={t('reservas.form.namePlaceholder')} type="text" required value={formData.name} onChange={e => handleChange('name', e.target.value)} />
-                </div>
-                <div className="flex flex-col gap-2 md:gap-4 group">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.email')} <span className="text-coastal-sea">*</span></label>
-                  <input className="bg-transparent text-base md:text-lg font-light text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/5 focus:border-primary dark:focus:border-slate-400 focus:ring-0 p-0 pb-2 md:pb-3 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600"
-                    placeholder={t('reservas.form.emailPlaceholder')} type="email" required value={formData.email} onChange={e => handleChange('email', e.target.value)} />
-                </div>
-              </div>
+            <form onSubmit={handleSubmit}>
+              <div className="bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/8 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] dark:shadow-none overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12 items-end">
-                <div className="flex flex-col gap-2 md:gap-4 group">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.phone')} <span className="text-coastal-sea">*</span></label>
-                  <div className="border-b border-slate-100 dark:border-white/5 group-focus-within:border-primary dark:group-focus-within:border-slate-400 pb-2 transition-all">
-                    <PhoneInput
-                      defaultCountry="es"
-                      value={phone}
-                      onChange={setPhone}
-                      className="phone-input-custom"
-                      inputClassName="phone-input-field"
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col gap-2 md:gap-4 group relative" ref={calendarRef}>
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.date')} <span className="text-coastal-sea">*</span></label>
-                  <button
-                    type="button"
-                    onClick={() => setShowCalendar(!showCalendar)}
-                    className="flex justify-between items-center bg-transparent text-left text-base md:text-lg font-light text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/5 focus:border-primary dark:focus:border-slate-400 focus:ring-0 p-0 pb-2 transition-all w-full relative"
-                  >
-                    <span>{formData.date ? formatDate(formData.date) : ''}</span>
-                    <svg className={`size-5 text-slate-400 transition-transform duration-300 ${showCalendar ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" /></svg>
-                  </button>
-
-                  <AnimatePresence>
-                    {showCalendar && (
-                      <>
-                        {/* Mobile: full-screen modal overlay */}
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="md:hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center p-4"
-                          onClick={() => setShowCalendar(false)}
-                        >
-                          <motion.div
-                            initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 30, scale: 0.95 }}
-                            transition={{ duration: 0.25 }}
-                            className="w-full max-w-sm"
-                            onClick={e => e.stopPropagation()}
-                          >
-                            <div className="flex justify-between items-center mb-3 px-1">
-                              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">{t('reservas.form.date')}</span>
-                              <button
-                                type="button"
-                                onClick={() => setShowCalendar(false)}
-                                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-slate-400 hover:text-white transition-colors"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                              </button>
-                            </div>
-                            <Calendar
-                              selectedDate={formData.date}
-                              onSelect={(date) => {
-                                handleChange('date', date);
-                                const times = getAvailableTimes(date, 15);
-                                if (times.length > 0 && (!formData.time || !times.includes(formData.time))) {
-                                  handleChange('time', times[0]);
-                                } else if (times.length === 0) {
-                                  handleChange('time', '');
-                                }
-                                setShowCalendar(false);
-                              }}
-                              minDate={getTodayDateString()}
-                            />
-                          </motion.div>
-                        </motion.div>
-
-                        {/* Desktop: dropdown */}
-                        <motion.div
-                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          transition={{ duration: 0.2 }}
-                          className="hidden md:block absolute top-full -left-4 mt-4 z-50 overflow-hidden"
-                        >
-                          <Calendar
-                            selectedDate={formData.date}
-                            onSelect={(date) => {
-                              handleChange('date', date);
-                              const times = getAvailableTimes(date, 15);
-                              if (times.length > 0 && (!formData.time || !times.includes(formData.time))) {
-                                handleChange('time', times[0]);
-                              } else if (times.length === 0) {
-                                handleChange('time', '');
-                              }
-                              setShowCalendar(false);
-                            }}
-                            minDate={getTodayDateString()}
-                          />
-                        </motion.div>
-                      </>
-                    )}
-                  </AnimatePresence>
-
-                  {formData.date && isDayClosed(formData.date) && (
-                    <p className="text-[10px] text-red-500 font-medium italic mt-1 animate-pulse">
-                      {t('reservas.form.dateClosedError')}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12">
-                <div className="flex flex-col gap-2 md:gap-4 group h-full justify-between">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.time')} <span className="text-coastal-sea">*</span></label>
-                  <div className="flex-1 flex flex-col justify-end">
-                    <CustomSelect
-                      value={formData.time}
-                      onChange={v => handleChange('time', v)}
-                      options={getAvailableTimes(formData.date, 15).map(time => ({ value: time, label: `${time} h` }))}
-                      placeholder={t('reservas.form.closedThisDay')}
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col gap-2 md:gap-4 group relative h-full justify-between">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.guestsAmount')}</label>
-                  <div className="border-b border-slate-100 dark:border-white/5 group-focus-within:border-primary dark:group-focus-within:border-slate-400 pb-2 transition-all flex-1 flex flex-col justify-end">
-                    <GuestCounter
-                      value={formData.guests}
-                      onChange={n => handleChange('guests', n)}
-                      max={9}
-                      className="py-1"
-                    />
-                  </div>
-                  <AnimatePresence>
-                    {formData.guests >= 9 && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -5 }}
-                        className="absolute -bottom-8 left-0 text-[10px] text-amber-600 font-medium italic w-full"
-                      >
-                        {t('reservas.form.groupWarning')}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12 items-end">
-                <div className="flex flex-col gap-2 md:gap-4 group">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.zonePreference')}</label>
-                  <CustomSelect
-                    value={formData.preference}
-                    onChange={v => handleChange('preference', v)}
-                    options={[
-                      { value: 'Indiferente', label: t('reservas.form.zones.Indiferente') },
-                      { value: 'Interior', label: t('reservas.form.zones.Interior') },
-                      { value: 'Mesas altas', label: t('reservas.form.zones.Mesas altas') },
-                      { value: 'Terraza exterior', label: t('reservas.form.zones.Terraza exterior') },
-                    ]}
-                  />
-                </div>
-                <div className="flex flex-col justify-end pb-3">
-                  <div className="flex items-center gap-4 group cursor-pointer" onClick={() => handleChange('hasPet', !formData.hasPet)}>
-                    <div className={`w-10 h-6 rounded-full relative transition-all duration-300 ${formData.hasPet ? 'bg-coastal-sea' : 'bg-slate-200 dark:bg-white/10'}`}>
-                      <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${formData.hasPet ? 'translate-x-4' : ''}`}></div>
+                {/* ── Tus datos ─────────────────────────── */}
+                <div className="p-6 md:p-8 space-y-4">
+                  <p className="font-serif italic text-slate-400 dark:text-slate-500 text-sm">Tus datos</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('reservas.form.fullName')} <span className="text-coastal-sea">*</span></label>
+                      <input
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary dark:focus:border-slate-500 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600"
+                        placeholder={t('reservas.form.namePlaceholder')} type="text" required value={formData.name} onChange={e => handleChange('name', e.target.value)} />
                     </div>
-                    <label className="text-sm font-light text-slate-600 dark:text-slate-400 cursor-pointer">{t('reservas.form.withPet')}</label>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('reservas.form.email')} <span className="text-coastal-sea">*</span></label>
+                      <input
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary dark:focus:border-slate-500 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600"
+                        placeholder={t('reservas.form.emailPlaceholder')} type="email" required value={formData.email} onChange={e => handleChange('email', e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('reservas.form.phone')} <span className="text-coastal-sea">*</span></label>
+                    <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
+                      <PhoneInput
+                        defaultCountry="es"
+                        value={phone}
+                        onChange={setPhone}
+                        className="phone-input-custom"
+                        inputClassName="phone-input-field"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex flex-col gap-2 md:gap-4">
-                <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">{t('reservas.form.additionalNotes')}</label>
-                <textarea className="bg-slate-50/50 dark:bg-white/5 rounded-xl md:rounded-2xl p-4 md:p-6 text-sm md:text-base font-light text-slate-900 dark:text-white border border-slate-100 dark:border-white/5 focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600 outline-none"
-                  placeholder={t('reservas.form.notesPlaceholder')} rows={2} value={formData.notes} onChange={e => handleChange('notes', e.target.value)}></textarea>
-              </div>
+                {/* ── Tu reserva ────────────────────────── */}
+                <div className="p-6 md:p-8 space-y-4">
+                  <p className="font-serif italic text-slate-400 dark:text-slate-500 text-sm">Tu reserva</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-              <div className="space-y-5 md:space-y-8 pt-2 md:pt-8">
-                <div className="flex items-start gap-3">
-                  <input type="checkbox" id="policies" required className="mt-0.5 md:mt-1 w-6 h-6 md:w-5 md:h-5 shrink-0 cursor-pointer rounded border-slate-300 text-primary focus:ring-primary/20 bg-slate-50 dark:bg-white/5 dark:border-white/10 transition-all hover:ring-2 hover:ring-primary/20"
-                    checked={formData.acceptPolicies} onChange={e => handleChange('acceptPolicies', e.target.checked)} />
-                  <label htmlFor="policies" className="text-[11px] font-light text-slate-500 dark:text-slate-400 leading-relaxed cursor-pointer select-none">
-                    {t('reservas.form.acceptTerms1')}<a href="/aviso-legal" target="_blank" className="text-primary dark:text-sky-400 hover:text-coastal-sea underline underline-offset-2 relative z-10">{t('reservas.form.terms')}</a>{t('reservas.form.acceptTerms2')}<a href="/privacidad" target="_blank" className="text-primary dark:text-sky-400 hover:text-coastal-sea underline underline-offset-2 relative z-10">{t('reservas.form.privacy')}</a>{t('reservas.form.acceptTerms3')}
-                  </label>
+                    {/* Fecha */}
+                    <div className="flex flex-col gap-1.5 relative" ref={calendarRef}>
+                      <label className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('reservas.form.date')} <span className="text-coastal-sea">*</span></label>
+                      <button
+                        type="button"
+                        onClick={() => setShowCalendar(!showCalendar)}
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-3 text-sm text-left text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all flex justify-between items-center"
+                      >
+                        <span className={formData.date ? '' : 'text-slate-300 dark:text-slate-600'}>
+                          {formData.date ? formatDate(formData.date) : t('reservas.form.date')}
+                        </span>
+                        <svg className={`size-4 text-slate-400 transition-transform duration-300 shrink-0 ${showCalendar ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" /></svg>
+                      </button>
+                      <AnimatePresence>
+                        {showCalendar && (
+                          <>
+                            <motion.div
+                              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+                              className="md:hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center p-4"
+                              onClick={() => setShowCalendar(false)}
+                            >
+                              <motion.div
+                                initial={{ opacity: 0, y: 30, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 30, scale: 0.95 }} transition={{ duration: 0.25 }}
+                                className="w-full max-w-sm" onClick={e => e.stopPropagation()}
+                              >
+                                <div className="flex justify-between items-center mb-3 px-1">
+                                  <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">{t('reservas.form.date')}</span>
+                                  <button type="button" onClick={() => setShowCalendar(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-slate-400 hover:text-white transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                  </button>
+                                </div>
+                                <Calendar selectedDate={formData.date} onSelect={(date) => { handleChange('date', date); const times = getAvailableTimes(date, 15); if (times.length > 0 && (!formData.time || !times.includes(formData.time))) { handleChange('time', times[0]); } else if (times.length === 0) { handleChange('time', ''); } setShowCalendar(false); }} minDate={getTodayDateString()} />
+                              </motion.div>
+                            </motion.div>
+                            <motion.div
+                              initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} transition={{ duration: 0.2 }}
+                              className="hidden md:block absolute top-full left-0 mt-2 z-50 overflow-hidden"
+                            >
+                              <Calendar selectedDate={formData.date} onSelect={(date) => { handleChange('date', date); const times = getAvailableTimes(date, 15); if (times.length > 0 && (!formData.time || !times.includes(formData.time))) { handleChange('time', times[0]); } else if (times.length === 0) { handleChange('time', ''); } setShowCalendar(false); }} minDate={getTodayDateString()} />
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
+                      {formData.date && isDayClosed(formData.date) && (
+                        <p className="text-[10px] text-red-500 font-medium italic">{t('reservas.form.dateClosedError')}</p>
+                      )}
+                    </div>
+
+                    {/* Hora */}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('reservas.form.time')} <span className="text-coastal-sea">*</span></label>
+                      <CustomSelect
+                        value={formData.time}
+                        onChange={v => handleChange('time', v)}
+                        options={getAvailableTimes(formData.date, 15).map(time => ({ value: time, label: `${time} h` }))}
+                        placeholder={t('reservas.form.closedThisDay')}
+                      />
+                    </div>
+
+                    {/* Comensales */}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('reservas.form.guestsAmount')}</label>
+                      <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2.5">
+                        <GuestCounter value={formData.guests} onChange={n => handleChange('guests', n)} max={9} className="" />
+                      </div>
+                      <AnimatePresence>
+                        {formData.guests >= 9 && (
+                          <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-[10px] text-amber-600 font-medium italic">
+                            {t('reservas.form.groupWarning')}
+                          </motion.p>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                  </div>
                 </div>
 
-                <div>
+                {/* ── Preferencias ──────────────────────── */}
+                <div className="p-6 md:p-8 space-y-4">
+                  <p className="font-serif italic text-slate-400 dark:text-slate-500 text-sm">Preferencias</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('reservas.form.zonePreference')}</label>
+                      <CustomSelect
+                        value={formData.preference}
+                        onChange={v => handleChange('preference', v)}
+                        options={[
+                          { value: 'Indiferente', label: t('reservas.form.zones.Indiferente') },
+                          { value: 'Interior', label: t('reservas.form.zones.Interior') },
+                          { value: 'Mesas altas', label: t('reservas.form.zones.Mesas altas') },
+                          { value: 'Terraza exterior', label: t('reservas.form.zones.Terraza exterior') },
+                        ]}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5 justify-center pt-5">
+                      <div className="flex items-center gap-3 cursor-pointer select-none" onClick={() => handleChange('hasPet', !formData.hasPet)}>
+                        <div className={`w-10 h-6 rounded-full relative transition-all duration-300 shrink-0 ${formData.hasPet ? 'bg-coastal-sea' : 'bg-slate-200 dark:bg-white/10'}`}>
+                          <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-300 ${formData.hasPet ? 'translate-x-4' : ''}`}></div>
+                        </div>
+                        <span className="text-sm text-slate-600 dark:text-slate-400">{t('reservas.form.withPet')}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('reservas.form.additionalNotes')}</label>
+                    <textarea
+                      className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary dark:focus:border-slate-500 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600 resize-none"
+                      placeholder={t('reservas.form.notesPlaceholder')} rows={3} value={formData.notes} onChange={e => handleChange('notes', e.target.value)} />
+                  </div>
+                </div>
+
+                {/* ── Envío ─────────────────────────────── */}
+                <div className="p-6 md:p-8 space-y-5 bg-slate-50/60 dark:bg-white/[0.01]">
+                  <div className="flex items-start gap-3">
+                    <input type="checkbox" id="policies" required
+                      className="mt-0.5 w-4 h-4 shrink-0 cursor-pointer rounded border-slate-300 text-primary focus:ring-primary/20 bg-white dark:bg-white/5 dark:border-white/10"
+                      checked={formData.acceptPolicies} onChange={e => handleChange('acceptPolicies', e.target.checked)} />
+                    <label htmlFor="policies" className="text-[11px] font-light text-slate-500 dark:text-slate-400 leading-relaxed cursor-pointer select-none">
+                      {t('reservas.form.acceptTerms1')}<a href="/aviso-legal" target="_blank" className="text-primary dark:text-sky-400 hover:text-coastal-sea underline underline-offset-2">{t('reservas.form.terms')}</a>{t('reservas.form.acceptTerms2')}<a href="/privacidad" target="_blank" className="text-primary dark:text-sky-400 hover:text-coastal-sea underline underline-offset-2">{t('reservas.form.privacy')}</a>{t('reservas.form.acceptTerms3')}
+                    </label>
+                  </div>
+
                   {formData.guests >= 9 ? (
-                    <div className="bg-amber-50 dark:bg-amber-900/10 p-8 rounded-3xl border border-amber-100/50 dark:border-amber-900/10 space-y-6">
-                      <p className="text-amber-800 dark:text-amber-300 text-sm font-medium text-center">
-                        {t('reservas.form.groupLargeMsg')}
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-4">
-                        <a href={isOpen ? CONTACT_INFO.landline.link : CONTACT_INFO.mobile.link} className="flex-1 h-14 flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-white rounded-2xl transition-all shadow-lg font-bold uppercase tracking-widest text-[11px]">
+                    <div className="bg-amber-50 dark:bg-amber-900/10 p-5 rounded-xl border border-amber-100/50 dark:border-amber-900/10 space-y-4">
+                      <p className="text-amber-800 dark:text-amber-300 text-sm font-medium text-center">{t('reservas.form.groupLargeMsg')}</p>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <a href={isOpen ? CONTACT_INFO.landline.link : CONTACT_INFO.mobile.link} className="flex-1 h-12 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white rounded-xl transition-all font-bold uppercase tracking-widest text-[11px]">
                           <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 7V5z" /></svg>
                           {t('reservas.form.call')}
                         </a>
-                        <a href={CONTACT_INFO.whatsapp.link} target="_blank" rel="noopener noreferrer" className="flex-1 h-14 flex items-center justify-center gap-3 border border-emerald-500 text-emerald-600 hover:bg-emerald-50 rounded-2xl transition-all font-bold uppercase tracking-widest text-[11px]">
+                        <a href={CONTACT_INFO.whatsapp.link} target="_blank" rel="noopener noreferrer" className="flex-1 h-12 flex items-center justify-center gap-2 border border-emerald-500 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all font-bold uppercase tracking-widest text-[11px]">
                           {t('reservas.form.whatsapp')}
                         </a>
                       </div>
                     </div>
                   ) : (
-                    <button type="submit" disabled={isSubmitting || !formData.acceptPolicies} className="w-full h-14 md:h-16 rounded-xl md:rounded-2xl btn-primary-high disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                    <button type="submit" disabled={isSubmitting || !formData.acceptPolicies} className="w-full h-14 rounded-xl btn-primary-high disabled:opacity-50 disabled:cursor-not-allowed transition-all">
                       <span className="relative z-10 font-bold uppercase tracking-[0.4em] text-[11px]">
                         {isSubmitting ? t('reservas.form.processing') : t('reservas.form.confirmBtn')}
                       </span>
                     </button>
                   )}
-                </div>
-              </div>
 
-              <div className="pt-2 md:pt-8 text-center">
-                <p className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-medium leading-loose">
-                  {t('reservas.form.disclaimer1')}<br />
-                  {t('reservas.form.disclaimer2')}
-                </p>
+                  <p className="text-center text-[10px] text-slate-400 uppercase tracking-[0.2em] font-medium leading-loose">
+                    {t('reservas.form.disclaimer1')}<br />
+                    {t('reservas.form.disclaimer2')}
+                  </p>
+                </div>
+
               </div>
             </form>
           </div>

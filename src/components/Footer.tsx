@@ -2,109 +2,58 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import logoWhite from '../assets/logowhite.png';
 import logoBlack from '../assets/logoblack.png';
-import { isRestaurantOpenNow } from '../utils/reservationUtils';
-import { CONTACT_INFO } from '../constants/contact';
 
 export default function Footer() {
-  const { t, i18n } = useTranslation();
-  const isOpen = isRestaurantOpenNow();
+  const { t } = useTranslation();
 
   return (
-    <footer className="relative bg-slate-50 dark:bg-[#0B0F14] text-slate-900 dark:text-slate-100 pt-14 md:pt-24 pb-10 md:pb-12 px-6 md:px-12 lg:px-40 overflow-hidden border-t border-slate-100 dark:border-white/5">
-      {/* Background Texture/Decor from Reserva Page */}
-      <div className="absolute inset-0 -z-10 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
-        <img
-          src="https://images.unsplash.com/photo-1551244072-5d12893278ab?auto=format&fit=crop&q=80&w=1200"
-          alt="Coastal texture"
-          className="w-full h-full object-cover grayscale"
-        />
-      </div>
+    <footer className="border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0B0F14] px-6 md:px-12 lg:px-40 py-6">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-5">
 
-      <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] -z-10 opacity-60"></div>
-      <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-coastal-sea/5 rounded-full blur-[80px] -z-10 opacity-60"></div>
+        {/* Logo */}
+        <div className="h-16 shrink-0">
+          <img src={logoBlack} alt="El Atlante" className="h-full w-auto object-contain dark:hidden" />
+          <img src={logoWhite} alt="El Atlante" className="h-full w-auto object-contain hidden dark:block" />
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-16 border-b border-slate-100 dark:border-white/5 pb-10 md:pb-16 mb-8 md:mb-12 relative z-10">
-        <div>
-          <div className="flex items-center gap-4 mb-6">
-            <div className="h-14 md:h-30">
-              <picture>
-                <source srcSet={logoWhite} media="(prefers-color-scheme: dark)" />
-                <img
-                  src={logoBlack}
-                  alt="El Atlante"
-                  className="h-full w-auto object-contain dark:hidden"
-                />
-                <img
-                  src={logoWhite}
-                  alt="El Atlante"
-                  className="h-full w-auto object-contain hidden dark:block"
-                />
-              </picture>
-            </div>
-          </div>
-        </div>
-        <div>
-          <h4 className="font-bold text-sm uppercase tracking-[0.3em] mb-5 md:mb-8 text-primary dark:text-sky-400">{t('footer.navigation')}</h4>
-          <ul className="space-y-4 text-slate-600 dark:text-slate-400 font-light">
-            <li><Link className="hover:text-primary dark:hover:text-white transition-colors" to="/">{t('nav.inicio')}</Link></li>
-            <li>
-              <a
-                className="hover:text-primary dark:hover:text-white transition-colors"
-                href={i18n.language.startsWith('en')
-                  ? (document.documentElement.classList.contains('dark') ? '/assets/pdf/carta_en_dark.pdf' : '/assets/pdf/carta_en.pdf')
-                  : (document.documentElement.classList.contains('dark') ? '/assets/pdf/carta_es_dark.pdf' : '/assets/pdf/carta_es.pdf')
-                }
-                target="_blank" rel="noopener noreferrer">
-                {t('nav.carta')}
-              </a>
-            </li>
-            <li><a className="hover:text-primary dark:hover:text-white transition-colors" href="/#nosotros">{t('nav.nosotros')}</a></li>
-            <li><Link className="hover:text-primary dark:hover:text-white transition-colors" to="/reservar">{t('nav.reservar')}</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-bold text-sm uppercase tracking-[0.3em] mb-5 md:mb-8 text-primary dark:text-sky-400">{t('footer.contact')}</h4>
-          <ul className="space-y-4 text-slate-600 dark:text-slate-400 font-light">
-            <li>{CONTACT_INFO.address.street}</li>
-            <li>{CONTACT_INFO.address.city}</li>
-            <li>{isOpen ? CONTACT_INFO.landline.display : CONTACT_INFO.mobile.display}</li>
-            <li>{CONTACT_INFO.email}</li>
-          </ul>
-        </div>
-      </div>
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-slate-400 dark:text-slate-600 uppercase tracking-[0.4em] font-bold relative z-10">
-        <p>© {new Date().getFullYear()} El Atlante de San Cristóbal</p>
-        <div className="flex flex-col items-center md:items-end gap-4">
-          <div className="flex gap-6 md:gap-8">
+        {/* Copyright */}
+        <p className="text-[11px] text-slate-400 dark:text-slate-600 uppercase tracking-[0.15em] font-bold order-last md:order-none">
+          © {new Date().getFullYear()} El Atlante de San Cristóbal
+        </p>
+
+        {/* Right: redes + legales */}
+        <div className="flex flex-col items-center md:items-end gap-3">
+          <div className="flex gap-5">
             <a
-              className="hover:text-primary dark:hover:text-sky-400 transition-colors flex items-center gap-2"
+              className="text-slate-400 dark:text-slate-600 hover:text-primary dark:hover:text-sky-400 transition-colors flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.15em]"
               href="https://www.instagram.com/restaurante_elatlante"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <svg className="size-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"></path>
+              <svg className="size-3.5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
               </svg>
               Instagram
             </a>
             <a
-              className="hover:text-primary dark:hover:text-sky-400 transition-colors flex items-center gap-2"
+              className="text-slate-400 dark:text-slate-600 hover:text-primary dark:hover:text-sky-400 transition-colors flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.15em]"
               href="https://www.facebook.com/elatlantedesancristobal/"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <svg className="size-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path>
+              <svg className="size-3.5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
               </svg>
               Facebook
             </a>
           </div>
-          <div className="flex gap-6 md:gap-8">
+          <div className="flex gap-5 text-[11px] text-slate-400 dark:text-slate-600 uppercase tracking-[0.15em] font-bold">
             <Link className="hover:text-primary dark:hover:text-sky-400 transition-colors" to="/aviso-legal">{t('footer.legal')}</Link>
             <Link className="hover:text-primary dark:hover:text-sky-400 transition-colors" to="/privacidad">{t('footer.privacy')}</Link>
             <Link className="hover:text-primary dark:hover:text-sky-400 transition-colors" to="/cookies">{t('footer.cookies')}</Link>
           </div>
         </div>
+
       </div>
     </footer>
   );
