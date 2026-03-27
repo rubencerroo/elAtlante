@@ -234,7 +234,9 @@
       "li2Label": "Customer Service:",
       "li2Desc": "Respond to your inquiries or requests for information.",
       "li3Label": "Communications:",
-      "li3Desc": "Where applicable, report changes to your reservation or service incidents."
+      "li3Desc": "Where applicable, report changes to your reservation or service incidents.",
+      "li4Label": "Analytics and Improvement:",
+      "li4Desc": "We use Google Analytics to analyze website usage and improve the user experience."
     },
     "section3": {
       "title": "3. Legitimation",
@@ -268,7 +270,9 @@
       "t1": "Technical Cookies (Necessary)",
       "d1": "These are those that allow the user to navigate through a web page and the use of the different options or services that exist in it, such as, for example, controlling traffic and data communication or making the request for registration in an event.",
       "t2": "Personalization Cookies",
-      "d2": "These are those that allow the user to access the service with some predefined general characteristics based on a series of criteria in the user's terminal, such as language or browser type."
+      "d2": "These are those that allow the user to access the service with some predefined general characteristics based on a series of criteria in the user's terminal, such as language or browser type.",
+      "t3": "Analytical Cookies (Google Analytics)",
+      "d3": "These allow us to quantify the number of users and perform statistical analysis of how users use the service to improve our offering."
     },
     "section4": {
       "title": "4. Deactivation of Cookies",

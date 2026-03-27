@@ -41,6 +41,7 @@ export default function PrivacyPolicy() {
               <li><strong>{t('privacy.section2.li1Label')}</strong> {t('privacy.section2.li1Desc')}</li>
               <li><strong>{t('privacy.section2.li2Label')}</strong> {t('privacy.section2.li2Desc')}</li>
               <li><strong>{t('privacy.section2.li3Label')}</strong> {t('privacy.section2.li3Desc')}</li>
+              <li><strong>{t('privacy.section2.li4Label')}</strong> {t('privacy.section2.li4Desc')}</li>
             </ul>
           </section>
 

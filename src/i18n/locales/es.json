@@ -234,7 +234,9 @@
       "li2Label": "Atención al Cliente:",
       "li2Desc": "Responder a sus consultas o peticiones de información.",
       "li3Label": "Comunicaciones:",
-      "li3Desc": "En su caso, informar sobre cambios en su reserva o incidencias en el servicio."
+      "li3Desc": "En su caso, informar sobre cambios en su reserva o incidencias en el servicio.",
+      "li4Label": "Estadísticas y Mejora:",
+      "li4Desc": "Utilizamos Google Analytics para analizar el uso de nuestra web y mejorar la experiencia del usuario."
     },
     "section3": {
       "title": "3. Legitimación",
@@ -268,7 +270,9 @@
       "t1": "Cookies Técnicas (Necesarias)",
       "d1": "Son aquellas que permiten al usuario la navegación a través de una página web y la utilización de las diferentes opciones o servicios que en ella existan como, por ejemplo, controlar el tráfico y la comunicación de datos o realizar la solicitud de inscripción en un evento.",
       "t2": "Cookies de Personalización",
-      "d2": "Son aquellas que permiten al usuario acceder al servicio con algunas características de carácter general predefinidas en función de una serie de criterios en el terminal del usuario como por ejemplo el idioma o el tipo de navegador."
+      "d2": "Son aquellas que permiten al usuario acceder al servicio con algunas características de carácter general predefinidas en función de una serie de criterios en el terminal del usuario como por ejemplo el idioma o el tipo de navegador.",
+      "t3": "Cookies de Análisis (Google Analytics)",
+      "d3": "Permiten cuantificar el número de usuarios y realizar el análisis estadístico de la utilización que hacen los usuarios del servicio para mejorar nuestra oferta de productos y servicios."
     },
     "section4": {
       "title": "4. Desactivación de Cookies",

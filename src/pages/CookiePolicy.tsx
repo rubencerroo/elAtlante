@@ -50,6 +50,10 @@ export default function CookiePolicy() {
                 <h3 className="text-slate-900 dark:text-white font-bold mb-2">{t('cookies.section3.t2')}</h3>
                 <p className="text-sm">{t('cookies.section3.d2')}</p>
               </div>
+              <div className="bg-slate-50 dark:bg-white/5 p-6 rounded-2xl border border-slate-100 dark:border-white/5">
+                <h3 className="text-slate-900 dark:text-white font-bold mb-2">{t('cookies.section3.t3')}</h3>
+                <p className="text-sm">{t('cookies.section3.d3')}</p>
+              </div>
             </div>
           </section>
 
