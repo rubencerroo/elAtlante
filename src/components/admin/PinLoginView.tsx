@@ -67,6 +67,26 @@ export default function PinLoginView({ onSuccess, onCancel }: PinLoginViewProps)
     }
   };
 
+  useEffect(() => {
+    if (!selectedStaff || loading) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Numbers 0-9 (top row or numpad)
+      if (e.key >= '0' && e.key <= '9') {
+        handleNumberClick(e.key);
+      } else if (e.key === 'Backspace') {
+        handleDelete();
+      } else if (e.key === 'Escape') {
+        setSelectedStaff(null);
+        setPin('');
+        setError('');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedStaff, loading, pin]); // pin added to dependencies because handleNumberClick uses it
+
   if (fetchingProfiles) {
     return (
       <div className="flex items-center justify-center p-12">
