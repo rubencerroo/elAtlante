@@ -107,7 +107,7 @@ export default function Calendar({ selectedDate, onSelect, minDate }: CalendarPr
           <button 
             type="button"
             onClick={() => changeMonth(-1)}
-            className="p-2 hover:bg-white/5 rounded-full transition-colors"
+            className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
             style={{ color: 'var(--admin-text-secondary)' }}
           >
             <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
@@ -115,7 +115,7 @@ export default function Calendar({ selectedDate, onSelect, minDate }: CalendarPr
           <button 
             type="button"
             onClick={() => changeMonth(1)}
-            className="p-2 hover:bg-white/5 rounded-full transition-colors"
+            className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
             style={{ color: 'var(--admin-text-secondary)' }}
           >
             <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
@@ -154,7 +154,7 @@ export default function Calendar({ selectedDate, onSelect, minDate }: CalendarPr
                   className={`
                     relative h-10 w-full rounded-xl flex items-center justify-center text-sm transition-all
                     ${!date.isCurrentMonth ? 'opacity-20' : ''}
-                    ${disabled ? 'cursor-not-allowed opacity-10 line-through' : 'hover:bg-white/5'}
+                    ${disabled ? 'cursor-not-allowed opacity-10 line-through' : 'hover:bg-black/5 dark:hover:bg-white/10'}
                     ${selected ? 'bg-primary text-white hover:bg-primary shadow-lg shadow-primary/20 scale-105' : ''}
                   `}
                   style={!selected ? { color: 'var(--admin-text-secondary)' } : undefined}

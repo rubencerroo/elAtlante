@@ -123,7 +123,7 @@ export default function ManualReservationModal({ onClose, onSave }: ManualReserv
               <button
                 type="button"
                 onClick={() => setShowCalendar(!showCalendar)}
-                className="w-full flex justify-between items-center border rounded-2xl px-5 py-3 text-sm hover:bg-white/10 focus:outline-none focus:border-primary/50 transition-all font-light"
+                className="w-full flex justify-between items-center border rounded-2xl px-5 py-3 text-sm hover:bg-black/5 dark:hover:bg-white/10 focus:outline-none focus:border-primary/50 transition-all font-light"
                 style={{ background: 'var(--admin-bg-input)', borderColor: 'var(--admin-border)', color: 'var(--admin-text)' }}
               >
                 <span className="capitalize">{formatDate(formData.date)}</span>
@@ -157,7 +157,7 @@ export default function ManualReservationModal({ onClose, onSave }: ManualReserv
               </AnimatePresence>
             </div>
             <div className="space-y-2 col-span-1">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-white/70 ml-1">Hora</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest ml-1" style={{ color: 'var(--admin-text-secondary)' }}>Hora</label>
               <CustomSelect
                 value={formData.time}
                 onChange={v => setFormData({ ...formData, time: v })}

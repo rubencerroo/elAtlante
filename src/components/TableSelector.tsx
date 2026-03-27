@@ -70,7 +70,7 @@ export default function TableSelector({
           <button
             key={area.id}
             onClick={() => setActiveSection(idx)}
-            className={`flex-shrink-0 py-2 px-2 text-[9px] font-bold uppercase tracking-wider rounded-lg transition-all whitespace-nowrap ${activeSection === idx ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+            className={`flex-shrink-0 py-2 px-2 text-[9px] font-bold uppercase tracking-wider rounded-lg transition-all whitespace-nowrap ${activeSection === idx ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-black/5 dark:hover:bg-white/5'}`}
           >
             {area.label}
           </button>

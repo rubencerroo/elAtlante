@@ -6,7 +6,54 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════
-   ADMIN PANEL THEME SYSTEM
+   GLOBAL FALLBACK THEME VARIABLES
+   These ensure shared components (Calendar, CustomSelect,
+   AlertModal, etc.) work on public pages where no
+   .admin-theme-dark/.admin-theme-light wrapper exists.
+   ═══════════════════════════════════════════════ */
+
+:root {
+  --admin-bg: #f8fafc;
+  --admin-bg-card: #ffffff;
+  --admin-bg-elevated: #f1f5f9;
+  --admin-bg-input: #ffffff;
+  --admin-bg-hover: rgba(0,0,0,0.04);
+  --admin-text: #0f172a;
+  --admin-text-secondary: #475569;
+  --admin-text-muted: #94a3b8;
+  --admin-text-heading: #1e293b;
+  --admin-border: #e2e8f0;
+  --admin-border-strong: #cbd5e1;
+  --admin-header-bg: rgba(248,250,252,0.85);
+  --admin-overlay: rgba(0,0,0,0.4);
+  --admin-modal-bg: #ffffff;
+  --admin-table-selector-bg: rgba(255,255,255,0.97);
+  --admin-loading-bg: rgba(248,250,252,0.5);
+  --admin-glow-opacity: 0.4;
+}
+
+.dark {
+  --admin-bg: #1a1c1e;
+  --admin-bg-card: rgba(255,255,255,0.03);
+  --admin-bg-elevated: rgba(255,255,255,0.05);
+  --admin-bg-input: rgba(255,255,255,0.05);
+  --admin-bg-hover: rgba(255,255,255,0.06);
+  --admin-text: #ffffff;
+  --admin-text-secondary: #94a3b8;
+  --admin-text-muted: #64748b;
+  --admin-text-heading: #ffffff;
+  --admin-border: rgba(255,255,255,0.05);
+  --admin-border-strong: rgba(255,255,255,0.10);
+  --admin-header-bg: rgba(26,28,30,0.8);
+  --admin-overlay: rgba(26,28,30,0.7);
+  --admin-modal-bg: #1e293b;
+  --admin-table-selector-bg: rgba(30,41,59,0.95);
+  --admin-loading-bg: rgba(26,28,30,0.5);
+  --admin-glow-opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════
+   ADMIN PANEL THEME SYSTEM (overrides globals)
    ═══════════════════════════════════════════════ */
 
 .admin-theme-dark {

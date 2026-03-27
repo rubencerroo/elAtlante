@@ -94,7 +94,7 @@ export default function CustomSelect({
                       w-full text-left px-5 py-3 text-sm transition-colors
                       ${value === option.value 
                         ? 'bg-primary text-white font-medium' 
-                        : 'hover:bg-white/5'}
+                        : 'hover:bg-black/5 dark:hover:bg-white/10'}
                     `}
                     style={value !== option.value ? { color: 'var(--admin-text-secondary)' } : undefined}
                   >

@@ -137,7 +137,7 @@ function AdminLoginContent() {
           <div className="grid grid-cols-1 gap-4 mt-8">
             <button
               onClick={() => navigate('/admin/owner')}
-              className="group relative border hover:border-primary/50 focus:border-primary/50 hover:bg-white/10 font-bold text-lg py-6 rounded-2xl transition-all duration-300 shadow-lg overflow-hidden flex flex-col items-center gap-3"
+              className="group relative border hover:border-primary/50 focus:border-primary/50 hover:bg-black/5 dark:hover:bg-white/10 font-bold text-lg py-6 rounded-2xl transition-all duration-300 shadow-lg overflow-hidden flex flex-col items-center gap-3"
               style={{ background: 'var(--admin-bg-card)', borderColor: 'var(--admin-border)', color: 'var(--admin-text)' }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -149,7 +149,7 @@ function AdminLoginContent() {
 
             <button
               onClick={() => navigate('/admin/waiter')}
-              className="group relative border hover:border-[#10b981]/50 focus:border-[#10b981]/50 hover:bg-white/10 font-bold text-lg py-6 rounded-2xl transition-all duration-300 shadow-lg overflow-hidden flex flex-col items-center gap-3"
+              className="group relative border hover:border-[#10b981]/50 focus:border-[#10b981]/50 hover:bg-black/5 dark:hover:bg-white/10 font-bold text-lg py-6 rounded-2xl transition-all duration-300 shadow-lg overflow-hidden flex flex-col items-center gap-3"
               style={{ background: 'var(--admin-bg-card)', borderColor: 'var(--admin-border)', color: 'var(--admin-text)' }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-[#10b981]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
