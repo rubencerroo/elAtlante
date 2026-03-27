@@ -24,28 +24,28 @@ const SEO = ({
   twitterImage,
 }: SEOProps) => {
   const siteName = 'El Atlante de San Cristóbal';
+  const defaultDescription = 'Restaurante especializado en pescado fresco y gastronomía canaria en San Cristóbal, Las Palmas. Tradición pesquera y producto Km 0 con terraza frente al mar de Gran Canaria.';
   const fullTitle = title && title !== siteName ? `${title} | ${siteName}` : siteName;
   const domain = 'https://elatlantedesancristobal.com';
   const fullCanonical = canonical ? `${domain}${canonical}` : domain;
+  const metaDescription = description || defaultDescription;
 
   return (
     <Helmet>
       {/* Base metadata */}
       <title>{fullTitle}</title>
-      {description && <meta name="description" content={description} />}
+      <meta name="description" content={metaDescription} />
       <link rel="canonical" href={fullCanonical} />
 
       {/* Open Graph / Facebook */}
       <meta property="og:title" content={ogTitle || fullTitle} />
-      {ogDescription && <meta property="og:description" content={ogDescription || description} />}
+      <meta property="og:description" content={ogDescription || metaDescription} />
       <meta property="og:url" content={fullCanonical} />
       {ogImage && <meta property="og:image" content={`${domain}${ogImage}`} />}
 
       {/* Twitter */}
       <meta name="twitter:title" content={twitterTitle || ogTitle || fullTitle} />
-      {twitterDescription && (
-        <meta name="twitter:description" content={twitterDescription || ogDescription || description} />
-      )}
+      <meta name="twitter:description" content={twitterDescription || ogDescription || metaDescription} />
       {twitterImage && <meta name="twitter:image" content={`${domain}${twitterImage}`} />}
     </Helmet>
   );

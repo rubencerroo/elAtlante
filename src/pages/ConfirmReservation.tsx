@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
+import SEO from '../components/SEO';
+import { useTranslation } from 'react-i18next';
 
 const CheckCircle2 = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -21,6 +23,7 @@ const Loader2 = ({ className }: { className?: string }) => (
 );
 
 export default function ConfirmReservation() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const id = searchParams.get('id');
@@ -96,6 +99,11 @@ export default function ConfirmReservation() {
 
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+      <SEO 
+        title={t('reservas.seo.titleConfirm', { defaultValue: 'Confirmar Reserva - El Atlante' })}
+        description={t('reservas.seo.descriptionConfirm', { defaultValue: 'Confirma tu reserva en El Atlante de San Cristóbal.' })}
+        canonical="/confirm"
+      />
       <div className="max-w-md w-full bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden p-8 text-center">
         {status === 'loading' && (
           <div className="flex flex-col items-center">
