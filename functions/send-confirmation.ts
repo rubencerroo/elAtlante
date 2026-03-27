@@ -8,6 +8,21 @@ function escapeHtml(str: string): string {
 		.replace(/'/g, '&#039;');
 }
 
+async function hmacSign(secret: string, message: string): Promise<string> {
+	const encoder = new TextEncoder();
+	const key = await crypto.subtle.importKey(
+		'raw',
+		encoder.encode(secret),
+		{ name: 'HMAC', hash: 'SHA-256' },
+		false,
+		['sign']
+	);
+	const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(message));
+	return Array.from(new Uint8Array(signature))
+		.map(b => b.toString(16).padStart(2, '0'))
+		.join('');
+}
+
 export const onRequestPost = async (context: any) => {
 	const {
 		request,
@@ -32,9 +47,12 @@ export const onRequestPost = async (context: any) => {
 	try {
 		const reservation = await request.json() as any;
 		
-		// Generate confirmation link
+		// Generate HMAC-signed confirmation link
 		const url = new URL(request.url);
-		const confirmUrl = `${url.origin}/confirm?id=${reservation.id}`;
+		const confirmSecret = env.CONFIRM_HMAC_SECRET || env.SUPABASE_SERVICE_ROLE_KEY;
+		const expiry = Math.floor(Date.now() / 1000) + (72 * 60 * 60); // 72 hours
+		const hmac = await hmacSign(confirmSecret, `${reservation.id}|${expiry}`);
+		const confirmUrl = `${url.origin}/confirm?id=${reservation.id}&token=${hmac}&exp=${expiry}`;
 
 		const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
 			method: 'POST',

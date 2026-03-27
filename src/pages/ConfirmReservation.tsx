@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { getReservationById, updateReservation } from '../services/reservationStore';
+import { supabase } from '../services/supabase';
 
 const CheckCircle2 = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -35,37 +35,53 @@ export default function ConfirmReservation() {
       }
 
       try {
-        const reservationData = await getReservationById(id);
-        if (!reservationData) {
-          setStatus('not-found');
-          return;
-        }
-        
-        setReservation(reservationData);
+        // Use the secure RPC that doesn't require auth
+        const { data, error } = await supabase.rpc('confirm_reservation_public', {
+          p_reservation_id: id
+        });
 
-        if (reservationData.status === 'confirmed') {
-          // Already confirmed
-          setStatus('success');
+        if (error) {
+          console.error('Error confirming reservation:', error);
+          setStatus('error');
           return;
         }
 
-        const updated = await updateReservation(id, { status: 'confirmed' });
-        if (updated) {
-          setStatus('success');
-          
-          // Notify owner via Cloudflare Pages Function
-          try {
-            const workerUrl = import.meta.env.VITE_WORKER_URL;
-            const endpoint = workerUrl && workerUrl !== 'https://elatlantedesancristobal.com' ? `${workerUrl}/notify-owner` : '/notify-owner';
-            fetch(endpoint, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(reservationData),
-            }).catch(err => console.error('Error triggering owner email:', err));
-          } catch (e) {
-            console.error('Error notifying owner:', e);
+        if (data?.error) {
+          if (data.error === 'Reserva no encontrada') {
+            setStatus('not-found');
+          } else {
+            setStatus('error');
           }
-          
+          return;
+        }
+
+        if (data?.success) {
+          setReservation({
+            bookingNumber: data.booking_number,
+            booking_number: data.booking_number,
+            name: data.name,
+            date: data.date,
+            time: data.time,
+            guests: data.guests,
+            preference: data.preference,
+            status: data.status,
+          });
+          setStatus('success');
+
+          // Notify owner via Cloudflare Pages Function (only if newly confirmed)
+          if (!data.already_confirmed) {
+            try {
+              const workerUrl = import.meta.env.VITE_WORKER_URL;
+              const endpoint = workerUrl && workerUrl !== 'https://elatlantedesancristobal.com' ? `${workerUrl}/notify-owner` : '/notify-owner';
+              fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+              }).catch(err => console.error('Error triggering owner email:', err));
+            } catch (e) {
+              console.error('Error notifying owner:', e);
+            }
+          }
         } else {
           setStatus('error');
         }

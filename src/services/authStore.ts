@@ -1,5 +1,7 @@
 import { supabase, refreshSupabaseAuth } from './supabase';
 
+const STAFF_TOKEN_KEY = 'el_atlante_staff_token';
+
 export type StaffRole = 'owner' | 'waiter';
 
 export interface StaffProfile {
@@ -44,14 +46,22 @@ export async function signIn(email: string, password: string) {
   
   if (data?.error) throw new Error(data.error);
   
-  // Successful login, data is the user profile
-  localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+  // Store JWT token separately
+  if (data?.token) {
+    localStorage.setItem(STAFF_TOKEN_KEY, data.token);
+  }
+  
+  // Store session profile (without token, for display purposes)
+  const { token: _t, ...profile } = data;
+  localStorage.setItem(SESSION_KEY, JSON.stringify(profile));
   refreshSupabaseAuth();
-  return data;
+  return profile;
 }
 
 export async function signOut() {
   localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(STAFF_TOKEN_KEY);
+  localStorage.removeItem('active_staff_token');
   setActiveStaffId(null);
   refreshSupabaseAuth();
 }
@@ -120,6 +130,7 @@ export function setActiveStaffId(id: string | null) {
     localStorage.setItem('active_staff_id', id);
   } else {
     localStorage.removeItem('active_staff_id');
+    localStorage.removeItem('active_staff_token');
   }
 }
 
@@ -138,11 +149,21 @@ export async function pinSignIn(staffId: string, pin: string): Promise<PinSignIn
   if (error) throw new Error('Error al verificar PIN');
   if (data?.error) throw new Error(data.error);
 
-  // Success, save custom session
-  localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+  // Store JWT token for this staff member (active staff on tablet)
+  if (data?.token) {
+    localStorage.setItem('active_staff_token', data.token);
+    // Also set as main token if no primary session exists
+    if (!localStorage.getItem(STAFF_TOKEN_KEY)) {
+      localStorage.setItem(STAFF_TOKEN_KEY, data.token);
+    }
+  }
+
+  // Store session profile (without token)
+  const { token: _t, ...profile } = data;
+  localStorage.setItem(SESSION_KEY, JSON.stringify(profile));
   refreshSupabaseAuth();
 
-  return { role: data.role as StaffRole, display_name: data.display_name, email: data.email };
+  return { role: profile.role as StaffRole, display_name: profile.display_name, email: profile.email };
 }
 
 export async function updateStaffPin(staffId: string, pin: string) {

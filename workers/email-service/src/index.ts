@@ -7,6 +7,7 @@ export interface Env {
 	SENDER_NAME: string;
 	OWNER_EMAIL: string;
 	CLIENT_REDIRECT_URL: string;
+	CONFIRM_HMAC_SECRET?: string;
 }
 
 function escapeHtml(str: string): string {
@@ -16,6 +17,31 @@ function escapeHtml(str: string): string {
 		.replace(/>/g, '&gt;')
 		.replace(/"/g, '&quot;')
 		.replace(/'/g, '&#039;');
+}
+
+async function hmacSign(secret: string, message: string): Promise<string> {
+	const encoder = new TextEncoder();
+	const key = await crypto.subtle.importKey(
+		'raw',
+		encoder.encode(secret),
+		{ name: 'HMAC', hash: 'SHA-256' },
+		false,
+		['sign']
+	);
+	const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(message));
+	return Array.from(new Uint8Array(signature))
+		.map(b => b.toString(16).padStart(2, '0'))
+		.join('');
+}
+
+async function hmacVerify(secret: string, message: string, expectedHmac: string): Promise<boolean> {
+	const computed = await hmacSign(secret, message);
+	if (computed.length !== expectedHmac.length) return false;
+	let result = 0;
+	for (let i = 0; i < computed.length; i++) {
+		result |= computed.charCodeAt(i) ^ expectedHmac.charCodeAt(i);
+	}
+	return result === 0;
 }
 
 export default {
@@ -42,9 +68,11 @@ export default {
 			try {
 				const reservation = await request.json() as any;
 				
-				// Generate confirmation link
-				// The worker URL itself + /confirm + id
-				const confirmUrl = `${url.origin}/confirm?id=${reservation.id}`;
+				// Generate HMAC-signed confirmation link
+				const confirmSecret = env.CONFIRM_HMAC_SECRET || env.SUPABASE_SERVICE_ROLE_KEY;
+				const expiry = Math.floor(Date.now() / 1000) + (72 * 60 * 60); // 72 hours
+				const hmac = await hmacSign(confirmSecret, `${reservation.id}|${expiry}`);
+				const confirmUrl = `${url.origin}/confirm?id=${reservation.id}&token=${hmac}&exp=${expiry}`;
 
 				const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
 					method: 'POST',
@@ -92,10 +120,29 @@ export default {
 		// 2. Confirm Reservation (Clicked from Email)
 		if (url.pathname === '/confirm' && request.method === 'GET') {
 			const id = url.searchParams.get('id');
+			const token = url.searchParams.get('token');
+			const exp = url.searchParams.get('exp');
 			if (!id) return new Response('Missing reservation ID', { status: 400 });
 
 			try {
-				// Get reservation details from Supabase using SERVICE ROLE (to bypass RLS if necessary)
+				// Verify HMAC token
+				const confirmSecret = env.CONFIRM_HMAC_SECRET || env.SUPABASE_SERVICE_ROLE_KEY;
+
+				if (!token || !exp) {
+					return new Response('Invalid or missing confirmation token', { status: 403 });
+				}
+
+				const expiry = parseInt(exp, 10);
+				if (isNaN(expiry) || Math.floor(Date.now() / 1000) > expiry) {
+					return new Response('Confirmation link has expired', { status: 403 });
+				}
+
+				const isValid = await hmacVerify(confirmSecret, `${id}|${exp}`, token);
+				if (!isValid) {
+					return new Response('Invalid confirmation token', { status: 403 });
+				}
+
+				// Get reservation details from Supabase using SERVICE ROLE
 				const sbResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/reservations?id=eq.${id}`, {
 					headers: {
 						'apikey': env.SUPABASE_SERVICE_ROLE_KEY,

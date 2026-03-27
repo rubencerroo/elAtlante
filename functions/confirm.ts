@@ -8,6 +8,32 @@ function escapeHtml(str: string): string {
 		.replace(/'/g, '&#039;');
 }
 
+async function hmacSign(secret: string, message: string): Promise<string> {
+	const encoder = new TextEncoder();
+	const key = await crypto.subtle.importKey(
+		'raw',
+		encoder.encode(secret),
+		{ name: 'HMAC', hash: 'SHA-256' },
+		false,
+		['sign']
+	);
+	const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(message));
+	return Array.from(new Uint8Array(signature))
+		.map(b => b.toString(16).padStart(2, '0'))
+		.join('');
+}
+
+async function hmacVerify(secret: string, message: string, expectedHmac: string): Promise<boolean> {
+	const computed = await hmacSign(secret, message);
+	// Constant-time comparison
+	if (computed.length !== expectedHmac.length) return false;
+	let result = 0;
+	for (let i = 0; i < computed.length; i++) {
+		result |= computed.charCodeAt(i) ^ expectedHmac.charCodeAt(i);
+	}
+	return result === 0;
+}
+
 export const onRequestGet = async (context: any) => {
 	const {
 		request,
@@ -16,10 +42,31 @@ export const onRequestGet = async (context: any) => {
 
 	const url = new URL(request.url);
 	const id = url.searchParams.get('id');
+	const token = url.searchParams.get('token');
+	const exp = url.searchParams.get('exp');
 	
 	if (!id) return new Response('Missing reservation ID', { status: 400 });
 
 	try {
+		// Verify HMAC token
+		const confirmSecret = env.CONFIRM_HMAC_SECRET || env.SUPABASE_SERVICE_ROLE_KEY;
+
+		if (!token || !exp) {
+			return new Response('Invalid or missing confirmation token', { status: 403 });
+		}
+
+		// Check expiration
+		const expiry = parseInt(exp, 10);
+		if (isNaN(expiry) || Math.floor(Date.now() / 1000) > expiry) {
+			return new Response('Confirmation link has expired', { status: 403 });
+		}
+
+		// Verify signature
+		const isValid = await hmacVerify(confirmSecret, `${id}|${exp}`, token);
+		if (!isValid) {
+			return new Response('Invalid confirmation token', { status: 403 });
+		}
+
 		const supabaseUrl = env.SUPABASE_URL || env.VITE_SUPABASE_URL;
 		const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
 		if (!serviceRoleKey) throw new Error('SUPABASE_SERVICE_ROLE_KEY not configured');
@@ -101,7 +148,6 @@ export const onRequestGet = async (context: any) => {
 		if (!emailRes.ok) {
 			const errorText = await emailRes.text();
 			console.error('Brevo error:', errorText);
-			// Throw to prevent silently failing, maybe there was a syntax issue
 			throw new Error('Failed to send owner notification email via Brevo');
 		}
 
