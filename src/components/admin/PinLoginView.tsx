@@ -79,8 +79,8 @@ export default function PinLoginView({ onSuccess, onCancel }: PinLoginViewProps)
     return (
       <div className="text-center space-y-6 py-8">
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6">
-          <p className="text-amber-400 text-sm font-medium">Equipo no disponible</p>
-          <p className="text-slate-400 text-xs mt-2 leading-relaxed">
+          <p className="text-amber-500 text-sm font-medium">Equipo no disponible</p>
+          <p className="text-xs mt-2 leading-relaxed" style={{ color: 'var(--admin-text-secondary)' }}>
             Es necesario iniciar sesión con contraseña de administrador para cargar la lista del equipo en este dispositivo.
           </p>
         </div>
@@ -198,7 +198,8 @@ export default function PinLoginView({ onSuccess, onCancel }: PinLoginViewProps)
               <button
                 onClick={handleDelete}
                 disabled={loading}
-                className="h-16 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+                className="h-16 flex items-center justify-center transition-colors"
+                style={{ color: 'var(--admin-text-muted)' }}
                 aria-label="Borrar"
               >
                 <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

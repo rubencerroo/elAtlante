@@ -97,23 +97,26 @@ export default function Calendar({ selectedDate, onSelect, minDate }: CalendarPr
   };
 
   return (
-    <div className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-100 dark:border-white/5 select-none">
+    <div className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border select-none"
+      style={{ background: 'var(--admin-modal-bg)', borderColor: 'var(--admin-border)' }}>
       <div className="flex items-center justify-between mb-8 px-2">
-        <h3 className="text-primary dark:text-white font-serif text-xl">
+        <h3 className="font-serif text-xl" style={{ color: 'var(--admin-text)' }}>
           {months[viewDate.getMonth()]} <span className="opacity-40">{viewDate.getFullYear()}</span>
         </h3>
         <div className="flex gap-2">
           <button 
             type="button"
             onClick={() => changeMonth(-1)}
-            className="p-2 hover:bg-slate-50 dark:hover:bg-white/5 rounded-full transition-colors text-slate-400 hover:text-primary dark:hover:text-white"
+            className="p-2 hover:bg-white/5 rounded-full transition-colors"
+            style={{ color: 'var(--admin-text-secondary)' }}
           >
             <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
           <button 
             type="button"
             onClick={() => changeMonth(1)}
-            className="p-2 hover:bg-slate-50 dark:hover:bg-white/5 rounded-full transition-colors text-slate-400 hover:text-primary dark:hover:text-white"
+            className="p-2 hover:bg-white/5 rounded-full transition-colors"
+            style={{ color: 'var(--admin-text-secondary)' }}
           >
             <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           </button>
@@ -122,7 +125,7 @@ export default function Calendar({ selectedDate, onSelect, minDate }: CalendarPr
 
       <div className="grid grid-cols-7 gap-1 mb-2">
         {daysOfWeek.map(day => (
-          <div key={day} className="text-[10px] font-bold uppercase tracking-widest text-slate-400 text-center py-2">
+          <div key={day} className="text-[10px] font-bold uppercase tracking-widest text-center py-2" style={{ color: 'var(--admin-text-muted)' }}>
             {day}
           </div>
         ))}
@@ -151,9 +154,10 @@ export default function Calendar({ selectedDate, onSelect, minDate }: CalendarPr
                   className={`
                     relative h-10 w-full rounded-xl flex items-center justify-center text-sm transition-all
                     ${!date.isCurrentMonth ? 'opacity-20' : ''}
-                    ${disabled ? 'cursor-not-allowed opacity-10 line-through' : 'hover:bg-primary/5 dark:hover:bg-white/5'}
-                    ${selected ? 'bg-primary text-white hover:bg-primary shadow-lg shadow-primary/20 scale-105' : 'text-slate-600 dark:text-slate-300'}
+                    ${disabled ? 'cursor-not-allowed opacity-10 line-through' : 'hover:bg-white/5'}
+                    ${selected ? 'bg-primary text-white hover:bg-primary shadow-lg shadow-primary/20 scale-105' : ''}
                   `}
+                  style={!selected ? { color: 'var(--admin-text-secondary)' } : undefined}
                 >
                   {date.day}
                   {selected && (
@@ -170,7 +174,7 @@ export default function Calendar({ selectedDate, onSelect, minDate }: CalendarPr
         </AnimatePresence>
       </div>
       
-      <div className="mt-6 pt-6 border-t border-slate-100 dark:border-white/5 flex gap-4 text-[10px] text-slate-400 font-medium px-2">
+      <div className="mt-6 pt-6 border-t flex gap-4 text-[10px] font-medium px-2" style={{ borderColor: 'var(--admin-border)', color: 'var(--admin-text-muted)' }}>
         <div className="flex items-center gap-1.5">
           <div className="size-1.5 rounded-full bg-primary/20"></div>
           <span>{t('reservas.form.calendar.available')}</span>

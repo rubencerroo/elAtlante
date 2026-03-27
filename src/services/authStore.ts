@@ -65,15 +65,19 @@ export async function getStaffProfiles(): Promise<StaffProfile[]> {
   return (data || []) as StaffProfile[];
 }
 
-export async function inviteStaff(email: string, role: StaffRole, password?: string): Promise<{ message: string }> {
+export async function inviteStaff(email: string, role: StaffRole, password: string): Promise<{ message: string }> {
   const session = getSession();
   if (!session || session.role !== 'owner') {
     throw new Error('Solo los administradores pueden invitar');
   }
 
+  if (!password || password.length < 8) {
+    throw new Error('La contraseña debe tener al menos 8 caracteres');
+  }
+
   const { data, error } = await supabase.rpc('invite_staff_custom', {
     p_email: email,
-    p_password: password || 'atlante123',
+    p_password: password,
     p_role: role,
     p_display_name: email.split('@')[0]
   });
@@ -85,13 +89,12 @@ export async function inviteStaff(email: string, role: StaffRole, password?: str
 }
 
 export async function deleteStaff(staffId: string) {
-  // As it relies on public RLS, this will work. In production you'd use a secure RPC.
-  const { error } = await supabase
-    .from('staff_profiles')
-    .delete()
-    .eq('id', staffId);
+  const { data, error } = await supabase.rpc('delete_staff_secure', {
+    p_staff_id: staffId
+  });
 
   if (error) throw error;
+  if (data?.error) throw new Error(data.error);
 }
 
 // ── PIN & Tablet Logic ──

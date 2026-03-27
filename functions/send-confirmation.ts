@@ -1,4 +1,13 @@
 
+function escapeHtml(str: string): string {
+	return str
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#039;');
+}
+
 export const onRequestPost = async (context: any) => {
 	const {
 		request,
@@ -7,7 +16,7 @@ export const onRequestPost = async (context: any) => {
 
 	// Helper to handle CORS
 	const origin = request.headers.get('Origin') || '';
-	const allowedOrigins = ['https://elatlantedesancristobal.com', 'https://www.elatlantedesancristobal.com', 'http://localhost:5173'];
+	const allowedOrigins = ['https://elatlantedesancristobal.com', 'https://www.elatlantedesancristobal.com'];
 	const corsOrigin = allowedOrigins.includes(origin) ? origin : 'https://elatlantedesancristobal.com';
 
 	const corsHeaders = {
@@ -50,7 +59,7 @@ export const onRequestPost = async (context: any) => {
 								<h1 style="color: #1A365D; font-family: 'Lora', Georgia, serif; font-size: 24px; margin-top: 0; text-align: center; font-weight: normal;">Confirmación de Reserva</h1>
 								
 								<p style="color: #334155; font-size: 16px; line-height: 1.6; margin-bottom: 24px; text-align: center;">
-									¡Hola <strong>${reservation.name}</strong>!<br>
+									¡Hola <strong>${escapeHtml(reservation.name)}</strong>!<br>
 									Gracias por elegir El Atlante. Hemos recibido tu solicitud de reserva para el día <strong>${reservation.date}</strong> a las <strong>${reservation.time}</strong>.
 								</p>
 

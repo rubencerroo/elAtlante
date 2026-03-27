@@ -160,12 +160,11 @@ function AdminLoginContent() {
             </button>
           </div>
           
-          <div className="pt-8 border-t border-white/10 space-y-4">
-
-
+          <div className="pt-8 border-t space-y-4" style={{ borderColor: 'var(--admin-border)' }}>
             <button
               onClick={handleLogout}
-              className="text-slate-500 hover:text-white underline text-sm transition-colors w-full"
+              className="underline text-sm transition-colors w-full"
+              style={{ color: 'var(--admin-text-muted)' }}
             >
               Cerrar sesión
             </button>
@@ -189,8 +188,8 @@ function AdminLoginContent() {
              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 mb-2">
               <svg className="w-8 h-8 text-primary" fill="currentColor" viewBox="0 -960 960 960"><path d="M480-440q-59 0-99.5-40.5T340-580q0-59 40.5-99.5T480-720q59 0 99.5 40.5T620-580q0 59-40.5 99.5T480-440Zm0-80q26 0 43-17t17-43q0-26-17-43t-43-17q-26 0-43 17t-17 43q0 26 17 43t43 17Zm0 440q-139-35-229.5-159.5T160-516v-244l320-120 320 120v244q0 152-90.5 276.5T480-80Zm0-400Z"/></svg>
             </div>
-            <h1 className="text-white text-2xl font-bold tracking-tight">Acceso Rápido</h1>
-            <p className="text-slate-400 text-sm">Dispositivo Autorizado · El Atlante</p>
+            <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--admin-text)' }}>Acceso Rápido</h1>
+            <p className="text-sm" style={{ color: 'var(--admin-text-secondary)' }}>Dispositivo Autorizado · El Atlante</p>
           </div>
 
           <PinLoginView 
@@ -216,7 +215,7 @@ function AdminLoginContent() {
         {/* Header */}
         <div className="text-center space-y-3">
           <div className="inline-flex items-center justify-center w-32 h-32 mb-4 mx-auto">
-             <img src={isDark ? "/assets/logowhite.png" : "/assets/logoblack.png"} alt="El Atlante" className="w-full h-full object-contain" />
+             <img src={isDark ? "/logowhite.png" : "/logoblack.png"} alt="El Atlante" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--admin-text)' }}>Panel de Administración</h1>
           <p className="text-sm" style={{ color: 'var(--admin-text-secondary)' }}>El Atlante · Acceso restringido</p>

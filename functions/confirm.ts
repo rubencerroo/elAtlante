@@ -1,4 +1,13 @@
 
+function escapeHtml(str: string): string {
+	return str
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#039;');
+}
+
 export const onRequestGet = async (context: any) => {
 	const {
 		request,
@@ -11,8 +20,10 @@ export const onRequestGet = async (context: any) => {
 	if (!id) return new Response('Missing reservation ID', { status: 400 });
 
 	try {
-		const supabaseUrl = env.VITE_SUPABASE_URL || env.SUPABASE_URL || 'https://sftdoiuqacbenefqewcr.supabase.co';
-		const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY || env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+		const supabaseUrl = env.SUPABASE_URL || env.VITE_SUPABASE_URL;
+		const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
+		if (!serviceRoleKey) throw new Error('SUPABASE_SERVICE_ROLE_KEY not configured');
+		if (!supabaseUrl) throw new Error('SUPABASE_URL not configured');
 		
 		// Get reservation details from Supabase using SERVICE ROLE
 		const sbResponse = await fetch(`${supabaseUrl}/rest/v1/reservations?id=eq.${id}`, {
@@ -70,15 +81,15 @@ export const onRequestGet = async (context: any) => {
 								<h2 style="color: #1A365D; font-family: 'Lora', Georgia, serif; font-size: 22px; margin-top: 0; border-bottom: 2px solid #F0EAD6; padding-bottom: 15px; text-align: center;">Nueva Reserva Confirmada</h2>
 								<table style="width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 15px; color: #334155;">
 									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b; width: 35%;">Referencia:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${reservation.booking_number}</td></tr>
-									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Cliente:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${reservation.name}</td></tr>
-									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Email:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;"><a href="mailto:${reservation.email}" style="color: #1A365D; text-decoration: none;">${reservation.email}</a></td></tr>
-									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Teléfono:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;"><a href="tel:${reservation.phone}" style="color: #1A365D; text-decoration: none;">${reservation.phone}</a></td></tr>
+									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Cliente:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${escapeHtml(reservation.name)}</td></tr>
+									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Email:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;"><a href="mailto:${escapeHtml(reservation.email || '')}" style="color: #1A365D; text-decoration: none;">${escapeHtml(reservation.email || '')}</a></td></tr>
+									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Teléfono:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;"><a href="tel:${escapeHtml(reservation.phone || '')}" style="color: #1A365D; text-decoration: none;">${escapeHtml(reservation.phone || '')}</a></td></tr>
 									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Fecha:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1A365D;">${reservation.date}</td></tr>
 									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Hora:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1A365D;">${reservation.time}</td></tr>
 									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Comensales:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600;">${reservation.guests}</td></tr>
-									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Preferencia:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${reservation.preference || '—'}</td></tr>
+									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Preferencia:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${escapeHtml(reservation.preference || '—')}</td></tr>
 									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Mascota:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${reservation.has_pet ? 'Sí' : 'No'}</td></tr>
-									<tr><td style="padding: 12px 8px; font-weight: 600; color: #1e293b;">Notas:</td><td style="padding: 12px 8px; font-style: italic;">${reservation.notes || '—'}</td></tr>
+									<tr><td style="padding: 12px 8px; font-weight: 600; color: #1e293b;">Notas:</td><td style="padding: 12px 8px; font-style: italic;">${escapeHtml(reservation.notes || '—')}</td></tr>
 								</table>
 							</div>
 						</div>

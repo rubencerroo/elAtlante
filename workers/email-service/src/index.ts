@@ -9,13 +9,22 @@ export interface Env {
 	CLIENT_REDIRECT_URL: string;
 }
 
+function escapeHtml(str: string): string {
+	return str
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#039;');
+}
+
 export default {
 	async fetch(request: Request, env: Env): Promise<Response> {
 		const url = new URL(request.url);
 
 		// Helper to handle CORS
 		const origin = request.headers.get('Origin') || '';
-		const allowedOrigins = ['https://elatlantedesancristobal.com', 'https://www.elatlantedesancristobal.com', 'http://localhost:5173'];
+		const allowedOrigins = ['https://elatlantedesancristobal.com', 'https://www.elatlantedesancristobal.com'];
 		const corsOrigin = allowedOrigins.includes(origin) ? origin : 'https://elatlantedesancristobal.com';
 
 		const corsHeaders = {
@@ -49,7 +58,7 @@ export default {
 						subject: 'Confirma tu reserva en El Atlante',
 						htmlContent: `
 							<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #334155;">
-								<h1 style="color: #0f172a;">¡Hola ${reservation.name}!</h1>
+								<h1 style="color: #0f172a;">¡Hola ${escapeHtml(reservation.name)}!</h1>
 								<p>Gracias por tu reserva en El Atlante para el día <strong>${reservation.date}</strong> a las <strong>${reservation.time}</strong>.</p>
 								<p>Para confirmar tu asistencia y verificar tu reserva, por favor haz clic en el siguiente botón:</p>
 								<div style="text-align: center; margin: 30px 0;">
@@ -137,15 +146,15 @@ export default {
 								<h2 style="color: #0f172a;">Nueva reserva confirmada</h2>
 								<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
 									<tr><td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">Referencia:</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${reservation.booking_number}</td></tr>
-									<tr><td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">Cliente:</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${reservation.name}</td></tr>
-									<tr><td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">Email:</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${reservation.email}</td></tr>
-									<tr><td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">Teléfono:</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${reservation.phone}</td></tr>
+									<tr><td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">Cliente:</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${escapeHtml(reservation.name)}</td></tr>
+									<tr><td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">Email:</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${escapeHtml(reservation.email || '')}</td></tr>
+									<tr><td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">Teléfono:</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${escapeHtml(reservation.phone || '')}</td></tr>
 									<tr><td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">Fecha:</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${reservation.date}</td></tr>
 									<tr><td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">Hora:</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${reservation.time}</td></tr>
 									<tr><td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">Comensales:</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${reservation.guests}</td></tr>
 									<tr><td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">Preferencia:</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${reservation.preference}</td></tr>
 									<tr><td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">Mascota:</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${reservation.has_pet ? 'Sí' : 'No'}</td></tr>
-									<tr><td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">Notas:</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${reservation.notes || '—'}</td></tr>
+									<tr><td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">Notas:</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${escapeHtml(reservation.notes || '—')}</td></tr>
 								</table>
 							</div>
 						`,
