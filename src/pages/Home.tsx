@@ -7,6 +7,7 @@ import heroImage from '../assets/elatlantePaisaje.jpg';
 import AboutSlider from '../components/AboutSlider';
 import { CONTACT_INFO } from '../constants/contact';
 import { isRestaurantOpenNow } from '../utils/reservationUtils';
+import { getOrganizationData, getWebSiteData, getLocalBusinessData } from '../utils/seoStructuredData';
 
 
 
@@ -30,53 +31,19 @@ export default function Home() {
 
   const { t, i18n } = useTranslation();
   const isOpen = useIsOpen();
+  
+  const orgSchema = getOrganizationData();
+  const webSiteSchema = getWebSiteData();
+  const localBusinessSchema = getLocalBusinessData();
 
   return (
     <>
       <SEO
         description="Tradición pesquera y producto Km 0 en un entorno inigualable frente al Atlántico. Disfruta del mejor pescado fresco en Las Palmas."
         ogImage="/og-image.jpg"
+        includeBaseRestaurantSchema={true}
+        structuredData={[orgSchema, webSiteSchema, localBusinessSchema]}
       />
-      <script type="application/ld+json">
-        {JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Restaurant",
-          "name": "El Atlante de San Cristóbal",
-          "image": "https://elatlantedesancristobal.com/logo-icon.svg",
-          "address": {
-            "@type": "PostalAddress",
-            "streetAddress": "Calle Marina, 81",
-            "addressLocality": "Las Palmas de Gran Canaria",
-            "postalCode": "35001",
-            "addressCountry": "ES"
-          },
-          "geo": {
-            "@type": "GeoCoordinates",
-            "latitude": 28.0934,
-            "longitude": -15.4165
-          },
-          "url": "https://elatlantedesancristobal.com",
-          "telephone": CONTACT_INFO.landline.raw,
-          "servesCuisine": "Canaria, Pescado, Mariscos",
-          "priceRange": "€€",
-          "menu": "https://elatlantedesancristobal.com/carta",
-          "description": "Restaurante especializado en pescado fresco y gastronomía canaria en San Cristóbal, Las Palmas. Tradición pesquera y producto Km 0 con terraza frente al mar.",
-          "openingHoursSpecification": [
-            {
-              "@type": "OpeningHoursSpecification",
-              "dayOfWeek": ["Monday", "Thursday", "Friday", "Saturday"],
-              "opens": "12:30",
-              "closes": "23:00"
-            },
-            {
-              "@type": "OpeningHoursSpecification",
-              "dayOfWeek": "Sunday",
-              "opens": "12:30",
-              "closes": "16:30"
-            }
-          ]
-        })}
-      </script>
       {/* Hero Section */}
       <section className="@container" id="inicio">
         <div className="flex min-h-screen flex-col items-center justify-center p-6 relative overflow-hidden"

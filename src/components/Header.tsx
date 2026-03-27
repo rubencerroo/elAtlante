@@ -124,7 +124,7 @@ export default function Header() {
             {navLink('carta', t('nav.carta'), pdfUrl, false, true)}
           </nav>
           <Link to="/" className="absolute left-1/2 -translate-x-1/2">
-            <img src={logoWhite} alt="El Atlante" className="h-16 lg:h-20 w-auto object-contain transition-all duration-300" />
+            <img src={logoWhite} alt="Logo de El Atlante de San Cristóbal" className="h-16 lg:h-20 w-auto object-contain transition-all duration-300" />
           </Link>
           <div className="flex items-center gap-5 flex-1 justify-end">
             <div className="flex items-center gap-3">
@@ -158,7 +158,7 @@ export default function Header() {
               onClick={() => setIsMobileMenuOpen(false)}
               className="z-10"
             >
-              <img src={logoWhite} alt="El Atlante" className="h-14 w-auto object-contain" />
+              <img src={logoWhite} alt="Logo de El Atlante de San Cristóbal" className="h-14 w-auto object-contain" />
             </Link>
 
             {/* Hamburger → X, anclado a la derecha */}

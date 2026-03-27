@@ -11,9 +11,15 @@ import CustomSelect from '../components/CustomSelect';
 import SEO from '../components/SEO';
 import { getAvailableTimes, isDateValid, getTodayDateString, isDayClosed, isRestaurantOpenNow, isReservationTimeValid, getDefaultReservationDateTime } from '../utils/reservationUtils';
 import { CONTACT_INFO } from '../constants/contact';
+import { getBreadcrumbList } from '../utils/seoStructuredData';
 
 export default function Reservations() {
   const { t, i18n } = useTranslation();
+  
+  const breadcrumbs = getBreadcrumbList([
+    { name: t('nav.inicio'), url: '/' },
+    { name: t('nav.reservar'), url: '/reservar' }
+  ]);
   const isOpen = isRestaurantOpenNow();
   const [searchParams] = useSearchParams();
   const [phone, setPhone] = useState('');
@@ -234,6 +240,7 @@ export default function Reservations() {
         title={t('reservas.seo.title')}
         description={t('reservas.seo.description')}
         canonical="/reservar"
+        structuredData={breadcrumbs}
       />
 
       {/* Background Decor */}

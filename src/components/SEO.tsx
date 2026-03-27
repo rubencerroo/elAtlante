@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { RESTAURANT_BASE_DATA } from '../utils/seoStructuredData';
 
 interface SEOProps {
   title?: string;
@@ -10,6 +11,8 @@ interface SEOProps {
   twitterTitle?: string;
   twitterDescription?: string;
   twitterImage?: string;
+  structuredData?: object | object[];
+  includeBaseRestaurantSchema?: boolean;
 }
 
 const SEO = ({
@@ -22,6 +25,8 @@ const SEO = ({
   twitterTitle,
   twitterDescription,
   twitterImage,
+  structuredData,
+  includeBaseRestaurantSchema = false,
 }: SEOProps) => {
   const siteName = 'El Atlante de San Cristóbal';
   const defaultDescription = 'Restaurante especializado en pescado fresco y gastronomía canaria en San Cristóbal, Las Palmas. Tradición pesquera y producto Km 0 con terraza frente al mar de Gran Canaria.';
@@ -29,6 +34,19 @@ const SEO = ({
   const domain = 'https://elatlantedesancristobal.com';
   const fullCanonical = canonical ? `${domain}${canonical}` : domain;
   const metaDescription = description || defaultDescription;
+
+  // Prepare structured data
+  const schemas = [];
+  if (includeBaseRestaurantSchema) {
+    schemas.push(RESTAURANT_BASE_DATA);
+  }
+  if (structuredData) {
+    if (Array.isArray(structuredData)) {
+      schemas.push(...structuredData);
+    } else {
+      schemas.push(structuredData);
+    }
+  }
 
   return (
     <Helmet>
@@ -47,6 +65,13 @@ const SEO = ({
       <meta name="twitter:title" content={twitterTitle || ogTitle || fullTitle} />
       <meta name="twitter:description" content={twitterDescription || ogDescription || metaDescription} />
       {twitterImage && <meta name="twitter:image" content={`${domain}${twitterImage}`} />}
+
+      {/* Structured Data */}
+      {schemas.map((schema, index) => (
+        <script key={index} type="application/ld+json">
+          {JSON.stringify(schema)}
+        </script>
+      ))}
     </Helmet>
   );
 };

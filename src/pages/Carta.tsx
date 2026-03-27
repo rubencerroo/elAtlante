@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import SEO from '../components/SEO';
+import { getMenuData, getBreadcrumbList } from '../utils/seoStructuredData';
 
 export default function Carta() {
   const { t, i18n } = useTranslation();
+  const lang = i18n.language.startsWith('en') ? 'en' : 'es';
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(() => 
     typeof window !== 'undefined' ? window.innerWidth < 768 : true
@@ -16,15 +18,23 @@ export default function Carta() {
   }, []);
   
   // Decide which PDF to show based on the active language
-  const pdfFileName = i18n.language.startsWith('en') ? 'carta_en.pdf' : 'carta_es.pdf';
+  const pdfFileName = lang === 'en' ? 'carta_en.pdf' : 'carta_es.pdf';
   const downloadUrl = `/assets/pdf/${pdfFileName}`;
   const pdfUrl = `/assets/pdf/${pdfFileName}#toolbar=0&navpanes=0&scrollbar=0&view=${isMobile ? 'FitH' : 'Fit'}`;
+
+  const breadcrumbs = getBreadcrumbList([
+    { name: t('nav.inicio'), url: '/' },
+    { name: t('nav.carta'), url: '/carta' }
+  ]);
+
+  const menuSchema = getMenuData(lang);
 
   return (
     <div className="w-screen h-screen flex flex-col bg-background-light dark:bg-background-dark overflow-hidden">
       <SEO 
         title={`${t('nav.carta')} - El Atlante de San Cristóbal`}
         description="Nuestra carta completa. Tradición pesquera y producto Km 0."
+        structuredData={[breadcrumbs, menuSchema]}
       />
       
       <h1 className="sr-only">

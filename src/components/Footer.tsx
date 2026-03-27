@@ -12,8 +12,8 @@ export default function Footer() {
 
         {/* Logo */}
         <div className="h-16 shrink-0">
-          <img src={logoBlack} alt="El Atlante" className="h-full w-auto object-contain dark:hidden" />
-          <img src={logoWhite} alt="El Atlante" className="h-full w-auto object-contain hidden dark:block" />
+          <img src={logoBlack} alt="Logo de El Atlante de San Cristóbal" className="h-full w-auto object-contain dark:hidden" />
+          <img src={logoWhite} alt="Logo de El Atlante de San Cristóbal" className="h-full w-auto object-contain hidden dark:block" />
         </div>
 
         {/* Copyright */}
