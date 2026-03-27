@@ -4,7 +4,10 @@ import { RESTAURANT_BASE_DATA, getBreadcrumbList, getMenuData, getOrganizationDa
 describe('SEO Structured Data Utility', () => {
   it('should have correct base restaurant data', () => {
     expect(RESTAURANT_BASE_DATA['@type']).toBe('Restaurant');
+    expect(RESTAURANT_BASE_DATA['@id']).toBe('https://elatlantedesancristobal.com/#restaurant');
     expect(RESTAURANT_BASE_DATA.name).toBe('El Atlante de San Cristóbal');
+    expect(RESTAURANT_BASE_DATA.logo).toBeDefined();
+    expect(RESTAURANT_BASE_DATA.contactPoint).toHaveLength(2);
     expect(RESTAURANT_BASE_DATA.address.streetAddress).toContain('Calle Marina');
     expect(RESTAURANT_BASE_DATA.potentialAction['@type']).toBe('ReserveAction');
   });
@@ -36,6 +39,7 @@ describe('SEO Structured Data Utility', () => {
     const org = getOrganizationData();
     expect(org['@type']).toBe('Organization');
     expect(org.logo).toContain('logoblack.png');
+    expect(org.contactPoint).toHaveLength(2);
     expect(org.sameAs).toHaveLength(2);
   });
 

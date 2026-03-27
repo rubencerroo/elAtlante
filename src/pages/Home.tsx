@@ -7,7 +7,7 @@ import heroImage from '../assets/elatlantePaisaje.jpg';
 import AboutSlider from '../components/AboutSlider';
 import { CONTACT_INFO } from '../constants/contact';
 import { isRestaurantOpenNow } from '../utils/reservationUtils';
-import { getOrganizationData, getWebSiteData, getLocalBusinessData } from '../utils/seoStructuredData';
+import { getWebSiteData } from '../utils/seoStructuredData';
 
 
 
@@ -32,9 +32,7 @@ export default function Home() {
   const { t, i18n } = useTranslation();
   const isOpen = useIsOpen();
   
-  const orgSchema = getOrganizationData();
   const webSiteSchema = getWebSiteData();
-  const localBusinessSchema = getLocalBusinessData();
 
   return (
     <>
@@ -42,7 +40,7 @@ export default function Home() {
         description="Tradición pesquera y producto Km 0 en un entorno inigualable frente al Atlántico. Disfruta del mejor pescado fresco en Las Palmas."
         ogImage="/og-image.jpg"
         includeBaseRestaurantSchema={true}
-        structuredData={[orgSchema, webSiteSchema, localBusinessSchema]}
+        structuredData={[webSiteSchema]}
       />
       {/* Hero Section */}
       <section className="@container" id="inicio">

@@ -8,8 +8,10 @@ import { CONTACT_INFO } from '../constants/contact';
 export interface RestaurantStructuredData {
   '@context': 'https://schema.org';
   '@type': 'Restaurant';
+  '@id': string;
   name: string;
   image: string;
+  logo?: string;
   address: {
     '@type': 'PostalAddress';
     streetAddress: string;
@@ -34,6 +36,7 @@ export interface RestaurantStructuredData {
     opens: string;
     closes: string;
   }>;
+  contactPoint?: any[];
   acceptsReservations?: string;
   sameAs?: string[];
   potentialAction?: any;
@@ -42,8 +45,13 @@ export interface RestaurantStructuredData {
 export const RESTAURANT_BASE_DATA: RestaurantStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'Restaurant',
+  '@id': 'https://elatlantedesancristobal.com/#restaurant',
   name: "El Atlante de San Cristóbal",
   image: "https://elatlantedesancristobal.com/logo-icon.svg",
+  logo: "https://elatlantedesancristobal.com/logoblack.png",
+  url: "https://elatlantedesancristobal.com",
+  telephone: CONTACT_INFO.landline.raw,
+  description: "Restaurante especializado en pescado fresco y gastronomía canaria con terraza frente al mar en San Cristóbal, Las Palmas.",
   address: {
     '@type': 'PostalAddress',
     streetAddress: CONTACT_INFO.address.street,
@@ -56,12 +64,9 @@ export const RESTAURANT_BASE_DATA: RestaurantStructuredData = {
     latitude: 28.0934,
     longitude: -15.4165
   },
-  url: "https://elatlantedesancristobal.com",
-  telephone: CONTACT_INFO.landline.raw,
   servesCuisine: "Canaria, Pescado, Mariscos",
   priceRange: "€€",
   menu: "https://elatlantedesancristobal.com/carta",
-  description: "Restaurante especializado en pescado fresco y gastronomía canaria en San Cristóbal, Las Palmas. Tradición pesquera y producto Km 0 con terraza frente al mar.",
   openingHoursSpecification: [
     {
       '@type': 'OpeningHoursSpecification',
@@ -74,6 +79,22 @@ export const RESTAURANT_BASE_DATA: RestaurantStructuredData = {
       dayOfWeek: "Sunday",
       opens: "12:30",
       closes: "16:30"
+    }
+  ],
+  contactPoint: [
+    {
+      '@type': 'ContactPoint',
+      telephone: CONTACT_INFO.landline.raw,
+      contactType: "customer service",
+      areaServed: "ES",
+      availableLanguage: ["Spanish", "English"]
+    },
+    {
+      '@type': 'ContactPoint',
+      telephone: CONTACT_INFO.mobile.raw,
+      contactType: "reservations",
+      areaServed: "ES",
+      availableLanguage: ["Spanish", "English"]
     }
   ],
   acceptsReservations: "true",
@@ -151,6 +172,30 @@ export function getOrganizationData() {
     name: "El Atlante de San Cristóbal",
     url: "https://elatlantedesancristobal.com",
     logo: "https://elatlantedesancristobal.com/logoblack.png",
+    description: "Restaurante especializado en pescado fresco y gastronomía canaria con terraza frente al mar en San Cristóbal, Las Palmas.",
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: CONTACT_INFO.address.street,
+      addressLocality: "Las Palmas de Gran Canaria",
+      postalCode: "35001",
+      addressCountry: "ES"
+    },
+    contactPoint: [
+      {
+        '@type': 'ContactPoint',
+        telephone: CONTACT_INFO.landline.raw,
+        contactType: "customer service",
+        areaServed: "ES",
+        availableLanguage: ["Spanish", "English"]
+      },
+      {
+        '@type': 'ContactPoint',
+        telephone: CONTACT_INFO.mobile.raw,
+        contactType: "reservations",
+        areaServed: "ES",
+        availableLanguage: ["Spanish", "English"]
+      }
+    ],
     sameAs: [
       "https://www.instagram.com/restaurante_elatlante",
       "https://www.facebook.com/elatlantedesancristobal/"
