@@ -27,6 +27,10 @@ export default function Carta() {
         description="Nuestra carta completa. Tradición pesquera y producto Km 0."
       />
       
+      <h1 className="sr-only">
+        {i18n.language.startsWith('en') ? 'Menu' : 'Carta de Platos'} - El Atlante de San Cristóbal
+      </h1>
+      
       {/* Container with Tiled Logo Background */}
       <div 
         className="flex-1 w-full flex items-center justify-center relative bg-slate-50 dark:bg-slate-900 overflow-hidden"

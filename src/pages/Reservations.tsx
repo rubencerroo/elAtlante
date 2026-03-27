@@ -274,12 +274,12 @@ export default function Reservations() {
           {/* Right Column: Form */}
           <div className="w-full lg:w-14/25 p-5 md:p-12 lg:p-20 relative bg-[#F9FAFB] dark:bg-transparent">
 
-            {/* Mobile-only compact header */}
+            {/* Mobile-only compact header - CHANGED TO H2 to avoid double H1 */}
             <div className="lg:hidden mb-6">
               <span className="text-primary/60 dark:text-slate-400 font-medium tracking-[0.4em] uppercase text-[10px]">{t('reservas.form.subtitle')}</span>
-              <h1 className="text-primary dark:text-slate-100 text-3xl font-serif font-bold leading-tight tracking-tight mt-1">
+              <h2 className="text-primary dark:text-slate-100 text-3xl font-serif font-bold leading-tight tracking-tight mt-1">
                 <span dangerouslySetInnerHTML={{ __html: t('reservas.form.titlePart1').replace(/<br \/>/g, '') }} /><span className="italic text-coastal-sea opacity-90">{t('reservas.form.titlePart2')}</span>.
-              </h1>
+              </h2>
             </div>
 
             <form className="space-y-7 md:space-y-16" onSubmit={handleSubmit}>

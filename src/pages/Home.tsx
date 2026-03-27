@@ -86,27 +86,37 @@ export default function Home() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.4)_0%,transparent_70%)] pointer-events-none z-0" />
 
           <div className="flex flex-col gap-6 text-center max-w-[850px] z-10 p-4">
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+            <h1 
               className="text-white text-3xl md:text-5xl lg:text-7xl font-serif font-extrabold leading-[1.2] md:leading-[1.1] tracking-tight drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] max-w-4xl mx-auto"
             >
-              {i18n.language.startsWith('es') ? (
-                <>
-                  {t('hero.titulo1_pre')}
-                  <span className="canary-flag-hover cursor-default">{t('hero.titulo1_word')}</span>
-                </>
-              ) : (
-                <>
-                  <span className="canary-flag-hover cursor-default">{t('hero.titulo1_pre')}</span>
-                  {t('hero.titulo1_word')}
-                </>
-              )} <br />
-              <span className="italic font-medium opacity-90 text-white/90">
+              <motion.span
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="inline-block"
+              >
+                {i18n.language.startsWith('es') ? (
+                  <>
+                    {t('hero.titulo1_pre')}
+                    <span className="canary-flag-hover cursor-default">{t('hero.titulo1_word')}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="canary-flag-hover cursor-default">{t('hero.titulo1_pre')}</span>
+                    {t('hero.titulo1_word')}
+                  </>
+                )}
+              </motion.span>
+              <br />
+              <motion.span 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
+                className="italic font-medium opacity-90 text-white/90 inline-block"
+              >
                 {t('hero.titulo2')}
-              </span>
-            </motion.h1>
+              </motion.span>
+            </h1>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

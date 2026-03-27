@@ -108,9 +108,9 @@ export default function ConfirmReservation() {
         {status === 'loading' && (
           <div className="flex flex-col items-center">
             <Loader2 className="w-16 h-16 text-primary animate-spin mb-4" />
-            <h2 className="text-2xl font-semibold text-slate-800 dark:text-white mb-2">
+            <h1 className="text-2xl font-semibold text-slate-800 dark:text-white mb-2">
               Confirmando Reserva...
-            </h2>
+            </h1>
             <p className="text-slate-600 dark:text-slate-300">
               Por favor espera un momento.
             </p>
@@ -122,9 +122,9 @@ export default function ConfirmReservation() {
             <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-6 mx-auto">
               <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2 text-center w-full">
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2 text-center w-full">
               ¡Reserva Confirmada!
-            </h2>
+            </h1>
             <p className="text-slate-600 dark:text-slate-300 mb-8 text-center w-full">
               Tu reserva ha sido confirmada con éxito. Te esperamos en El Atlante.
             </p>
@@ -177,9 +177,9 @@ export default function ConfirmReservation() {
             <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-6">
               <XCircle className="w-10 h-10 text-red-600 dark:text-red-400" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">
               {status === 'not-found' ? 'Reserva no encontrada' : 'Error al confirmar'}
-            </h2>
+            </h1>
             <p className="text-slate-600 dark:text-slate-300 mb-8">
               {status === 'not-found' 
                 ? 'El enlace parece ser inválido o la reserva no existe.' 
