@@ -804,12 +804,9 @@ import {
  * Excludes cancelled, no-show, and completed reservations.
  */
 async function getOccupiedTableIds(date: string, time: string): Promise<Set<number>> {
+  // Use SECURITY DEFINER RPC function so public users can check table availability
   const { data, error } = await supabase
-    .from('reservations')
-    .select('table_number, assigned_tables, time')
-    .eq('date', date)
-    .not('status', 'in', ['cancelled', 'no-show', 'completed'])
-    .not('table_number', 'is', null);
+    .rpc('get_occupied_tables_for_date', { p_date: date });
 
   if (error) {
     console.error('Error checking table availability:', error);
@@ -820,13 +817,13 @@ async function getOccupiedTableIds(date: string, time: string): Promise<Set<numb
   const occupied = new Set<number>();
 
   for (const r of data || []) {
-    const rMin = timeToMinutesLocal(r.time?.substring(0, 5) || '00:00');
+    const rMin = timeToMinutesLocal((r.time_slot as string)?.substring(0, 5) || '00:00');
     if (Math.abs(rMin - targetMin) < 120) {
       // Parse all assigned tables, not just the primary
       const assigned = parseAssignedTables(r.assigned_tables);
       if (assigned.length > 0) {
         for (const tid of assigned) occupied.add(tid);
-      } else {
+      } else if (r.table_number) {
         occupied.add(r.table_number as number);
       }
     }
