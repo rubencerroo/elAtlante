@@ -4,12 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
-import { addReservation, getReservationById, type Reservation } from '../services/reservationStore';
+import { /* addReservation, */ getReservationById, type Reservation } from '../services/reservationStore';
 import GuestCounter from '../components/GuestCounter';
 import Calendar from '../components/Calendar';
 import CustomSelect from '../components/CustomSelect';
 import SEO from '../components/SEO';
-import { getAvailableTimes, isDateValid, getTodayDateString, isDayClosed, isRestaurantOpenNow, isReservationTimeValid, getDefaultReservationDateTime } from '../utils/reservationUtils';
+import { getAvailableTimes, /* isDateValid, */ getTodayDateString, isDayClosed, isRestaurantOpenNow, /* isReservationTimeValid, */ getDefaultReservationDateTime } from '../utils/reservationUtils';
 import { CONTACT_INFO } from '../constants/contact';
 import { getBreadcrumbList } from '../utils/seoStructuredData';
 
@@ -24,7 +24,7 @@ export default function Reservations() {
   const [searchParams] = useSearchParams();
   const [phone, setPhone] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // const [isSubmitting, setIsSubmitting] = useState(false); // COMENTADO PARA EVITAR ERROR DE BUILD. Reactivar cuando se habilite de nuevo el botón de reserva.
   const [lastReservation, setLastReservation] = useState<Reservation | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -76,6 +76,8 @@ export default function Reservations() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  /* 
+  // ESTA PARTE ES PARA CUANDO SE QUIERA ACTIVAR EL BOTÓN DE RESERVA
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (phone.length < 9) {
@@ -128,6 +130,7 @@ export default function Reservations() {
       setIsSubmitting(false);
     }
   };
+  */
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr + 'T00:00:00');
