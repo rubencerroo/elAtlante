@@ -507,10 +507,10 @@ export default function Reservations() {
                   ) : (
                     <div className="bg-amber-50 dark:bg-amber-900/10 p-8 rounded-3xl border border-amber-100/50 dark:border-amber-900/10 space-y-4 text-center">
                       <p className="text-amber-800 dark:text-amber-300 text-sm font-semibold">
-                        Las reservas online no están disponibles en este momento.
+                        {t('reservas.form.onlineNotAvailable')}
                       </p>
                       <p className="text-amber-700 dark:text-amber-400 text-sm">
-                        Para hacer tu reserva llámanos al:
+                        {t('reservas.form.callToReserve')}
                       </p>
                       <a
                         href={CONTACT_INFO.landline.link}

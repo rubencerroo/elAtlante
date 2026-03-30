@@ -139,6 +139,8 @@
       "call": "Llamar",
       "whatsapp": "WhatsApp",
       "processing": "Procesando...",
+      "onlineNotAvailable": "Las reservas online no están disponibles en este momento.",
+      "callToReserve": "Para hacer tu reserva llámanos al:",
       "confirmBtn": "Confirmar Reserva",
       "disclaimer1": "Las solicitudes online están sujetas a confirmación.",
       "disclaimer2": "Le enviaremos un email tan pronto como procesemos su mesa.",
