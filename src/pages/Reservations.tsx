@@ -289,7 +289,7 @@ export default function Reservations() {
               </h2>
             </div>
 
-            <form className="space-y-7 md:space-y-16" onSubmit={handleSubmit}>
+            <form className="space-y-7 md:space-y-16" onSubmit={(e) => e.preventDefault()}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12 items-end">
                 <div className="flex flex-col gap-2 md:gap-4 group">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.fullName')} <span className="text-coastal-sea">*</span></label>
@@ -502,11 +502,28 @@ export default function Reservations() {
                       </div>
                     </div>
                   ) : (
-                    <button type="submit" disabled={isSubmitting || !formData.acceptPolicies} className="w-full h-14 md:h-16 rounded-xl md:rounded-2xl btn-primary-high disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-                      <span className="relative z-10 font-bold uppercase tracking-[0.4em] text-[11px]">
-                        {isSubmitting ? t('reservas.form.processing') : t('reservas.form.confirmBtn')}
-                      </span>
-                    </button>
+                    <div className="bg-amber-50 dark:bg-amber-900/10 p-8 rounded-3xl border border-amber-100/50 dark:border-amber-900/10 space-y-4 text-center">
+                      <p className="text-amber-800 dark:text-amber-300 text-sm font-semibold">
+                        Las reservas online no están disponibles en este momento.
+                      </p>
+                      <p className="text-amber-700 dark:text-amber-400 text-sm">
+                        Para hacer tu reserva llámanos al:
+                      </p>
+                      <a
+                        href={CONTACT_INFO.landline.link}
+                        className="inline-flex items-center justify-center gap-3 h-14 w-full bg-primary hover:bg-primary/90 text-white rounded-2xl transition-all shadow-lg font-bold uppercase tracking-widest text-[11px]"
+                      >
+                        <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 7V5z" /></svg>
+                        {CONTACT_INFO.landline.display}
+                      </a>
+                      <a
+                        href={CONTACT_INFO.mobile.link}
+                        className="inline-flex items-center justify-center gap-3 h-14 w-full border border-primary text-primary hover:bg-primary/10 rounded-2xl transition-all font-bold uppercase tracking-widest text-[11px]"
+                      >
+                        <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 7V5z" /></svg>
+                        {CONTACT_INFO.mobile.display}
+                      </a>
+                    </div>
                   )}
                 </div>
               </div>
