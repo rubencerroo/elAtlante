@@ -10,6 +10,7 @@ import AdminPanel from './pages/AdminPanel';
 import WaiterPanel from './pages/WaiterPanel';
 import SetPassword from './pages/SetPassword';
 import ConfirmReservation from './pages/ConfirmReservation';
+import CancelReservation from './pages/CancelReservation';
 import LegalNotice from './pages/LegalNotice';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import CookiePolicy from './pages/CookiePolicy';
@@ -131,6 +132,7 @@ function AppLayout() {
           <Route path="/admin/waiter" element={<WaiterPanel />} />
           <Route path="/admin/set-password" element={<SetPassword />} />
           <Route path="/confirm" element={<ConfirmReservation />} />
+          <Route path="/cancelada" element={<CancelReservation />} />
           <Route path="/aviso-legal" element={<LegalNotice />} />
           <Route path="/privacidad" element={<PrivacyPolicy />} />
           <Route path="/cookies" element={<CookiePolicy />} />

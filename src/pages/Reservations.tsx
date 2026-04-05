@@ -4,12 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
-import { getReservationById, getCalendarOverrides, type Reservation } from '../services/reservationStore';
+import { getReservationById, getCalendarOverrides, addReservation, type Reservation } from '../services/reservationStore';
 import GuestCounter from '../components/GuestCounter';
 import Calendar from '../components/Calendar';
 import CustomSelect from '../components/CustomSelect';
 import SEO from '../components/SEO';
-import { getAvailableTimes, /* isDateValid, */ getTodayDateString, isDayClosed, isRestaurantOpenNow, /* isReservationTimeValid, */ getDefaultReservationDateTime } from '../utils/reservationUtils';
+import { getAvailableTimes, isDateValid, getTodayDateString, isDayClosed, isRestaurantOpenNow, isReservationTimeValid, getDefaultReservationDateTime } from '../utils/reservationUtils';
 import { CONTACT_INFO } from '../constants/contact';
 import { getBreadcrumbList } from '../utils/seoStructuredData';
 import type { CalendarOverride } from '../utils/reservationUtils';
@@ -24,9 +24,11 @@ export default function Reservations() {
   ]);
   const isOpen = isRestaurantOpenNow();
   const [searchParams] = useSearchParams();
+  // 🔒 Modo test interno: visible sólo con ?mode=stafftest en la URL
+  const isTestMode = searchParams.get('mode') === 'stafftest';
   const [phone, setPhone] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  // const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastReservation, setLastReservation] = useState<Reservation | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
   const [, startTransitionCalendar] = useTransition();
@@ -112,9 +114,11 @@ export default function Reservations() {
     }
   }, [searchParams, submitted, t]);
 
-  /* 
+  // handleSubmit — activo sólo cuando isTestMode está habilitado
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isTestMode) return;
+
     if (phone.length < 9) {
       setAlertConfig({
         isOpen: true,
@@ -188,7 +192,6 @@ export default function Reservations() {
       setIsSubmitting(false);
     }
   };
-  */
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr + 'T00:00:00');
@@ -343,7 +346,7 @@ export default function Reservations() {
               </h2>
             </div>
 
-            <form className="space-y-7 md:space-y-16" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-7 md:space-y-16" onSubmit={isTestMode ? handleSubmit : (e) => e.preventDefault()}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-7 md:gap-x-12 md:gap-y-12 items-end">
                 <div className="flex flex-col gap-2 md:gap-4 group">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.fullName')} <span className="text-coastal-sea">*</span></label>
@@ -546,6 +549,26 @@ export default function Reservations() {
                           {t('reservas.form.whatsapp')}
                         </a>
                       </div>
+                    </div>
+                  ) : isTestMode ? (
+                    // 🔒 MODO TEST INTERNO — sólo visible con ?mode=stafftest
+                    <div className="space-y-4">
+                      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/40 rounded-2xl px-5 py-3 flex items-center gap-3">
+                        <svg className="size-4 text-amber-600 dark:text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
+                        <p className="text-amber-700 dark:text-amber-300 text-xs font-medium">Modo prueba interno activo — este botón no es visible para clientes</p>
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting || !formData.acceptPolicies || !formData.name || !formData.email || phone.length < 9 || !formData.date || !formData.time}
+                        className="w-full h-14 flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-2xl transition-all shadow-lg font-bold uppercase tracking-widest text-[11px]"
+                      >
+                        {isSubmitting ? (
+                          <svg className="size-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>
+                        ) : (
+                          <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        )}
+                        {isSubmitting ? 'Enviando...' : 'Enviar reserva (test)'}
+                      </button>
                     </div>
                   ) : (
                     <div className="bg-amber-50 dark:bg-amber-900/10 p-8 rounded-3xl border border-amber-100/50 dark:border-amber-900/10 space-y-4 text-center">
