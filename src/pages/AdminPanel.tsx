@@ -412,8 +412,40 @@ function DashboardView({
   handleSaveNote: () => void;
   savingNote: boolean;
 }) {
+  const [timeRange, setTimeRange] = useState<'daily' | 'weekly' | 'monthly' | 'all' | 'future'>('all');
+
+  const getFilteredList = () => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const today = new Date(todayStr); // start of today in local time
+    
+    // For weekly (assuming Monday is start of week)
+    const currentWeekStart = new Date(today);
+    const day = currentWeekStart.getDay();
+    const diff = currentWeekStart.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+    currentWeekStart.setDate(diff);
+    
+    const currentWeekEnd = new Date(currentWeekStart);
+    currentWeekEnd.setDate(currentWeekEnd.getDate() + 6);
+    
+    // For monthly
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    
+    return reservations.filter(r => {
+      const rDate = new Date(r.date);
+      switch(timeRange) {
+        case 'daily': return r.date === (filterDate === 'all' ? todayStr : filterDate);
+        case 'weekly': return rDate >= currentWeekStart && rDate <= currentWeekEnd;
+        case 'monthly': return rDate.getMonth() === currentMonth && rDate.getFullYear() === currentYear;
+        case 'future': return rDate >= today;
+        case 'all': default: return true;
+      }
+    });
+  };
+
+  const list = getFilteredList();
+
   const getSourceDistribution = () => {
-    const list = reservations.filter(r => filterDate === 'all' ? true : r.date === filterDate);
     const data: Record<string, number> = {};
     const labelMap: Record<string, string> = {
       'walk-in': 'Walk-in',
@@ -423,13 +455,82 @@ function DashboardView({
     };
 
     list.forEach(r => {
-      // If it's a walk-in or is_walk_in is true, force 'walk-in'
       const rawSrc = r.isWalkIn || r.source === 'walk-in' ? 'walk-in' : (r.source || 'website');
-      // Use mapped label or fall back to 'Web' for any other legacy source
       const srcName = labelMap[rawSrc] || 'Reserva por Web';
       data[srcName] = (data[srcName] || 0) + 1;
     });
     return Object.entries(data).map(([name, value]) => ({ name, value }));
+  };
+
+  const getStatusData = () => {
+    const counts: Record<string, number> = { 'pending': 0, 'confirmed': 0, 'seated': 0, 'completed': 0, 'cancelled': 0, 'no-show': 0, 'waiting': 0 };
+    list.forEach(r => {
+      if (counts[r.status] !== undefined) {
+        counts[r.status]++;
+      }
+    });
+    return [
+      { name: 'Pendiente', value: counts['pending'], color: '#fbbf24' },
+      { name: 'Confirmada', value: counts['confirmed'], color: '#34d399' },
+      { name: 'Sentados', value: counts['seated'], color: '#60a5fa' },
+      { name: 'Completada', value: counts['completed'], color: '#94a3b8' },
+      { name: 'Cancelada', value: counts['cancelled'], color: '#f87171' },
+      { name: 'No Show', value: counts['no-show'], color: '#fb923c' },
+    ].filter(d => d.value > 0);
+  };
+
+  const getOccupancyData = () => {
+    const hours: Record<string, number> = {};
+    for (let h = 12; h <= 23; h++) {
+      hours[`${h}:00`] = 0;
+    }
+    list.filter(r => r.status !== 'cancelled' && r.status !== 'no-show').forEach(r => {
+      const hStr = r.time.split(':')[0];
+      const h = parseInt(hStr, 10);
+      const key = `${h}:00`;
+      if (hours[key] !== undefined) hours[key] += r.guests;
+    });
+    return Object.entries(hours).map(([hour, guests]) => ({ hour, guests }));
+  };
+
+  const getNationalityData = () => {
+    const map: Record<string, number> = {};
+    const prefixes: Record<string, string> = {
+      '+34': 'España', '0034': 'España',
+      '+44': 'Reino Unido', '0044': 'Reino Unido',
+      '+33': 'Francia', '0033': 'Francia',
+      '+49': 'Alemania', '0049': 'Alemania',
+      '+39': 'Italia', '0039': 'Italia',
+      '+351': 'Portugal', '00351': 'Portugal',
+      '+1': 'USA/Canadá', '001': 'USA/Canadá',
+      '+31': 'Países Bajos', '0031': 'Países Bajos',
+      '+32': 'Bélgica', '0032': 'Bélgica',
+      '+41': 'Suiza', '0041': 'Suiza',
+      '+46': 'Suecia', '0046': 'Suecia',
+      '+47': 'Noruega', '0047': 'Noruega',
+      '+358': 'Finlandia', '00358': 'Finlandia'
+    };
+    
+    list.forEach(r => {
+      if (!r.phone || r.isWalkIn || r.phone === 'Mesa Rápida' || r.phone === 'Lista de Espera' || r.source === 'walk-in') return;
+      
+      const phone = r.phone.replace(/\s+/g, '');
+      let found = false;
+      for (const [prefix, country] of Object.entries(prefixes)) {
+        if (phone.startsWith(prefix)) {
+          map[country] = (map[country] || 0) + 1;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        map['Otros/Desconocido'] = (map['Otros/Desconocido'] || 0) + 1;
+      }
+    });
+
+    return Object.entries(map)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
   };
 
   const getForecast = () => {
@@ -448,6 +549,9 @@ function DashboardView({
 
   const sourceData = getSourceDistribution();
   const forecastData = getForecast();
+  const localStatusData = getStatusData();
+  const localOccupancyData = getOccupancyData();
+  const nationalityData = getNationalityData();
 
   return (
     <div className="space-y-8">
@@ -495,13 +599,31 @@ function DashboardView({
         </div>
       </div>
 
+      {/* Time Filter for Dashboard Stats */}
+      <div className="flex flex-wrap items-center gap-4 p-4 rounded-2xl" style={{ background: 'rgba(56, 189, 248, 0.05)', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
+        <h3 className="text-sm font-semibold tracking-wide text-sky-500 uppercase">Filtro de Gráficos:</h3>
+        <select 
+          value={timeRange} 
+          onChange={(e) => setTimeRange(e.target.value as any)}
+          className="rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-sky-500/50 shadow-sm transition-all" 
+          style={{ background: 'var(--admin-bg-input)', border: '1px solid var(--admin-border)', color: 'var(--admin-text)' }}
+        >
+          <option value="daily">Diario (según fecha seleccionada arriba)</option>
+          <option value="weekly">Esta semana</option>
+          <option value="monthly">Este mes</option>
+          <option value="all">Siempre</option>
+          <option value="future">Solo a futuro</option>
+        </select>
+        <span className="text-xs text-slate-500 ml-auto hidden md:block">Mostrando datos para: <strong>{list.length} reservas</strong></span>
+      </div>
+
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Occupancy by hour */}
         <div className="lg:col-span-2 rounded-2xl p-6" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
           <h3 className="text-sm font-semibold mb-4">Ocupación por hora</h3>
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={occupancyData}>
+            <BarChart data={localOccupancyData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="hour" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
               <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
@@ -518,20 +640,20 @@ function DashboardView({
         {/* Status distribution */}
         <div className="rounded-2xl p-6" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
           <h3 className="text-sm font-semibold mb-4">Estado de reservas</h3>
-          {statusData.length > 0 ? (
+          {localStatusData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
-                  <Pie data={statusData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
-                    {statusData.map((entry, i) => (
+                  <Pie data={localStatusData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
+                    {localStatusData.map((entry, i) => (
                       <Cell key={i} fill={entry.color} />
                     ))}
                   </Pie>
                   <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontSize: '12px' }} />
                 </PieChart>
               </ResponsiveContainer>
-              <div className="space-y-1.5 mt-2">
-                {statusData.map(d => (
+              <div className="space-y-1.5 mt-2 max-h-32 overflow-y-auto pr-2">
+                {localStatusData.map(d => (
                   <div key={d.name} className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full" style={{ background: d.color }}></span>
@@ -543,7 +665,7 @@ function DashboardView({
               </div>
             </>
           ) : (
-            <div className="text-center py-12 text-slate-600 text-xs">Sin datos para esta fecha</div>
+             <div className="text-center py-12 text-slate-600 text-xs">Sin datos para este periodo</div>
           )}
         </div>
       </div>
@@ -565,7 +687,7 @@ function DashboardView({
                   <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontSize: '12px' }} />
                 </PieChart>
               </ResponsiveContainer>
-              <div className="space-y-1.5 mt-2">
+              <div className="space-y-1.5 mt-2 max-h-32 overflow-y-auto pr-2">
                 {sourceData.map((d, i) => (
                   <div key={d.name} className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
@@ -582,9 +704,41 @@ function DashboardView({
           )}
         </div>
 
+        {/* Nationality Distribution */}
+        <div className="rounded-2xl p-6" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
+          <h3 className="text-sm font-semibold mb-4">Nacionalidad de Clientes (Prefijo)</h3>
+          {nationalityData.length > 0 ? (
+            <>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie data={nationalityData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
+                    {nationalityData.map((_, i) => (
+                      <Cell key={i} fill={['#f43f5e', '#a855f7', '#3b82f6', '#14b8a6', '#f59e0b', '#84cc16', '#64748b', '#ec4899'][i % 8]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontSize: '12px' }} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="space-y-1.5 mt-2 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
+                {nationalityData.map((d, i) => (
+                  <div key={d.name} className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: ['#f43f5e', '#a855f7', '#3b82f6', '#14b8a6', '#f59e0b', '#84cc16', '#64748b', '#ec4899'][i % 8] }}></span>
+                      <span className="text-slate-400 truncate w-[100px]" title={d.name}>{d.name}</span>
+                    </div>
+                    <span className="font-bold">{d.value}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-12 text-slate-600 text-xs">Sin datos numéricos válidos</div>
+          )}
+        </div>
+
         {/* Forecast */}
-        <div className="lg:col-span-2 rounded-2xl p-6" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
-          <h3 className="text-sm font-semibold mb-4">Previsión 7 días (visión global)</h3>
+        <div className="rounded-2xl p-6" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
+          <h3 className="text-sm font-semibold mb-4">Previsión 7 días</h3>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={forecastData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
