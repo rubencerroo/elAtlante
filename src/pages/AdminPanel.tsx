@@ -52,7 +52,6 @@ function AdminPanelInner() {
   const [activeTab, setActiveTab] = useState<AdminTab>('kanban');
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
   const [showTableSelector, setShowTableSelector] = useState<string | null>(null);
-  const [draggedId, setDraggedId] = useState<string | null>(null);
   
   // Stats and data states
   const [stats, setStats] = useState<ReservationStats | null>(null);
@@ -275,17 +274,6 @@ function AdminPanelInner() {
     printWindow.print();
   };
 
-  // ── Drag & Drop handlers ──
-  const handleDragStart = (id: string) => setDraggedId(id);
-  const handleDragEnd = () => setDraggedId(null);
-  const handleDrop = (targetStatus: ReservationStatus) => {
-    if (draggedId) {
-      handleStatus(draggedId, targetStatus);
-      setDraggedId(null);
-    }
-  };
-
-
   const logout = async () => { await signOut(); navigate('/admin'); };
 
   const tabs: { key: AdminTab; label: string; icon: string }[] = [
@@ -315,7 +303,7 @@ function AdminPanelInner() {
     <div className="min-h-screen" style={{ background: 'var(--admin-bg)', color: 'var(--admin-text)' }}>
       {/* Top Bar */}
       <header className="sticky top-0 z-50 backdrop-blur-xl border-b" style={{ background: 'var(--admin-header-bg)', borderColor: 'var(--admin-border)' }}>
-        <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-full px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <ThemeToggle />
             <div className="h-8 transition-transform hover:scale-105">
@@ -360,7 +348,7 @@ function AdminPanelInner() {
         </div>
       </header>
 
-      <div className="max-w-[1400px] mx-auto px-6 py-8">
+      <div className="max-w-full px-6 py-8">
         {/* KPI Cards - always visible */}
         {stats && <StatsCards stats={stats} />}
 
@@ -383,7 +371,7 @@ function AdminPanelInner() {
         </div>
 
         {/* Tab Content */}
-        {activeTab === 'kanban' && <StatusKanban filtered={filtered} handleStatus={handleStatus} handleDelete={handleDelete} handleAssignTable={handleAssignTable} showTableSelector={showTableSelector} setShowTableSelector={setShowTableSelector} occupiedTables={occupiedTables} draggedId={draggedId} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} />}
+        {activeTab === 'kanban' && <StatusKanban filtered={filtered} handleStatus={handleStatus} handleDelete={handleDelete} handleAssignTable={handleAssignTable} showTableSelector={showTableSelector} setShowTableSelector={setShowTableSelector} occupiedTables={occupiedTables}  />}
         {activeTab === 'dashboard' && <DashboardView filterDate={filterDate} setFilterDate={setFilterDate} reservations={reservations} occupancyData={occupancyData} statusData={statusData} weeklyComp={weeklyComp} noShowRate={noShowRate} metrics={metrics} shiftNote={shiftNote} setShiftNote={setShiftNote} handleSaveNote={handleSaveNote} savingNote={savingNote} />}
         {activeTab === 'crm' && <CRMView search={crmSearch} setSearch={setCrmSearch} selectedClient={selectedClient} setSelectedClient={setSelectedClient} clientProfiles={clientProfiles} />}
         {activeTab === 'staff' && <StaffView showAlert={showAlert} />}
