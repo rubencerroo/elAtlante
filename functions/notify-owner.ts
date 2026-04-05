@@ -1,3 +1,5 @@
+import { ownerNewBookingEmail } from './_i18n';
+
 function escapeHtml(str: string): string {
 	return str
 		.replace(/&/g, '&amp;')
@@ -31,6 +33,8 @@ export const onRequestPost = async (context: any) => {
 	try {
 		const reservation = await request.json() as any;
 		const url = new URL(request.url);
+		// Owner emails are always in Spanish (internal use)
+		const t = ownerNewBookingEmail.es;
 
 		const emailRes = await fetch('https://api.brevo.com/v3/smtp/email', {
 			method: 'POST',
@@ -44,7 +48,7 @@ export const onRequestPost = async (context: any) => {
 					email: env.SENDER_EMAIL || 'reservas@elatlantedesancristobal.com' 
 				},
 				to: [{ email: env.OWNER_EMAIL || 'dev@elatlantedesancristobal.com' }],
-				subject: `Nueva Reserva Confirmada: ${reservation.bookingNumber || reservation.booking_number}`,
+				subject: t.subject(reservation.bookingNumber || reservation.booking_number),
 				htmlContent: `
 					<div style="background-color: #f8fafc; padding: 40px 20px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
 						<div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border: 1px solid #e2e8f0;">
@@ -52,18 +56,18 @@ export const onRequestPost = async (context: any) => {
 								<img src="${url.origin}/logowhite.png" alt="El Atlante" style="max-height: 60px; width: auto;" />
 							</div>
 							<div style="padding: 40px;">
-								<h2 style="color: #1A365D; font-family: 'Lora', Georgia, serif; font-size: 22px; margin-top: 0; border-bottom: 2px solid #F0EAD6; padding-bottom: 15px; text-align: center;">Nueva Reserva Confirmada</h2>
+								<h2 style="color: #1A365D; font-family: 'Lora', Georgia, serif; font-size: 22px; margin-top: 0; border-bottom: 2px solid #F0EAD6; padding-bottom: 15px; text-align: center;">${t.h2}</h2>
 								<table style="width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 15px; color: #334155;">
-									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b; width: 35%;">Referencia:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${reservation.bookingNumber || reservation.booking_number}</td></tr>
-									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Cliente:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${escapeHtml(reservation.name)}</td></tr>
-									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Email:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;"><a href="mailto:${escapeHtml(reservation.email || '')}" style="color: #1A365D; text-decoration: none;">${escapeHtml(reservation.email || '')}</a></td></tr>
-									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Teléfono:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;"><a href="tel:${escapeHtml(reservation.phone || '')}" style="color: #1A365D; text-decoration: none;">${escapeHtml(reservation.phone || '')}</a></td></tr>
-									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Fecha:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1A365D;">${reservation.date}</td></tr>
-									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Hora:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1A365D;">${reservation.time}</td></tr>
-									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Comensales:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600;">${reservation.guests}</td></tr>
-									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Preferencia:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${escapeHtml(reservation.preference || '—')}</td></tr>
-									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Mascota:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${reservation.hasPet || reservation.has_pet ? 'Sí' : 'No'}</td></tr>
-									<tr><td style="padding: 12px 8px; font-weight: 600; color: #1e293b;">Notas:</td><td style="padding: 12px 8px; font-style: italic;">${escapeHtml(reservation.notes || '—')}</td></tr>
+									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b; width: 35%;">${t.labelRef}</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${reservation.bookingNumber || reservation.booking_number}</td></tr>
+									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">${t.labelClient}</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${escapeHtml(reservation.name)}</td></tr>
+									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">${t.labelEmail}</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;"><a href="mailto:${escapeHtml(reservation.email || '')}" style="color: #1A365D; text-decoration: none;">${escapeHtml(reservation.email || '')}</a></td></tr>
+									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">${t.labelPhone}</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;"><a href="tel:${escapeHtml(reservation.phone || '')}" style="color: #1A365D; text-decoration: none;">${escapeHtml(reservation.phone || '')}</a></td></tr>
+									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">${t.labelDate}</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1A365D;">${reservation.date}</td></tr>
+									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">${t.labelTime}</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1A365D;">${reservation.time}</td></tr>
+									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">${t.labelGuests}</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600;">${reservation.guests}</td></tr>
+									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">${t.labelZone}</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${escapeHtml(reservation.preference || '—')}</td></tr>
+									<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">${t.labelPet}</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${reservation.hasPet || reservation.has_pet ? t.petYes : t.petNo}</td></tr>
+									<tr><td style="padding: 12px 8px; font-weight: 600; color: #1e293b;">${t.labelNotes}</td><td style="padding: 12px 8px; font-style: italic;">${escapeHtml(reservation.notes || '—')}</td></tr>
 								</table>
 							</div>
 						</div>

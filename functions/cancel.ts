@@ -1,4 +1,6 @@
 
+import { getLang, ownerCancelEmail } from './_i18n';
+
 function escapeHtml(str: string): string {
 	return str
 		.replace(/&/g, '&amp;')
@@ -79,6 +81,8 @@ export const onRequestGet = async (context: any) => {
 		}
 
 		const reservation = reservations[0];
+		// Determine language for any future client-facing messaging
+		const _lang = getLang(reservation.language);
 
 		// If already cancelled, redirect to success (idempotent)
 		if (reservation.status === 'cancelled') {
@@ -105,9 +109,10 @@ export const onRequestGet = async (context: any) => {
 
 		if (!updateResponse.ok) throw new Error('Failed to cancel reservation');
 
-		// Notify owner about cancellation
+		// Notify owner about cancellation (always in Spanish — internal)
 		if (env.BREVO_API_KEY || env.VITE_BREVO_API_KEY) {
 			try {
+				const tOwner = ownerCancelEmail.es;
 				await fetch('https://api.brevo.com/v3/smtp/email', {
 					method: 'POST',
 					headers: {
@@ -120,7 +125,7 @@ export const onRequestGet = async (context: any) => {
 							email: env.SENDER_EMAIL || 'reservas@elatlantedesancristobal.com' 
 						},
 						to: [{ email: env.OWNER_EMAIL || 'dev@elatlantedesancristobal.com' }],
-						subject: `❌ Reserva Cancelada: ${reservation.booking_number}`,
+						subject: tOwner.subject(reservation.booking_number),
 						htmlContent: `
 							<div style="background-color: #f8fafc; padding: 40px 20px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
 								<div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;">
@@ -128,17 +133,17 @@ export const onRequestGet = async (context: any) => {
 										<img src="${url.origin}/logowhite.png" alt="El Atlante" style="max-height: 60px; width: auto;" />
 									</div>
 									<div style="background-color: #fef2f2; border-bottom: 1px solid #fecaca; padding: 16px 40px; text-align: center;">
-										<p style="margin: 0; color: #dc2626; font-size: 16px; font-weight: 600;">❌ Reserva cancelada por el cliente</p>
+										<p style="margin: 0; color: #dc2626; font-size: 16px; font-weight: 600;">${tOwner.banner}</p>
 									</div>
 									<div style="padding: 40px;">
 										<table style="width: 100%; border-collapse: collapse; font-size: 15px; color: #334155;">
-											<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b; width: 35%;">Referencia:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${reservation.booking_number}</td></tr>
-											<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Cliente:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${escapeHtml(reservation.name)}</td></tr>
-											<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Email:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;"><a href="mailto:${escapeHtml(reservation.email || '')}" style="color: #1A365D; text-decoration: none;">${escapeHtml(reservation.email || '')}</a></td></tr>
-											<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Teléfono:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;"><a href="tel:${escapeHtml(reservation.phone || '')}" style="color: #1A365D; text-decoration: none;">${escapeHtml(reservation.phone || '')}</a></td></tr>
-											<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Fecha:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; color: #dc2626; font-weight: 600;">${reservation.date}</td></tr>
-											<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">Hora:</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; color: #dc2626; font-weight: 600;">${reservation.time}</td></tr>
-											<tr><td style="padding: 12px 8px; font-weight: 600; color: #1e293b;">Comensales:</td><td style="padding: 12px 8px;">${reservation.guests}</td></tr>
+											<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b; width: 35%;">${tOwner.labelRef}</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${reservation.booking_number}</td></tr>
+											<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">${tOwner.labelClient}</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;">${escapeHtml(reservation.name)}</td></tr>
+											<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">${tOwner.labelEmail}</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;"><a href="mailto:${escapeHtml(reservation.email || '')}" style="color: #1A365D; text-decoration: none;">${escapeHtml(reservation.email || '')}</a></td></tr>
+											<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">${tOwner.labelPhone}</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9;"><a href="tel:${escapeHtml(reservation.phone || '')}" style="color: #1A365D; text-decoration: none;">${escapeHtml(reservation.phone || '')}</a></td></tr>
+											<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">${tOwner.labelDate}</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; color: #dc2626; font-weight: 600;">${reservation.date}</td></tr>
+											<tr><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;">${tOwner.labelTime}</td><td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; color: #dc2626; font-weight: 600;">${reservation.time}</td></tr>
+											<tr><td style="padding: 12px 8px; font-weight: 600; color: #1e293b;">${tOwner.labelGuests}</td><td style="padding: 12px 8px;">${reservation.guests}</td></tr>
 										</table>
 									</div>
 								</div>
