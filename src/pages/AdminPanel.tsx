@@ -396,7 +396,7 @@ function AdminPanelInner() {
 // ═══════════════════════════════════════════════
 
 function DashboardView({ 
-  filterDate, setFilterDate, reservations, occupancyData, statusData, weeklyComp, noShowRate, metrics,
+  filterDate, setFilterDate, reservations, occupancyData: _occupancyData, statusData: _statusData, weeklyComp, noShowRate, metrics,
   shiftNote, setShiftNote, handleSaveNote, savingNote
 }: { 
   filterDate: string;
