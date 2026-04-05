@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useTransition } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,6 +27,7 @@ export default function Reservations() {
   // const [isSubmitting, setIsSubmitting] = useState(false); // COMENTADO PARA EVITAR ERROR DE BUILD. Reactivar cuando se habilite de nuevo el botón de reserva.
   const [lastReservation, setLastReservation] = useState<Reservation | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [, startTransitionCalendar] = useTransition();
   const calendarRef = useRef<HTMLDivElement>(null);
   const defaultDateTime = getDefaultReservationDateTime();
   const [formData, setFormData] = useState({
@@ -323,8 +324,8 @@ export default function Reservations() {
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-primary transition-colors">{t('reservas.form.date')} <span className="text-coastal-sea">*</span></label>
                   <button
                     type="button"
-                    onClick={() => setShowCalendar(!showCalendar)}
-                    className="flex justify-between items-center bg-transparent text-left text-base md:text-lg font-light text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/5 focus:border-primary dark:focus:border-slate-400 focus:ring-0 p-0 pb-2 transition-all w-full relative"
+                    onClick={() => startTransitionCalendar(() => setShowCalendar(!showCalendar))}
+                    className="flex justify-between items-center bg-transparent text-left text-base md:text-lg font-light text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/5 focus:border-primary dark:focus:border-slate-400 focus:ring-0 p-0 pb-2 transition-colors duration-300 w-full relative"
                   >
                     <span>{formData.date ? formatDate(formData.date) : ''}</span>
                     <svg className={`size-5 text-slate-400 transition-transform duration-300 ${showCalendar ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" /></svg>

@@ -91,7 +91,7 @@ export default function Home() {
               {t('hero.subtitulo')}
             </motion.p>
             <div className="flex flex-wrap gap-4 justify-center mt-4 w-full sm:w-auto">
-              <Link to="/reservar" className="group flex w-full sm:w-auto min-w-[180px] cursor-pointer items-center justify-center rounded-full h-12 px-7 btn-primary-high text-xs font-bold uppercase tracking-[0.15em] hover:scale-105 transition-all shadow-2xl">
+              <Link to="/reservar" className="group flex w-full sm:w-auto min-w-[180px] cursor-pointer items-center justify-center rounded-full h-12 px-7 btn-primary-high text-xs font-bold uppercase tracking-[0.15em] hover:scale-105 transition-[color,transform,box-shadow] duration-300 shadow-2xl transform-gpu">
                 {t('hero.cta')}
               </Link>
               <a
@@ -100,7 +100,7 @@ export default function Home() {
                   : (document.documentElement.classList.contains('dark') ? '/assets/pdf/carta_es_dark.pdf' : '/assets/pdf/carta_es.pdf')
                 }
                 target="_blank" rel="noopener noreferrer" 
-                className="group flex w-full sm:w-auto min-w-[180px] cursor-pointer items-center justify-center rounded-full h-12 px-7 border border-white/30 text-white/70 hover:border-white/60 hover:text-white text-xs font-bold uppercase tracking-[0.15em] hover:scale-105 transition-all backdrop-blur-sm"
+                className="group flex w-full sm:w-auto min-w-[180px] cursor-pointer items-center justify-center rounded-full h-12 px-7 border border-white/30 text-white/70 hover:border-white/60 hover:text-white text-xs font-bold uppercase tracking-[0.15em] hover:scale-105 transition-[color,border-color,transform] duration-300 transform-gpu backdrop-blur-sm"
               >
                 {t('hero.ctaCarta')}
               </a>
