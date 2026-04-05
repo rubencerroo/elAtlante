@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import logoWhite from '../assets/logowhite.png';
 
-import { useSystemTheme } from '../hooks/useTheme';
+
 
 export default function Header() {
   const [isVisible, setIsVisible] = useState(true);
@@ -14,7 +14,6 @@ export default function Header() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const [activeSection, setActiveSection] = useState('inicio');
-  const isDark = useSystemTheme();
 
   useEffect(() => {
     if (location.pathname !== '/') {
@@ -47,7 +46,7 @@ export default function Header() {
     return () => observer.disconnect();
   }, [location.pathname]);
 
-  useSystemTheme();
+
 
   useEffect(() => {
     let scrollTimer: ReturnType<typeof setTimeout> | null = null;
@@ -100,10 +99,6 @@ export default function Header() {
         : <a key={section} className={cls} href={href} onClick={(e) => handleAnchorClick(e, href)}>{label}</a>;
   };
 
-  const pdfUrl = i18n.language.startsWith('en')
-    ? (isDark ? '/assets/pdf/carta_en_dark.pdf' : '/assets/pdf/carta_en.pdf')
-    : (isDark ? '/assets/pdf/carta_es_dark.pdf' : '/assets/pdf/carta_es.pdf');
-
   return (
     <div className={`fixed top-0 left-0 right-0 z-[100] transition-transform duration-500 ease-in-out
       ${isVisible || isMobileMenuOpen ? 'translate-y-0' : '-translate-y-full'}`}>
@@ -121,7 +116,7 @@ export default function Header() {
           <nav className="flex items-center gap-10 flex-1">
             {navLink('inicio', t('nav.inicio'), '/', true)}
             {navLink('nosotros', t('nav.nosotros'), '/#nosotros')}
-            {navLink('carta', t('nav.carta'), pdfUrl, false, true)}
+            {navLink('carta', t('nav.carta'), '/assets/pdf/carta.pdf', false, true)}
           </nav>
           <Link to="/" className="absolute left-1/2 -translate-x-1/2">
             <img src={logoWhite} alt="Logo de El Atlante de San Cristóbal" className="h-16 lg:h-20 w-auto object-contain transition-all duration-300" />
@@ -182,7 +177,7 @@ export default function Header() {
               {[
                 { section: 'inicio', label: t('nav.inicio'), href: '/', isLink: true as const },
                 { section: 'nosotros', label: t('nav.nosotros'), href: '/#nosotros', isLink: false as const },
-                { section: 'carta', label: t('nav.carta'), href: pdfUrl, isExternal: true as const },
+                { section: 'carta', label: t('nav.carta'), href: '/assets/pdf/carta.pdf', isExternal: true as const },
               ].map(({ section, label, href, isLink, isExternal }, i) => {
                 const isActive = activeSection === section || (href !== '/' && location.pathname === href);
                 const cls = `text-[12px] font-semibold tracking-widest uppercase whitespace-nowrap transition-colors duration-200 ${isActive ? 'text-white' : 'text-white/45'}`;

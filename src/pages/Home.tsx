@@ -95,10 +95,7 @@ export default function Home() {
                 {t('hero.cta')}
               </Link>
               <a
-                href={i18n.language.startsWith('en')
-                  ? (document.documentElement.classList.contains('dark') ? '/assets/pdf/carta_en_dark.pdf' : '/assets/pdf/carta_en.pdf')
-                  : (document.documentElement.classList.contains('dark') ? '/assets/pdf/carta_es_dark.pdf' : '/assets/pdf/carta_es.pdf')
-                }
+                href="/assets/pdf/carta.pdf"
                 target="_blank" rel="noopener noreferrer" 
                 className="group flex w-full sm:w-auto min-w-[180px] cursor-pointer items-center justify-center rounded-full h-12 px-7 border border-white/30 text-white/70 hover:border-white/60 hover:text-white text-xs font-bold uppercase tracking-[0.15em] hover:scale-105 transition-[color,border-color,transform] duration-300 transform-gpu backdrop-blur-sm"
               >

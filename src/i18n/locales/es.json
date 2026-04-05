@@ -3,6 +3,7 @@
     "inicio": "Inicio",
     "nosotros": "Nosotros",
     "carta": "Carta",
+    "bebidas": "Bebidas",
     "reservar": "Reservar",
     "reservarMesa": "Reservar Mesa"
   },
@@ -15,6 +16,7 @@
     "subtitulo": "Sabores que nacen del producto, el cuidado y una forma cercana de entender la mesa.",
     "cta": "Reservar Mesa",
     "ctaCarta": "Ver la Carta",
+    "ctaBebidas": "Ver Bebidas",
     "siguenos": "Síguenos"
   },
   "nosotros": {

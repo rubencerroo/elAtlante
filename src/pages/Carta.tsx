@@ -17,8 +17,8 @@ export default function Carta() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  // Decide which PDF to show based on the active language
-  const pdfFileName = lang === 'en' ? 'carta_en.pdf' : 'carta_es.pdf';
+  // Default to showing the unified menu inside the iframe reader.
+  const pdfFileName = 'carta.pdf';
   const downloadUrl = `/assets/pdf/${pdfFileName}`;
   const pdfUrl = `/assets/pdf/${pdfFileName}#toolbar=0&navpanes=0&scrollbar=0&view=${isMobile ? 'FitH' : 'Fit'}`;
 
@@ -79,17 +79,14 @@ export default function Carta() {
 
         {/* 
           Iframe with PDF.
-          In light mode: mix-blend-multiply makes the white background of the PDF transparent,
-          allowing the logo watermark to show through!
-          In dark mode: we invert the PDF (so it's dark with light text), hue-rotate to fix colors, 
-          and use mix-blend-screen to make the dark background transparent.
+          The new menu is "dark mode" inherently, so we just display it natively without inversion or blend modes.
         */}
         <iframe 
           key={pdfUrl} // Add key to force iframe reload if view mode changes
           src={pdfUrl}
           title="Menu PDF Viewer"
           onLoad={() => setIsLoaded(true)}
-          className={`absolute inset-0 w-full h-full border-none z-10 transition-opacity duration-1000 ${isLoaded ? 'opacity-95 mix-blend-multiply dark:mix-blend-screen dark:filter dark:invert dark:hue-rotate-180' : 'opacity-0'}`}
+          className={`absolute inset-0 w-full h-full border-none z-10 transition-opacity duration-1000 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
           style={{ backgroundColor: 'transparent' }}
         />
       </div>

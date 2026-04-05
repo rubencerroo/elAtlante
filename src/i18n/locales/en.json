@@ -3,6 +3,7 @@
     "inicio": "Home",
     "nosotros": "About Us",
     "carta": "Menu",
+    "bebidas": "Drinks",
     "reservar": "Book",
     "reservarMesa": "Book a Table"
   },
@@ -15,6 +16,7 @@
     "subtitulo": "Flavors born from the produce, the care, and a warm way of understanding the table.",
     "cta": "Book a Table",
     "ctaCarta": "View Menu",
+    "ctaBebidas": "Drinks Menu",
     "siguenos": "Follow Us"
   },
   "nosotros": {
