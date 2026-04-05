@@ -742,14 +742,6 @@ export async function deleteFeedback(id: string): Promise<boolean> {
   return true;
 }
 
-export async function generateCSV(dateStr: string): Promise<string> {
-  const list = await getReservationsForDate(dateStr);
-  const header = 'Nombre,Email,Teléfono,Fecha,Hora,Comensales,Preferencia,Mascota,Mesa,Estado,Notas';
-  const rows = list.map(r =>
-    `"${r.name}","${r.email}","${r.phone}","${r.date}","${r.time}",${r.guests},"${r.preference}",${r.hasPet ? 'Sí' : 'No'},${r.tableNumber || '—'},"${r.status}","${r.notes}"`
-  );
-  return [header, ...rows].join('\n');
-}
 
 // ── Shift Notes ──
 

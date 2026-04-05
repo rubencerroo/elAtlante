@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   getReservations, updateReservation, getStats, deleteReservation,
   getOccupancyByHour, getStatusDistribution, getWeeklyComparison, getNoShowRate, getWaitAndMealMetrics,
-  getClientProfiles, getClientMeta, saveClientMeta, generateCSV, getOccupiedTables, getShiftNote, saveShiftNote, getFeedbacks, updateFeedbackStatus, deleteFeedback,
+  getClientProfiles, getClientMeta, saveClientMeta, getOccupiedTables, getShiftNote, saveShiftNote, getFeedbacks, updateFeedbackStatus, deleteFeedback,
   type Reservation, type ReservationStatus, type ReservationStats, type ClientProfile, type ClientMeta, type WaitAndMealMetrics
 } from '../services/reservationStore';
 import { signOut, getStaffRole, getSession, getStaffProfiles, inviteStaff, deleteStaff, updateStaffProfile, isTabletAuthorized, authorizeTablet, deauthorizeTablet, getActiveStaffId, type StaffProfile, type StaffRole } from '../services/authStore';
@@ -213,16 +213,6 @@ function AdminPanelInner() {
     reload();
   };
 
-  const exportCSV = async () => {
-    const csv = await generateCSV(filterDate);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `reservas_${filterDate}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
   const exportPDF = () => {
     const printWindow = window.open('', '_blank');
@@ -363,9 +353,6 @@ function AdminPanelInner() {
             </button>
             <button onClick={exportPDF} className="rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2" style={{ background: 'var(--admin-bg-elevated)', border: '1px solid var(--admin-border)', color: 'var(--admin-text-secondary)' }}>
               📄 PDF
-            </button>
-            <button onClick={exportCSV} className="rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2" style={{ background: 'var(--admin-bg-elevated)', border: '1px solid var(--admin-border)', color: 'var(--admin-text-secondary)' }}>
-              📊 CSV
             </button>
           </div>
         </div>
