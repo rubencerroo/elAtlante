@@ -785,6 +785,61 @@ export async function saveShiftNote(dateStr: string, content: string): Promise<v
 }
 
 
+// ── Calendar Overrides ──
+
+export interface CalendarOverride {
+  date: string;
+  isClosed: boolean;
+  slots?: { start: string; end: string }[];
+}
+
+export async function getCalendarOverrides(): Promise<CalendarOverride[]> {
+  const { data, error } = await supabase
+    .from('calendar_days')
+    .select('*');
+
+  if (error) {
+    console.error('Error fetching calendar overrides:', error);
+    return [];
+  }
+  return data.map(d => ({ 
+    date: d.date, 
+    isClosed: d.is_closed,
+    slots: d.slots
+  }));
+}
+
+export async function setCalendarOverride(dateStr: string, isClosed: boolean, slots: { start: string; end: string }[] | null = null): Promise<boolean> {
+  const { error } = await supabase
+    .from('calendar_days')
+    .upsert({ 
+      date: dateStr, 
+      is_closed: isClosed, 
+      slots: slots,
+      updated_at: new Date().toISOString() 
+    });
+
+  if (error) {
+    console.error('Error setting calendar override:', error);
+    return false;
+  }
+  return true;
+}
+
+export async function deleteCalendarOverride(dateStr: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('calendar_days')
+    .delete()
+    .eq('date', dateStr);
+
+  if (error) {
+    console.error('Error deleting calendar override:', error);
+    return false;
+  }
+  return true;
+}
+
+
 // ── Table Assignment Helpers ──
 
 import {

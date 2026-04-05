@@ -1,15 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import SEO from '../components/SEO';
 import heroImage from '../assets/elatlantePaisaje.jpg';
 import AboutSlider from '../components/AboutSlider';
 import { CONTACT_INFO } from '../constants/contact';
-import { isRestaurantOpenNow } from '../utils/reservationUtils';
+import { isRestaurantOpenNow, getTodayDateString, type CalendarOverride } from '../utils/reservationUtils';
 import { getWebSiteData } from '../utils/seoStructuredData';
-
-
+import { getCalendarOverrides } from '../services/reservationStore';
 
 function useIsOpen() {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,11 +27,52 @@ function useIsOpen() {
 }
 
 export default function Home() {
-
   const { t, i18n } = useTranslation();
   const isOpen = useIsOpen();
+  const [overrides, setOverrides] = useState<CalendarOverride[]>([]);
   
   const webSiteSchema = getWebSiteData();
+
+  useEffect(() => {
+    getCalendarOverrides().then(data => {
+      const today = getTodayDateString();
+      // Filter future or today overrides
+      const futureOverrides = data
+        .filter(o => o.date >= today)
+        .sort((a, b) => a.date.localeCompare(b.date));
+      setOverrides(futureOverrides);
+    });
+  }, []);
+
+  const formattedAlerts = useMemo(() => {
+    const today = getTodayDateString();
+    const tomorrowDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'Atlantic/Canary' }));
+    tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+    const tomorrowStr = tomorrowDate.toLocaleDateString('en-CA');
+
+    return overrides.map(o => {
+      const isToday = o.date === today;
+      const isTomorrow = o.date === tomorrowStr;
+      
+      let dateLabel = '';
+      if (!isToday && !isTomorrow) {
+        const d = new Date(o.date + 'T12:00:00');
+        dateLabel = d.toLocaleDateString(i18n.language, { day: 'numeric', month: 'long' });
+      }
+
+      if (o.isClosed) {
+        if (isToday) return t('horarios.alerts.closedToday');
+        if (isTomorrow) return t('horarios.alerts.closedTomorrow');
+        return t('horarios.alerts.closedOn', { date: dateLabel });
+      } else if (o.slots && o.slots.length > 0) {
+        const hours = o.slots.map(s => `${s.start}-${s.end}`).join(', ');
+        if (isToday) return t('horarios.alerts.specialHoursToday', { hours });
+        if (isTomorrow) return t('horarios.alerts.specialHoursTomorrow', { hours });
+        return t('horarios.alerts.specialHoursOn', { date: dateLabel, hours });
+      }
+      return null;
+    }).filter(Boolean);
+  }, [overrides, t, i18n.language]);
 
   return (
     <>
@@ -47,7 +87,6 @@ export default function Home() {
         <div className="flex min-h-screen flex-col items-center justify-center p-6 relative overflow-hidden"
           style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.75) 100%), url('${heroImage}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
           
-          {/* Subtle radial darkening behind text for extra elegance and readability */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.4)_0%,transparent_70%)] pointer-events-none z-0" />
 
           <div className="flex flex-col gap-6 text-center max-w-[850px] z-10 p-4">
@@ -181,15 +220,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Info & Hours - Abyssal Elegance (Stitch Design) */}
+      {/* Info & Hours */}
       <section className="pt-16 pb-32 px-6 lg:px-28 bg-[#FBFBF9] dark:bg-background-dark relative overflow-hidden">
-        {/* Editorial Decorative Background Elements */}
         <div className="absolute top-0 right-0 w-[40%] h-[120%] bg-slate-50 dark:bg-white/[0.02] -z-10 translate-x-1/4 -skew-x-12 border-l border-slate-100 dark:border-white/5" />
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-x-24 lg:gap-y-20">
 
-            {/* Hours Block - FIRST on Mobile */}
+            {/* Hours Block */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -203,7 +241,45 @@ export default function Home() {
                   {isOpen ? t('hero.abierto') : t('hero.cerrado')}
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-10">
+
+              {/* NEWS / ALERTS SECTION */}
+              <AnimatePresence>
+                {formattedAlerts.length > 0 && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mb-10 space-y-4"
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-900 dark:text-white">
+                        {t('horarios.alerts.title')}
+                      </span>
+                    </div>
+                    <div className="space-y-3">
+                      {formattedAlerts.map((alert, idx) => (
+                        <motion.div 
+                          key={idx}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: idx * 0.1 }}
+                          className="flex items-start gap-4 p-4 rounded-2xl bg-primary/[0.03] dark:bg-white/[0.03] border border-primary/10 dark:border-white/5"
+                        >
+                          <svg className="size-4 text-primary mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                          </svg>
+                          <p className="text-sm md:text-base font-medium text-slate-700 dark:text-slate-200 leading-relaxed">
+                            {alert}
+                          </p>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-10 border-t border-slate-100 dark:border-white/5 pt-10">
                 {[
                   { day: t('horarios.lunes'), hours: '12:30 - 23:00', days: [1] },
                   { day: t('horarios.martesMiercoles'), hours: t('horarios.cerrado'), days: [2, 3] },
@@ -229,7 +305,7 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* Map Column - SECOND on Mobile, LEFT on Desktop */}
+            {/* Map Column */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -237,13 +313,9 @@ export default function Home() {
               className="lg:col-span-5 lg:row-span-2 order-2 lg:order-1 flex flex-col gap-10"
             >
               <div className="space-y-6">
-
-
                 <div className="relative w-full h-[300px] md:h-[360px] mt-8 rounded-3xl overflow-hidden shadow-[0_15px_40px_-15px_rgba(0,0,0,0.15)] border border-slate-200 dark:border-white/10 group transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.2)] hover:border-slate-300 dark:hover:border-white/20">
-                  {/* Tint Overlay to match site aesthetic */}
                   <div className="absolute inset-0 bg-primary/5 dark:bg-accent-blue/10 pointer-events-none mix-blend-multiply dark:mix-blend-color z-10 transition-opacity duration-700 opacity-100 group-hover:opacity-0 ring-1 ring-inset ring-black/5 dark:ring-white/5"></div>
 
-                  {/* Hide Google Maps UI by boldly pushing negative margins - specifically top to hide reviews */}
                   <div className="absolute -top-[125px] -left-[40px] w-[calc(100%+80px)] h-[calc(100%+170px)] md:-top-[140px] md:h-[calc(100%+190px)] pointer-events-none">
                     <iframe
                       title="Mapa de ubicación de Google"
@@ -256,7 +328,6 @@ export default function Home() {
                     </iframe>
                   </div>
 
-                  {/* Elegant Floating Badge (Always Visible, Centered Bottom) */}
                   <a
                     href="https://www.google.com/maps/search/?api=1&query=Restaurante+El+Atlante+de+San+Cristobal+Las+Palmas"
                     target="_blank"
@@ -286,7 +357,7 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* Contact Info - THIRD on Mobile */}
+            {/* Contact Info */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -301,7 +372,6 @@ export default function Home() {
                 <h3 className="text-2xl font-serif text-slate-900 dark:text-slate-100 leading-tight">
                   {t('contacto.direccion')}
                 </h3>
-
               </div>
 
               <div className="space-y-4">
@@ -327,8 +397,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-
     </>
   );
 }

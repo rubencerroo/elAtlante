@@ -2,11 +2,12 @@ import { useState, useRef, useEffect } from 'react';
 import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import { addReservation } from '../services/reservationStore';
+import { addReservation, getCalendarOverrides } from '../services/reservationStore';
 import GuestCounter from './GuestCounter';
 import Calendar from './Calendar';
 import CustomSelect from './CustomSelect';
-import { getAvailableTimes, isDateValid, getTodayDateString, getDefaultReservationDateTime } from '../utils/reservationUtils';
+import { getAvailableTimes, isDateValid, getTodayDateString, getDefaultReservationDateTime, isDayClosed, type CalendarOverride } from '../utils/reservationUtils';
+import { AlertModal } from './AlertModal';
 
 interface ManualReservationModalProps {
   onClose: () => void;
@@ -15,22 +16,46 @@ interface ManualReservationModalProps {
 
 export default function ManualReservationModal({ onClose, onSave }: ManualReservationModalProps) {
   const today = getTodayDateString();
-  const defaultDateTime = getDefaultReservationDateTime();
+  const [overrides, setOverrides] = useState<CalendarOverride[]>([]);
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    date: defaultDateTime.date,
-    time: defaultDateTime.time,
+    date: today,
+    time: '',
     guests: 2,
     preference: 'Indiferente' as any,
     hasPet: false,
     notes: '',
     source: 'phone'
   });
+
+  useEffect(() => {
+    getCalendarOverrides().then(data => {
+      setOverrides(data);
+      const defaultDT = getDefaultReservationDateTime(data);
+      setFormData(prev => ({
+        ...prev,
+        date: defaultDT.date,
+        time: defaultDT.time
+      }));
+    });
+  }, []);
+
   const [loading, setLoading] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'info' | 'error' | 'success' | 'confirm';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info'
+  });
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -48,12 +73,22 @@ export default function ManualReservationModal({ onClose, onSave }: ManualReserv
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isDateValid(formData.date, formData.time)) {
-      alert('La fecha u hora seleccionada no es válida (restaurante cerrado o fuera de horario).');
+    if (!isDateValid(formData.date, formData.time, overrides)) {
+      setAlertConfig({
+        isOpen: true,
+        title: 'Error de validación',
+        message: 'La fecha u hora seleccionada no es válida (restaurante cerrado o fuera de horario).',
+        type: 'error'
+      });
       return;
     }
     if (formData.phone.length < 9) {
-      alert('El número de teléfono no es válido.');
+      setAlertConfig({
+        isOpen: true,
+        title: 'Formato incorrecto',
+        message: 'El número de teléfono no es válido.',
+        type: 'error'
+      });
       return;
     }
     setLoading(true);
@@ -64,15 +99,20 @@ export default function ManualReservationModal({ onClose, onSave }: ManualReserv
       });
       onSave();
     } catch (err: any) {
-      alert(err.message === 'DUPLICATE_RESERVATION'
-        ? 'Ya existe una reserva para ese cliente en esa fecha/hora.'
-        : 'Error al crear la reserva.');
+      setAlertConfig({
+        isOpen: true,
+        title: 'Error al reservar',
+        message: err.message === 'DUPLICATE_RESERVATION'
+          ? 'Ya existe una reserva para ese cliente en esa fecha/hora.'
+          : 'Error al crear la reserva.',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const activeTimes = getAvailableTimes(formData.date, 15);
+  const activeTimes = getAvailableTimes(formData.date, 15, overrides);
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '';
@@ -142,7 +182,7 @@ export default function ManualReservationModal({ onClose, onSave }: ManualReserv
                     <Calendar
                       selectedDate={formData.date}
                       onSelect={(date) => {
-                        const newTimes = getAvailableTimes(date, 15);
+                        const newTimes = getAvailableTimes(date, 15, overrides);
                         setFormData({
                           ...formData,
                           date: date,
@@ -151,11 +191,19 @@ export default function ManualReservationModal({ onClose, onSave }: ManualReserv
                         setShowCalendar(false);
                       }}
                       minDate={today}
+                      overrides={overrides}
                     />
                   </motion.div>
                 )}
               </AnimatePresence>
+              
+              {formData.date && isDayClosed(formData.date, overrides) && (
+                <p className="text-[10px] text-red-500 font-medium italic mt-1 animate-pulse">
+                  Este día está marcado como cerrado.
+                </p>
+              )}
             </div>
+            
             <div className="space-y-2 col-span-1">
               <label className="text-[10px] font-bold uppercase tracking-widest ml-1" style={{ color: 'var(--admin-text-secondary)' }}>Hora</label>
               <CustomSelect
@@ -241,6 +289,13 @@ export default function ManualReservationModal({ onClose, onSave }: ManualReserv
           </div>
         </form>
       </div>
+      <AlertModal 
+        isOpen={alertConfig.isOpen}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onConfirm={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }

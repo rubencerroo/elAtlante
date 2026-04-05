@@ -14,12 +14,13 @@ export default function FeedbackButton({ role, className }: FeedbackButtonProps)
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
     
-    
+    setError(null);
     setIsSubmitting(true);
     let userEmail = '';
     const user = getUser();
@@ -36,7 +37,7 @@ export default function FeedbackButton({ role, className }: FeedbackButtonProps)
         setContent('');
       }, 2000);
     } else {
-      alert('Error al enviar. Inténtalo de nuevo.');
+      setError('Error al enviar. Inténtalo de nuevo.');
     }
   };
 
@@ -109,6 +110,10 @@ export default function FeedbackButton({ role, className }: FeedbackButtonProps)
                       style={{ background: 'var(--admin-bg-input)', borderColor: 'var(--admin-border)', color: 'var(--admin-text)' }}
                     />
                   </div>
+
+                  {error && (
+                    <p className="text-xs text-red-500 font-medium animate-pulse">{error}</p>
+                  )}
 
                   <div className="pt-2 flex gap-3">
                     <button

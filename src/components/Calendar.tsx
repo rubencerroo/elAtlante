@@ -1,15 +1,16 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { normalizeDayName, OPENING_HOURS } from '../utils/reservationUtils';
+import { isDayClosed, type CalendarOverride } from '../utils/reservationUtils';
 
 interface CalendarProps {
   selectedDate: string; // YYYY-MM-DD
   onSelect: (date: string) => void;
   minDate?: string; // YYYY-MM-DD
+  overrides?: CalendarOverride[];
 }
 
-export default function Calendar({ selectedDate, onSelect, minDate }: CalendarProps) {
+export default function Calendar({ selectedDate, onSelect, minDate, overrides = [] }: CalendarProps) {
   const { t } = useTranslation();
   const [viewDate, setViewDate] = useState(() => {
     const initial = selectedDate || minDate || new Date().toISOString().split('T')[0];
@@ -82,8 +83,7 @@ export default function Calendar({ selectedDate, onSelect, minDate }: CalendarPr
     if (minDate && dateStr < minDate) return true;
     
     // Closed days
-    const normalizedDay = normalizeDayName(date);
-    return OPENING_HOURS.closed.includes(normalizedDay);
+    return isDayClosed(dateStr, overrides);
   };
 
   const handleSelect = (d: number, m: number, y: number) => {

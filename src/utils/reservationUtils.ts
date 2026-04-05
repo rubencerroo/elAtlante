@@ -57,26 +57,39 @@ export function timeToMinutes(t: string): number {
   return h * 60 + m;
 }
 
+export interface CalendarOverride {
+  date: string;
+  isClosed: boolean;
+  slots?: { start: string; end: string }[];
+}
+
 /**
  * Checks if the restaurant is open on a given date and time
  */
-export function isDateValid(dateStr: string, timeStr: string): boolean {
+export function isDateValid(dateStr: string, timeStr: string, overrides: CalendarOverride[] = []): boolean {
   if (!dateStr || !timeStr) return false;
   
   const date = new Date(dateStr + 'T12:00:00');
   const normalizedDay = normalizeDayName(date);
   const currentMinutes = timeToMinutes(timeStr);
 
-  if (OPENING_HOURS.closed.includes(normalizedDay)) {
+  const isClosedByOverride = overrides.find(o => o.date === dateStr)?.isClosed;
+  if (isClosedByOverride) return false;
+
+  const isExplicitlyOpen = overrides.find(o => o.date === dateStr && !o.isClosed) !== undefined;
+
+  if (!isExplicitlyOpen && OPENING_HOURS.closed.includes(normalizedDay)) {
     return false;
   }
 
   if (normalizedDay === 'domingo') {
+    // If it's Sunday OR if it was explicitly opened on a closed day, use the standard/sunday hours?
+    // Wait, let's use standard hours for explicitly opened non-Sunday days.
     return currentMinutes >= timeToMinutes(OPENING_HOURS.sunday.service.start) && 
            currentMinutes <= timeToMinutes(OPENING_HOURS.sunday.service.end);
   }
 
-  // Monday, Thursday, Friday, Saturday (Continuous Service)
+  // Monday, Thursday, Friday, Saturday (Continuous Service) - AND overridden opened days
   return currentMinutes >= timeToMinutes(OPENING_HOURS.standard.service.start) && 
          currentMinutes <= timeToMinutes(OPENING_HOURS.standard.service.end);
 }
@@ -106,8 +119,14 @@ export function isReservationTimeValid(dateStr: string, timeStr: string): boolea
 /**
  * Checks if a specific date is closed
  */
-export function isDayClosed(dateStr: string): boolean {
+export function isDayClosed(dateStr: string, overrides: CalendarOverride[] = []): boolean {
   if (!dateStr) return true;
+  
+  const override = overrides.find(o => o.date === dateStr);
+  if (override) {
+    return override.isClosed;
+  }
+
   const date = new Date(dateStr + 'T12:00:00');
   const normalizedDay = normalizeDayName(date);
   return OPENING_HOURS.closed.includes(normalizedDay);
@@ -116,13 +135,18 @@ export function isDayClosed(dateStr: string): boolean {
 /**
  * Generates available time slots for a given date
  */
-export function getAvailableTimes(dateStr: string, intervalMinutes: number = 30): string[] {
+export function getAvailableTimes(dateStr: string, intervalMinutes: number = 30, overrides: CalendarOverride[] = []): string[] {
   if (!dateStr) return [];
   
   const date = new Date(dateStr + 'T12:00:00');
   const normalizedDay = normalizeDayName(date);
   
-  if (OPENING_HOURS.closed.includes(normalizedDay)) {
+  const override = overrides.find(o => o.date === dateStr);
+  if (override?.isClosed) return [];
+
+  const isExplicitlyOpen = override !== undefined && !override.isClosed;
+
+  if (!isExplicitlyOpen && OPENING_HOURS.closed.includes(normalizedDay)) {
     return [];
   }
 
@@ -139,7 +163,11 @@ export function getAvailableTimes(dateStr: string, intervalMinutes: number = 30)
     }
   };
 
-  if (normalizedDay === 'domingo') {
+  if (isExplicitlyOpen && override?.slots && override.slots.length > 0) {
+    override.slots.forEach(slot => {
+      generateRange(slot.start, slot.end);
+    });
+  } else if (normalizedDay === 'domingo') {
     generateRange(OPENING_HOURS.sunday.service.start, OPENING_HOURS.sunday.service.end);
   } else {
     // Continuous Service (Lunch through Dinner)
@@ -207,13 +235,13 @@ export function isRestaurantOpenNow(): boolean {
  * Gets the next available date and its first available time slot.
  * Returns { date: string, time: string }
  */
-export function getDefaultReservationDateTime(): { date: string; time: string } {
+export function getDefaultReservationDateTime(overrides: CalendarOverride[] = []): { date: string; time: string } {
   const currentDate = new Date();
   
   // Check up to 30 days ahead to find the next available slot
   for (let i = 0; i < 30; i++) {
     const dateStr = currentDate.toLocaleDateString('en-CA', { timeZone: RESTAURANT_TIMEZONE });
-    const times = getAvailableTimes(dateStr, 15);
+    const times = getAvailableTimes(dateStr, 15, overrides);
     
     if (times.length > 0) {
       return { date: dateStr, time: times[0] };

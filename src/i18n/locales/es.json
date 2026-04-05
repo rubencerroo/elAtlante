@@ -55,7 +55,16 @@
     "cerrado": "Cerrado",
     "title": "Vente a vernos",
     "reserveTitle": "¿Quieres asegurar tu mesa?",
-    "reserveBtn": "Reserva Online"
+    "reserveBtn": "Reserva Online",
+    "alerts": {
+      "title": "Avisos Especiales",
+      "closedOn": "Permaneceremos cerrados el {{date}}.",
+      "closedToday": "Hoy el restaurante permanecerá cerrado.",
+      "closedTomorrow": "Mañana permaneceremos cerrados.",
+      "specialHoursOn": "Horario especial el {{date}}: {{hours}}",
+      "specialHoursToday": "Hoy tenemos un horario especial: {{hours}}",
+      "specialHoursTomorrow": "Mañana el horario será: {{hours}}"
+    }
   },
   "contacto": {
     "ubicacionLabel": "Ubicación",

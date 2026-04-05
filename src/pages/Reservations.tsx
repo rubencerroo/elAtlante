@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, useTransition } from 'react';
+import { useState, useRef, useEffect, useTransition } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
-import { /* addReservation, */ getReservationById, type Reservation } from '../services/reservationStore';
+import { getReservationById, getCalendarOverrides, type Reservation } from '../services/reservationStore';
 import GuestCounter from '../components/GuestCounter';
 import Calendar from '../components/Calendar';
 import CustomSelect from '../components/CustomSelect';
@@ -12,6 +12,8 @@ import SEO from '../components/SEO';
 import { getAvailableTimes, /* isDateValid, */ getTodayDateString, isDayClosed, isRestaurantOpenNow, /* isReservationTimeValid, */ getDefaultReservationDateTime } from '../utils/reservationUtils';
 import { CONTACT_INFO } from '../constants/contact';
 import { getBreadcrumbList } from '../utils/seoStructuredData';
+import type { CalendarOverride } from '../utils/reservationUtils';
+import { AlertModal } from '../components/AlertModal';
 
 export default function Reservations() {
   const { t, i18n } = useTranslation();
@@ -24,17 +26,35 @@ export default function Reservations() {
   const [searchParams] = useSearchParams();
   const [phone, setPhone] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  // const [isSubmitting, setIsSubmitting] = useState(false); // COMENTADO PARA EVITAR ERROR DE BUILD. Reactivar cuando se habilite de nuevo el botón de reserva.
+  // const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastReservation, setLastReservation] = useState<Reservation | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
   const [, startTransitionCalendar] = useTransition();
   const calendarRef = useRef<HTMLDivElement>(null);
   const defaultDateTime = getDefaultReservationDateTime();
+  const [overrides, setOverrides] = useState<CalendarOverride[]>([]);
   const [formData, setFormData] = useState({
     name: '', email: '', date: defaultDateTime.date, time: defaultDateTime.time,
     guests: 2, preference: 'Indiferente' as const,
     hasPet: false, notes: '', acceptPolicies: false,
   });
+  const [alertConfig, setAlertConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'info' | 'error' | 'success' | 'confirm';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info'
+  });
+
+  useEffect(() => {
+    getCalendarOverrides().then(data => {
+      setOverrides(data);
+    });
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -50,15 +70,29 @@ export default function Reservations() {
     };
   }, [showCalendar]);
 
+  const handleChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   useEffect(() => {
     const isConfirmed = searchParams.get('confirmed') === 'true';
     const reservationId = searchParams.get('id');
     const errorParam = searchParams.get('error');
 
     if (errorParam === 'failed_to_confirm') {
-      alert(t('reservas.alerts.failedToConfirm'));
+      setAlertConfig({
+        isOpen: true,
+        title: t('common.error'),
+        message: t('reservas.alerts.failedToConfirm'),
+        type: 'error'
+      });
     } else if (errorParam === 'reservation_cancelled') {
-      alert(t('reservas.alerts.reservationCancelled'));
+      setAlertConfig({
+        isOpen: true,
+        title: t('nav.reservar'),
+        message: t('reservas.alerts.reservationCancelled'),
+        type: 'info'
+      });
     }
 
     if (isConfirmed && reservationId && !submitted) {
@@ -67,32 +101,47 @@ export default function Reservations() {
           setLastReservation(res);
           setSubmitted(true);
         } else {
-          alert(t('reservas.alerts.notFoundConfirmed'));
+          setAlertConfig({
+            isOpen: true,
+            title: t('common.error'),
+            message: t('reservas.alerts.notFoundConfirmed'),
+            type: 'error'
+          });
         }
       });
     }
-  }, [searchParams, submitted]);
-
-  const handleChange = (field: string, value: string | boolean | number) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  }, [searchParams, submitted, t]);
 
   /* 
-  // ESTA PARTE ES PARA CUANDO SE QUIERA ACTIVAR EL BOTÓN DE RESERVA
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (phone.length < 9) {
-      alert(t('reservas.alerts.invalidPhone'));
+      setAlertConfig({
+        isOpen: true,
+        title: t('common.error'),
+        message: t('reservas.alerts.invalidPhone'),
+        type: 'error'
+      });
       return;
     }
 
-    if (!isDateValid(formData.date, formData.time)) {
-      alert(t('reservas.alerts.restaurantClosed'));
+    if (!isDateValid(formData.date, formData.time, overrides)) {
+      setAlertConfig({
+        isOpen: true,
+        title: t('common.error'),
+        message: t('reservas.alerts.restaurantClosed'),
+        type: 'error'
+      });
       return;
     }
 
     if (!isReservationTimeValid(formData.date, formData.time)) {
-      alert(t('reservas.alerts.tooSoon'));
+      setAlertConfig({
+        isOpen: true,
+        title: t('common.error'),
+        message: t('reservas.alerts.tooSoon'),
+        type: 'error'
+      });
       return;
     }
 
@@ -100,32 +149,40 @@ export default function Reservations() {
 
     try {
       const reservation = await addReservation({
-        name: formData.name,
-        email: formData.email,
+        ...formData,
         phone,
-        date: formData.date,
-        time: formData.time,
-        guests: formData.guests,
-        preference: formData.preference as 'Indiferente' | 'Interior' | 'Mesas altas' | 'Terraza exterior',
-        hasPet: formData.hasPet,
-        notes: formData.notes,
         utmSource: searchParams.get('utm_source') || undefined,
         utmMedium: searchParams.get('utm_medium') || undefined,
         utmCampaign: searchParams.get('utm_campaign') || undefined,
-        language: navigator.language,
+        language: i18n.language,
       });
       if (reservation) {
         setLastReservation(reservation);
         setSubmitted(true);
       } else {
-        alert(t('reservas.alerts.errorProcessing'));
+        setAlertConfig({
+          isOpen: true,
+          title: t('common.error'),
+          message: t('reservas.alerts.errorProcessing'),
+          type: 'error'
+        });
       }
     } catch (err: any) {
       console.error('Reservation submission error:', err);
       if (err.message === 'DUPLICATE_RESERVATION') {
-        alert(t('reservas.alerts.duplicateReservation'));
+        setAlertConfig({
+          isOpen: true,
+          title: t('common.error'),
+          message: t('reservas.alerts.duplicateReservation'),
+          type: 'error'
+        });
       } else {
-        alert(t('reservas.alerts.errorProcessingWithReason', { reason: err.message || t('reservas.alerts.unknownError') }));
+        setAlertConfig({
+          isOpen: true,
+          title: t('common.error'),
+          message: t('reservas.alerts.errorProcessingWithReason', { reason: err.message || t('reservas.alerts.unknownError') }),
+          type: 'error'
+        });
       }
     } finally {
       setIsSubmitting(false);
@@ -256,7 +313,6 @@ export default function Reservations() {
 
           {/* Left Column: Visual & Info — hidden on mobile */}
           <div className="hidden lg:flex lg:w-11/25 relative p-12 lg:p-20 flex-col justify-between overflow-hidden">
-            {/* Texture/Overlay */}
             <div className="absolute inset-0 -z-10">
               <div className="absolute inset-0 bg-primary/5 dark:bg-primary/20 mix-blend-multiply"></div>
               <img
@@ -275,17 +331,11 @@ export default function Reservations() {
                 </h1>
                 <div className="w-16 h-px bg-primary/20"></div>
               </div>
-
-
             </div>
-
-
           </div>
 
           {/* Right Column: Form */}
           <div className="w-full lg:w-14/25 p-5 md:p-12 lg:p-20 relative bg-[#F9FAFB] dark:bg-transparent">
-
-            {/* Mobile-only compact header - CHANGED TO H2 to avoid double H1 */}
             <div className="lg:hidden mb-6">
               <span className="text-primary/60 dark:text-slate-400 font-medium tracking-[0.4em] uppercase text-[10px]">{t('reservas.form.subtitle')}</span>
               <h2 className="text-primary dark:text-slate-100 text-3xl font-serif font-bold leading-tight tracking-tight mt-1">
@@ -351,21 +401,12 @@ export default function Reservations() {
                             className="w-full max-w-sm"
                             onClick={e => e.stopPropagation()}
                           >
-                            <div className="flex justify-between items-center mb-3 px-1">
-                              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">{t('reservas.form.date')}</span>
-                              <button
-                                type="button"
-                                onClick={() => setShowCalendar(false)}
-                                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-slate-400 hover:text-white transition-colors"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                              </button>
-                            </div>
                             <Calendar
                               selectedDate={formData.date}
+                              overrides={overrides}
                               onSelect={(date) => {
                                 handleChange('date', date);
-                                const times = getAvailableTimes(date, 15);
+                                const times = getAvailableTimes(date, 15, overrides);
                                 if (times.length > 0 && (!formData.time || !times.includes(formData.time))) {
                                   handleChange('time', times[0]);
                                 } else if (times.length === 0) {
@@ -388,9 +429,10 @@ export default function Reservations() {
                         >
                           <Calendar
                             selectedDate={formData.date}
+                            overrides={overrides}
                             onSelect={(date) => {
                               handleChange('date', date);
-                              const times = getAvailableTimes(date, 15);
+                              const times = getAvailableTimes(date, 15, overrides);
                               if (times.length > 0 && (!formData.time || !times.includes(formData.time))) {
                                 handleChange('time', times[0]);
                               } else if (times.length === 0) {
@@ -405,7 +447,7 @@ export default function Reservations() {
                     )}
                   </AnimatePresence>
 
-                  {formData.date && isDayClosed(formData.date) && (
+                  {formData.date && isDayClosed(formData.date, overrides) && (
                     <p className="text-[10px] text-red-500 font-medium italic mt-1 animate-pulse">
                       {t('reservas.form.dateClosedError')}
                     </p>
@@ -420,7 +462,7 @@ export default function Reservations() {
                     <CustomSelect
                       value={formData.time}
                       onChange={v => handleChange('time', v)}
-                      options={getAvailableTimes(formData.date, 15).map(time => ({ value: time, label: `${time} h` }))}
+                      options={getAvailableTimes(formData.date, 15, overrides).map(time => ({ value: time, label: `${time} h` }))}
                       placeholder={t('reservas.form.closedThisDay')}
                     />
                   </div>
@@ -542,6 +584,13 @@ export default function Reservations() {
           </div>
         </div>
       </div>
+      <AlertModal 
+        isOpen={alertConfig.isOpen}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onConfirm={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }

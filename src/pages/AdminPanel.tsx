@@ -11,6 +11,7 @@ import { signOut, getStaffRole, getSession, getStaffProfiles, inviteStaff, delet
 
 import StatsCards from './admin/StatsCards';
 import StatusKanban from './admin/StatusKanban';
+import CalendarSettingsView from './admin/CalendarSettingsView';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import FeedbackButton from '../components/FeedbackButton';
 import logoWhite from '../assets/logowhite.png';
@@ -31,7 +32,7 @@ const STATUS_CONFIG: Record<ReservationStatus, { label: string; color: string; b
   'waiting':   { label: 'En Espera', color: 'text-purple-400',  bg: 'bg-purple-400/10 border-purple-400/20' },
 };
 
-type AdminTab = 'kanban' | 'dashboard' | 'crm' | 'staff' | 'feedback';
+type AdminTab = 'kanban' | 'dashboard' | 'crm' | 'staff' | 'feedback' | 'calendar';
 
 
 
@@ -292,6 +293,7 @@ function AdminPanelInner() {
     { key: 'dashboard', label: 'Dashboard', icon: '📊' },
     { key: 'crm', label: 'Clientes', icon: '👥' },
     { key: 'staff', label: 'Equipo', icon: '🔑' },
+    { key: 'calendar', label: 'Calendario', icon: '📅' },
     { key: 'feedback', label: 'Feedback', icon: '💬' },
   ];
 
@@ -385,6 +387,7 @@ function AdminPanelInner() {
         {activeTab === 'dashboard' && <DashboardView filterDate={filterDate} setFilterDate={setFilterDate} reservations={reservations} occupancyData={occupancyData} statusData={statusData} weeklyComp={weeklyComp} noShowRate={noShowRate} metrics={metrics} shiftNote={shiftNote} setShiftNote={setShiftNote} handleSaveNote={handleSaveNote} savingNote={savingNote} />}
         {activeTab === 'crm' && <CRMView search={crmSearch} setSearch={setCrmSearch} selectedClient={selectedClient} setSelectedClient={setSelectedClient} clientProfiles={clientProfiles} />}
         {activeTab === 'staff' && <StaffView showAlert={showAlert} />}
+        {activeTab === 'calendar' && <CalendarSettingsView />}
         {activeTab === 'feedback' && <FeedbackView feedbacks={feedbacks} onReload={fetchDashboardData} currentUserEmail={currentUserEmail} showAlert={showAlert} />}
 
         {loading && (

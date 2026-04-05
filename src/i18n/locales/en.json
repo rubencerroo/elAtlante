@@ -55,7 +55,16 @@
     "cerrado": "Closed",
     "title": "Come visit us",
     "reserveTitle": "Want to secure your table?",
-    "reserveBtn": "Book Online"
+    "reserveBtn": "Online Booking",
+    "alerts": {
+      "title": "Special Announcements",
+      "closedOn": "We will be closed on {{date}}.",
+      "closedToday": "We are closed today.",
+      "closedTomorrow": "We will be closed tomorrow.",
+      "specialHoursOn": "Special hours on {{date}}: {{hours}}",
+      "specialHoursToday": "We have special hours today: {{hours}}",
+      "specialHoursTomorrow": "Tomorrow's special hours: {{hours}}"
+    }
   },
   "contacto": {
     "ubicacionLabel": "Location",
