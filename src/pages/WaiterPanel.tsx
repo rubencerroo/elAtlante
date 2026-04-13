@@ -293,8 +293,17 @@ function WaiterPanelInner() {
               <p className="text-[10px] uppercase tracking-tight" style={{ color: 'var(--admin-text-muted)' }}>{today} · {currentTimeStr}</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <FeedbackButton role="waiter" className="text-slate-500 text-xs flex items-center gap-1.5 transition-colors hover:text-amber-400" />
+            {/* Sleep Mode Button */}
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('force-sleep-mode'))}
+              title="Modo reposo"
+              className="flex items-center justify-center w-8 h-8 rounded-lg transition-all hover:bg-slate-500/10 active:scale-95"
+              style={{ color: 'var(--admin-text-muted)' }}
+            >
+              <span className="text-base leading-none select-none">💤</span>
+            </button>
             <button onClick={logout} className="text-xs flex items-center gap-2 transition-colors hover:text-red-400" style={{ color: 'var(--admin-text-muted)' }}>
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 -960 960 960"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>
               Salir

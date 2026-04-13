@@ -3,9 +3,9 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   getReservations, updateReservation, getStats, deleteReservation,
-  getOccupancyByHour, getStatusDistribution, getWeeklyComparison, getNoShowRate, getWaitAndMealMetrics,
+  getOccupancyByHour, getStatusDistribution, getWeeklyComparison, getNoShowRate, getWaitAndMealMetrics, getForecastData,
   getClientProfiles, getClientMeta, saveClientMeta, getOccupiedTables, getShiftNote, saveShiftNote, getFeedbacks, updateFeedbackStatus, deleteFeedback,
-  type Reservation, type ReservationStatus, type ReservationStats, type ClientProfile, type ClientMeta, type WaitAndMealMetrics
+  type Reservation, type ReservationStatus, type ReservationStats, type ClientProfile, type ClientMeta, type WaitAndMealMetrics, type ForecastDay
 } from '../services/reservationStore';
 import { signOut, getStaffRole, getSession, getStaffProfiles, inviteStaff, deleteStaff, updateStaffProfile, isTabletAuthorized, authorizeTablet, deauthorizeTablet, getActiveStaffId, type StaffProfile, type StaffRole } from '../services/authStore';
 
@@ -60,6 +60,7 @@ function AdminPanelInner() {
   const [weeklyComp, setWeeklyComp] = useState<{ thisWeek: number; lastWeek: number; change: number }>({ thisWeek: 0, lastWeek: 0, change: 0 });
   const [noShowRate, setNoShowRate] = useState(0);
   const [metrics, setMetrics] = useState<WaitAndMealMetrics | null>(null);
+  const [forecastData, setForecastData] = useState<ForecastDay[]>([]);
   const [clientProfiles, setClientProfiles] = useState<ClientProfile[]>([]);
   const [occupiedTables, setOccupiedTables] = useState<number[]>([]);
   const [shiftNote, setShiftNote] = useState('');
@@ -153,7 +154,8 @@ function AdminPanelInner() {
       getClientProfiles(),
       getOccupiedTables(filterDate === 'all' ? new Date().toISOString().split('T')[0] : filterDate),
       getShiftNote(filterDate === 'all' ? new Date().toISOString().split('T')[0] : filterDate),
-      getWaitAndMealMetrics(filterDate)
+      getWaitAndMealMetrics(filterDate),
+      getForecastData()
     ]);
 
     setReservations(resData);
@@ -163,6 +165,11 @@ function AdminPanelInner() {
     setWeeklyComp(weeklyData);
     setNoShowRate(nsRate);
     setMetrics(metricsData);
+    
+    // We already fetch getForecastData as the 11th array item or we just fetch it again safely:
+    const forecastReturn = await getForecastData().catch(() => []);
+    setForecastData(forecastReturn);
+
     setClientProfiles(profiles);
     setOccupiedTables(occTables);
     setShiftNote(note || '');
@@ -316,8 +323,17 @@ function AdminPanelInner() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <FeedbackButton role="admin" />
+            {/* Sleep Mode Button */}
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('force-sleep-mode'))}
+              title="Modo reposo"
+              className="flex items-center justify-center w-8 h-8 rounded-lg transition-all hover:bg-slate-500/10 active:scale-95"
+              style={{ color: 'var(--admin-text-muted)' }}
+            >
+              <span className="text-base leading-none select-none">💤</span>
+            </button>
             <button onClick={logout} className="text-sm flex items-center gap-2 transition-colors hover:text-red-400" style={{ color: 'var(--admin-text-secondary)' }}>
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 -960 960 960"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>
               Salir
@@ -359,7 +375,7 @@ function AdminPanelInner() {
 
         {/* Tab Content */}
         {activeTab === 'kanban' && <StatusKanban filtered={filtered} handleStatus={handleStatus} handleDelete={handleDelete} handleAssignTable={handleAssignTable} showTableSelector={showTableSelector} setShowTableSelector={setShowTableSelector} occupiedTables={occupiedTables}  />}
-        {activeTab === 'dashboard' && <DashboardView filterDate={filterDate} setFilterDate={setFilterDate} reservations={reservations} occupancyData={occupancyData} statusData={statusData} weeklyComp={weeklyComp} noShowRate={noShowRate} metrics={metrics} shiftNote={shiftNote} setShiftNote={setShiftNote} handleSaveNote={handleSaveNote} savingNote={savingNote} />}
+        {activeTab === 'dashboard' && <DashboardView filterDate={filterDate} setFilterDate={setFilterDate} reservations={reservations} occupancyData={occupancyData} statusData={statusData} weeklyComp={weeklyComp} noShowRate={noShowRate} metrics={metrics} shiftNote={shiftNote} setShiftNote={setShiftNote} handleSaveNote={handleSaveNote} savingNote={savingNote} forecastData={forecastData} />}
         {activeTab === 'crm' && <CRMView search={crmSearch} setSearch={setCrmSearch} selectedClient={selectedClient} setSelectedClient={setSelectedClient} clientProfiles={clientProfiles} />}
         {activeTab === 'staff' && <StaffView showAlert={showAlert} />}
         {activeTab === 'calendar' && <CalendarSettingsView />}
@@ -397,7 +413,7 @@ function AdminPanelInner() {
 
 function DashboardView({ 
   filterDate, setFilterDate, reservations, occupancyData: _occupancyData, statusData: _statusData, weeklyComp, noShowRate, metrics,
-  shiftNote, setShiftNote, handleSaveNote, savingNote
+  shiftNote, setShiftNote, handleSaveNote, savingNote, forecastData
 }: { 
   filterDate: string;
   setFilterDate: (date: string) => void;
@@ -411,6 +427,7 @@ function DashboardView({
   setShiftNote: (note: string) => void;
   handleSaveNote: () => void;
   savingNote: boolean;
+  forecastData: ForecastDay[];
 }) {
   const [timeRange, setTimeRange] = useState<'daily' | 'weekly' | 'monthly' | 'all' | 'future'>('all');
 
@@ -533,22 +550,7 @@ function DashboardView({
       .sort((a, b) => b.value - a.value);
   };
 
-  const getForecast = () => {
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    const result = [];
-    for (let i = 1; i <= 7; i++) {
-      const d = new Date(today);
-      d.setDate(d.getDate() + i);
-      const dStr = d.toISOString().split('T')[0];
-      const count = reservations.filter(r => r.date === dStr && r.status !== 'cancelled').length;
-      result.push({ date: d.toLocaleDateString('es-ES', { weekday: 'short' }), count });
-    }
-    return result;
-  };
-
   const sourceData = getSourceDistribution();
-  const forecastData = getForecast();
   const localStatusData = getStatusData();
   const localOccupancyData = getOccupancyData();
   const nationalityData = getNationalityData();
@@ -665,7 +667,47 @@ function DashboardView({
               </div>
             </>
           ) : (
-             <div className="text-center py-12 text-slate-600 text-xs">Sin datos para este periodo</div>
+            <div className="text-center py-12 text-slate-600 text-xs">Sin datos para este periodo</div>
+          )}
+        </div>
+
+        {/* Forecast Chart */}
+        <div className="lg:col-span-3 rounded-2xl p-6" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
+          <h3 className="text-sm font-semibold mb-4">Previsión próxima semana (Estimado vs Actual)</h3>
+          {forecastData && forecastData.length > 0 ? (
+            <div className="flex items-end gap-3 w-full h-48 mt-4">
+              {forecastData.map((f, i) => {
+                const maxFcst = Math.max(...forecastData.map(d => d.projected), 1);
+                return (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-2 group relative">
+                    {/* Tooltip on hover */}
+                    <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-[10px] py-1 px-2 rounded pointer-events-none z-10 whitespace-nowrap shadow-xl">
+                      {f.actual} actu. / {f.projected} est.<br/>
+                      <span className="text-slate-400">Med. hist: {f.historical}</span>
+                    </div>
+                    {/* Projected ghost bar */}
+                    <div className="w-full relative rounded-t-lg flex flex-col justify-end"
+                      style={{
+                        height: `${Math.max(10, (f.projected / maxFcst) * 150)}px`,
+                        background: 'rgba(56,189,248,0.1)',
+                        border: '1px dashed rgba(56,189,248,0.3)',
+                        borderBottom: 'none'
+                      }}>
+                      {/* Actual inner bar */}
+                      <div className="w-full rounded-t-lg transition-all"
+                        style={{
+                          height: `${(f.actual / Math.max(f.projected, 1)) * 100}%`,
+                          background: 'linear-gradient(180deg,#38bdf8,#0284c7)',
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs font-bold text-slate-500">{f.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-slate-600 text-xs">Calculando previsión...</div>
           )}
         </div>
       </div>
@@ -736,23 +778,7 @@ function DashboardView({
           )}
         </div>
 
-        {/* Forecast */}
-        <div className="rounded-2xl p-6" style={{ background: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)' }}>
-          <h3 className="text-sm font-semibold mb-4">Previsión 7 días</h3>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={forecastData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
-              <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
-              <Tooltip
-                contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontSize: '12px' }}
-                labelStyle={{ color: '#94a3b8' }}
-                itemStyle={{ color: '#10b981' }}
-              />
-              <Bar dataKey="count" fill="#10b981" radius={[8, 8, 0, 0]} name="Reservas Esperadas" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+
       </div>
 
       {/* Shift Notes */}

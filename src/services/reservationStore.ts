@@ -548,6 +548,125 @@ export async function getNoShowRate(): Promise<number> {
   return Math.round((noShows / data.length) * 100);
 }
 
+export interface ForecastDay {
+  date: string;
+  label: string;
+  actual: number;        // confirmed future reservations already in DB
+  projected: number;     // booking-pace model estimate of final total
+  historical: number;    // simple avg for that weekday (baseline)
+  hasActual: boolean;
+  confidence: 'high' | 'medium' | 'low';
+}
+
+/**
+ * Booking-pace forecast model.
+ *
+ * Builds a pickup curve per weekday from historical data:
+ *   pctAhead[dow][N] = fraction of reservations booked >= N days in advance
+ *
+ * For a future day X days away:
+ *   - If actual > 0: projected = actual / pctAhead[dow][X]  (pace extrapolation)
+ *   - If actual = 0: projected = avgTotal * (1 - pctAhead[dow][X])  (expected remaining)
+ *
+ * Self-improves as more reservations accumulate.
+ */
+export async function getForecastData(): Promise<ForecastDay[]> {
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+
+  const futureDates: { date: string; daysAway: number; dow: number; label: string }[] = [];
+  for (let i = 1; i <= 7; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() + i);
+    const dateStr = d.toISOString().split('T')[0];
+    futureDates.push({
+      date: dateStr,
+      daysAway: i,
+      dow: new Date(dateStr + 'T12:00:00').getDay(),
+      label: d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' }),
+    });
+  }
+
+  const lastFutureDate = futureDates[futureDates.length - 1].date;
+
+  const [{ data: historicalRaw, error: hErr }, { data: futureRaw, error: fErr }] = await Promise.all([
+    supabase
+      .from('reservations')
+      .select('date, created_at')
+      .lt('date', today)
+      .not('status', 'in', '(cancelled,no-show)')
+      .eq('is_walk_in', false),
+    supabase
+      .from('reservations')
+      .select('date')
+      .gt('date', today)
+      .lte('date', lastFutureDate)
+      .not('status', 'in', '(cancelled)'),
+  ]);
+
+  // Build per-DOW pickup model
+  const LEAD_BUCKETS = [0, 1, 3, 7, 14];
+  const dowModel: Record<number, { total: number; days: Set<string>; buckets: Record<number, number> }> = {};
+  for (let d = 0; d <= 6; d++) {
+    dowModel[d] = { total: 0, days: new Set(), buckets: Object.fromEntries(LEAD_BUCKETS.map(b => [b, 0])) };
+  }
+
+  if (!hErr && historicalRaw) {
+    historicalRaw.forEach(r => {
+      const dow = new Date(r.date + 'T12:00:00').getDay();
+      const leadDays = (new Date(r.date + 'T12:00:00').getTime() - new Date(r.created_at).getTime()) / 86400000;
+      dowModel[dow].total++;
+      dowModel[dow].days.add(r.date);
+      LEAD_BUCKETS.forEach(b => { if (leadDays >= b) dowModel[dow].buckets[b]++; });
+    });
+  }
+
+  // pctAhead[dow][b] = fraction of reservations booked >= b days ahead of dining date
+  const pctAhead: Record<number, Record<number, number>> = {};
+  for (let d = 0; d <= 6; d++) {
+    const { total, buckets } = dowModel[d];
+    const t = total || 1;
+    pctAhead[d] = Object.fromEntries(LEAD_BUCKETS.map(b => [b, buckets[b] / t]));
+  }
+
+  const actualByDate: Record<string, number> = {};
+  if (!fErr && futureRaw) {
+    futureRaw.forEach(r => { actualByDate[r.date] = (actualByDate[r.date] || 0) + 1; });
+  }
+
+  return futureDates.map(({ date, daysAway, dow, label }) => {
+    const m = dowModel[dow];
+    const hasSamples = m.days.size >= 1;
+    const avgTotal = hasSamples ? m.total / m.days.size : 0;
+    const actual = actualByDate[date] || 0;
+
+    let projected = actual;
+    if (hasSamples) {
+      // Find pct of bookings historically confirmed >= daysAway days out
+      let pctAlreadyIn = pctAhead[dow][0];
+      for (const b of LEAD_BUCKETS) {
+        if (daysAway >= b) pctAlreadyIn = pctAhead[dow][b];
+      }
+      if (actual > 0 && pctAlreadyIn > 0.05) {
+        projected = Math.round(actual / pctAlreadyIn);
+      } else if (actual === 0) {
+        projected = Math.round(avgTotal * (1 - pctAlreadyIn));
+      }
+      projected = Math.min(projected, Math.round(avgTotal * 2.5));
+    }
+
+    return {
+      date,
+      label,
+      actual,
+      projected: Math.max(actual, projected),
+      historical: Math.round(avgTotal),
+      hasActual: actual > 0,
+      confidence: !hasSamples ? 'low' : daysAway <= 3 ? 'high' : 'medium',
+    };
+  });
+}
+
 // ── CRM ──
 
 export async function getClientProfiles(): Promise<ClientProfile[]> {

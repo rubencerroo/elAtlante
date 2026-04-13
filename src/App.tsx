@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -18,9 +18,10 @@ import NotFound from './pages/NotFound';
 import { registerSW } from 'virtual:pwa-register';
 import CookieBanner from './components/CookieBanner';
 import { useIdleTimer } from './hooks/useIdleTimer';
-import { isTabletAuthorized, setActiveStaffId, getActiveStaffId } from './services/authStore';
+import { isTabletAuthorized, setActiveStaffId, getActiveStaffId, getStaffRole, signOut } from './services/authStore';
 import { useNavigate } from 'react-router-dom';
 import { loadTables } from './utils/tableConfig';
+import SleepModeScreen from './components/admin/SleepModeScreen';
 
 function PWASetup() {
   const { pathname } = useLocation();
@@ -94,19 +95,38 @@ function AppLayout() {
   const navigate = useNavigate();
   const isAdmin = pathname.startsWith('/admin');
   const isCartaRoute = pathname === '/carta';
-  
-  // Auto-lock logic for tablet mode
-  const handleAutoLock = useCallback(() => {
+
+  // Sleep mode state
+  const [isSleepMode, setIsSleepMode] = useState(false);
+  const [sleepRole, setSleepRole] = useState<'owner' | 'waiter' | null>(null);
+
+  // Activate sleep mode (captures current role before locking)
+  const activateSleep = useCallback(() => {
     if (isTabletAuthorized() && getActiveStaffId()) {
-      setActiveStaffId(null);
-      navigate('/admin');
+      const role = getStaffRole();
+      setSleepRole(role as 'owner' | 'waiter' | null);
+      setIsSleepMode(true);
     }
+  }, []);
+
+  // Wake from sleep: fully sign out and go to login
+  const handleWake = useCallback(async () => {
+    setIsSleepMode(false);
+    try { await signOut(); } catch { setActiveStaffId(null); }
+    navigate('/admin');
   }, [navigate]);
+
+  // Listen for manual sleep trigger from panels via custom event
+  useEffect(() => {
+    const handler = () => activateSleep();
+    window.addEventListener('force-sleep-mode', handler);
+    return () => window.removeEventListener('force-sleep-mode', handler);
+  }, [activateSleep]);
 
   useIdleTimer({
     timeout: 15 * 60 * 1000, // 15 minutes
-    onIdle: handleAutoLock,
-    enabled: isAdmin && isTabletAuthorized() && pathname !== '/admin'
+    onIdle: activateSleep,
+    enabled: isAdmin && isTabletAuthorized() && pathname !== '/admin' && !isSleepMode
   });
   
   // Protection logic removed to allow SEO indexing
@@ -142,6 +162,11 @@ function AppLayout() {
 
       {!isAdmin && !isCartaRoute && <Footer />}
       <CookieBanner />
+
+      {/* Sleep Mode Overlay */}
+      {isSleepMode && (
+        <SleepModeScreen role={sleepRole} onWake={handleWake} />
+      )}
     </div>
   );
 }
