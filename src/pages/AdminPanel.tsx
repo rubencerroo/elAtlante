@@ -331,7 +331,7 @@ function AdminPanelInner() {
         <table>
           <thead>
             <tr>
-              <th style="width: 60px;">Check</th>
+              <th style="width: 80px;">Control</th>
               <th style="width: 50px;">Hora</th>
               <th style="width: 250px;">Cliente & Contacto</th>
               <th style="text-align: center; width: 50px;">PAX</th>
@@ -348,8 +348,16 @@ function AdminPanelInner() {
               return `
                 <tr>
                   <td style="white-space: nowrap;">
-                    <div class="check-box"></div>
-                    <div class="check-box"></div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                      <div style="text-align: center;">
+                        <div class="check-box"></div>
+                        <div style="font-size: 7px; text-transform: uppercase; margin-top: 2px;">Llegada</div>
+                      </div>
+                      <div style="text-align: center;">
+                        <div class="check-box"></div>
+                        <div style="font-size: 7px; text-transform: uppercase; margin-top: 2px;">Pagado</div>
+                      </div>
+                    </div>
                   </td>
                   <td><span class="time">${r.time}</span></td>
                   <td>
