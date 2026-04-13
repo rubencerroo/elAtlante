@@ -1,12 +1,42 @@
 /**
  * Daily Shift Report — Cloudflare Pages Function
  * GET /test-report  → triggers the report manually for testing
+ * 
+ * Before sending, checks if the restaurant was open today by consulting:
+ *   1. Default OPENING_HOURS (closed on martes/miercoles)
+ *   2. calendar_days table in Supabase (overrides per specific date)
  *
- * Fetches today's reservation data from Supabase and sends
- * a comprehensive summary email to the owner via Brevo.
+ * If the restaurant is closed today, the report is skipped.
  */
 
-async function buildAndSendReport(env: any): Promise<{ success: boolean; data?: any; error?: string }> {
+// ── Restaurant schedule (mirrored from src/utils/reservationUtils.ts) ──
+const OPENING_HOURS = {
+	standard: { start: '12:30', end: '23:00' },
+	sunday:   { start: '12:30', end: '16:30' },
+	closed: ['martes', 'miercoles']  // normalized day names, no accents
+};
+
+function normalizeDayName(date: Date): string {
+	const day = date.toLocaleDateString('es-ES', { weekday: 'long', timeZone: 'Atlantic/Canary' }).toLowerCase();
+	return day.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function getClosingTime(dayName: string): string {
+	if (dayName === 'domingo') return OPENING_HOURS.sunday.end;
+	return OPENING_HOURS.standard.end;
+}
+
+// ── Core report logic ──
+
+interface ReportResult {
+	success: boolean;
+	skipped?: boolean;
+	reason?: string;
+	data?: any;
+	error?: string;
+}
+
+async function buildAndSendReport(env: any, forceEvenIfClosed = false): Promise<ReportResult> {
 	const supabaseUrl = env.VITE_SUPABASE_URL || env.SUPABASE_URL;
 	const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY;
 	const brevoApiKey = env.BREVO_API_KEY || env.VITE_BREVO_API_KEY;
@@ -18,6 +48,12 @@ async function buildAndSendReport(env: any): Promise<{ success: boolean; data?: 
 		return { success: false, error: 'Falta BREVO_API_KEY en el entorno' };
 	}
 
+	const headers = {
+		'apikey': supabaseKey,
+		'Authorization': `Bearer ${supabaseKey}`,
+		'Content-Type': 'application/json'
+	};
+
 	// ── 1. Fecha de hoy (Canarias) ──
 	const canariasTimeStr = new Date().toLocaleString("en-US", { timeZone: "Atlantic/Canary" });
 	const today = new Date(canariasTimeStr);
@@ -25,25 +61,63 @@ async function buildAndSendReport(env: any): Promise<{ success: boolean; data?: 
 	const month = String(today.getMonth() + 1).padStart(2, '0');
 	const day = String(today.getDate()).padStart(2, '0');
 	const todayDateStr = `${year}-${month}-${day}`;
+
+	const dayName = normalizeDayName(today);
 	const dow = today.getDay(); // 0=Sun
 
 	const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 	const monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 	const prettyDate = `${dayNames[dow]}, ${parseInt(day)} de ${monthNames[today.getMonth()]} ${year}`;
 
-	const headers = {
-		'apikey': supabaseKey,
-		'Authorization': `Bearer ${supabaseKey}`,
-		'Content-Type': 'application/json'
-	};
+	// ── 2. Check if restaurant is open today ──
+	// 2a. Check calendar_days overrides in Supabase
+	const overrideQuery = `${supabaseUrl}/rest/v1/calendar_days?date=eq.${todayDateStr}&select=is_closed,slots`;
+	const overrideFetch = await fetch(overrideQuery, { headers });
+	
+	let overrideFound = false;
+	let overrideClosed = false;
+	let overrideSlots: { start: string; end: string }[] | null = null;
 
-	// ── 2. Fetch all reservations for today (full data) ──
+	if (overrideFetch.ok) {
+		const overrideData = await overrideFetch.json() as any[];
+		if (overrideData.length > 0) {
+			overrideFound = true;
+			overrideClosed = overrideData[0].is_closed;
+			overrideSlots = overrideData[0].slots;
+		}
+	}
+
+	// 2b. Determine if closed
+	let isClosed = false;
+	if (overrideFound) {
+		isClosed = overrideClosed;
+	} else {
+		isClosed = OPENING_HOURS.closed.includes(dayName);
+	}
+
+	if (isClosed && !forceEvenIfClosed) {
+		return {
+			success: true,
+			skipped: true,
+			reason: `Restaurante cerrado hoy (${prettyDate}). Reporte no enviado.`
+		};
+	}
+
+	// 2c. Determine closing time for the subject line
+	let closingTime = getClosingTime(dayName);
+	if (overrideFound && !overrideClosed && overrideSlots && overrideSlots.length > 0) {
+		// Use the latest slot end time as closing
+		closingTime = overrideSlots.reduce((latest, slot) => 
+			slot.end > latest ? slot.end : latest, overrideSlots[0].end);
+	}
+
+	// ── 3. Fetch all reservations for today ──
 	const resQuery = `${supabaseUrl}/rest/v1/reservations?date=eq.${todayDateStr}&select=*`;
 	const resFetch = await fetch(resQuery, { headers });
 	if (!resFetch.ok) throw new Error(`Error Supabase Reservas: ${await resFetch.text()}`);
 	const reservations = await resFetch.json() as any[];
 
-	// ── 3. Fetch Shift Notes ──
+	// ── 4. Fetch Shift Notes ──
 	const notesQuery = `${supabaseUrl}/rest/v1/shift_notes?date=eq.${todayDateStr}&select=content`;
 	const notesFetch = await fetch(notesQuery, { headers });
 	let shiftNotes = "";
@@ -54,7 +128,7 @@ async function buildAndSendReport(env: any): Promise<{ success: boolean; data?: 
 		}
 	}
 
-	// ── 4. Calculate metrics ──
+	// ── 5. Calculate metrics ──
 	let totalCovers = 0;
 	let totalReservations = 0;
 	let noShows = 0;
@@ -80,7 +154,6 @@ async function buildAndSendReport(env: any): Promise<{ success: boolean; data?: 
 		} else if (r.status === 'cancelled') {
 			cancelledCount++;
 		} else {
-			// Active covers: confirmed + seated + completed + pending
 			totalCovers += r.guests || 0;
 
 			if (r.status === 'completed') completedCount++;
@@ -98,43 +171,37 @@ async function buildAndSendReport(env: any): Promise<{ success: boolean; data?: 
 			petsCount++;
 		}
 
-		// Hour distribution (for active reservations)
 		if (r.status !== 'cancelled' && r.status !== 'no-show' && r.time) {
 			const hour = r.time.substring(0, 2) + ':00';
 			hourBuckets[hour] = (hourBuckets[hour] || 0) + (r.guests || 0);
 		}
 
-		// Zone/preference distribution
 		if (r.status !== 'cancelled' && r.status !== 'no-show' && r.preference) {
 			zoneCounts[r.preference] = (zoneCounts[r.preference] || 0) + 1;
 		}
 
-		// Tables used
 		if (r.table_number && r.status !== 'cancelled' && r.status !== 'no-show') {
 			tableSet.add(r.table_number);
 		}
 	});
 
-	// Average party size
 	const activeReservations = totalReservations - cancelledCount - noShows;
 	const avgPartySize = activeReservations > 0 ? (totalCovers / activeReservations).toFixed(1) : '0';
 
-	// Peak hour
 	let peakHour = '—';
 	let peakGuests = 0;
 	Object.entries(hourBuckets).forEach(([hour, guests]) => {
 		if (guests > peakGuests) { peakHour = hour; peakGuests = guests; }
 	});
 
-	// Occupancy bar chart (text-based for email)
 	const sortedHours = Object.entries(hourBuckets).sort((a, b) => a[0].localeCompare(b[0]));
 	const maxGuests = Math.max(...Object.values(hourBuckets), 1);
 
-	// ── 5. Fetch yesterday's data for comparison ──
+	// ── 6. Yesterday comparison ──
 	const yesterday = new Date(today);
 	yesterday.setDate(yesterday.getDate() - 1);
 	const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
-	const yQuery = `${supabaseUrl}/rest/v1/reservations?date=eq.${yesterdayStr}&select=guests,status,is_walk_in`;
+	const yQuery = `${supabaseUrl}/rest/v1/reservations?date=eq.${yesterdayStr}&select=guests,status`;
 	const yFetch = await fetch(yQuery, { headers });
 	let yesterdayCovers = 0;
 	if (yFetch.ok) {
@@ -150,7 +217,7 @@ async function buildAndSendReport(env: any): Promise<{ success: boolean; data?: 
 	const coversDiffStr = coversDiff > 0 ? `+${coversDiff}` : `${coversDiff}`;
 	const coversDiffIcon = coversDiff > 0 ? '📈' : coversDiff < 0 ? '📉' : '➡️';
 
-	// ── 6. Build the email HTML ──
+	// ── 7. Build the email HTML ──
 	const hourBarsHtml = sortedHours.map(([hour, guests]) => {
 		const pct = Math.round((guests / maxGuests) * 100);
 		return `
@@ -183,6 +250,7 @@ async function buildAndSendReport(env: any): Promise<{ success: boolean; data?: 
 			<div style="background: linear-gradient(135deg, #1A365D 0%, #2A4A7F 100%); padding: 28px 24px; text-align: center;">
 				<h1 style="margin: 0 0 4px 0; color: white; font-size: 20px; font-weight: 600; letter-spacing: 0.5px;">Resumen del Día</h1>
 				<p style="margin: 0; color: #93B5E0; font-size: 14px;">${prettyDate}</p>
+				<p style="margin: 6px 0 0 0; color: #7BA3D4; font-size: 12px;">Horario: ${OPENING_HOURS.standard.start} – ${closingTime}</p>
 			</div>
 
 			<!-- Main Stats Cards -->
@@ -227,34 +295,13 @@ async function buildAndSendReport(env: any): Promise<{ success: boolean; data?: 
 			<div style="padding: 0 24px 20px;">
 				<h3 style="margin: 0 0 12px 0; font-size: 15px; color: #1A365D; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px;">📋 Desglose de Reservas</h3>
 				<table width="100%" style="font-size: 14px; color: #334155; border-collapse: collapse;">
-					<tr>
-						<td style="padding: 6px 0;">✅ Completadas</td>
-						<td style="padding: 6px 0; text-align: right; font-weight: 600;">${completedCount}</td>
-					</tr>
-					<tr>
-						<td style="padding: 6px 0;">🪑 Sentados ahora</td>
-						<td style="padding: 6px 0; text-align: right; font-weight: 600;">${seatedCount}</td>
-					</tr>
-					<tr>
-						<td style="padding: 6px 0;">🟢 Confirmadas</td>
-						<td style="padding: 6px 0; text-align: right; font-weight: 600;">${confirmedCount}</td>
-					</tr>
-					<tr>
-						<td style="padding: 6px 0;">🟡 Pendientes</td>
-						<td style="padding: 6px 0; text-align: right; font-weight: 600;">${pendingCount}</td>
-					</tr>
-					<tr>
-						<td style="padding: 6px 0;">🚫 Canceladas</td>
-						<td style="padding: 6px 0; text-align: right; font-weight: 600;">${cancelledCount}</td>
-					</tr>
-					<tr>
-						<td style="padding: 6px 0;">🐾 Con mascota</td>
-						<td style="padding: 6px 0; text-align: right; font-weight: 600;">${petsCount}</td>
-					</tr>
-					<tr style="border-top: 1px solid #E2E8F0;">
-						<td style="padding: 8px 0; font-weight: 700; color: #1A365D;">Total reservas</td>
-						<td style="padding: 8px 0; text-align: right; font-weight: 700; color: #1A365D;">${totalReservations}</td>
-					</tr>
+					<tr><td style="padding: 6px 0;">✅ Completadas</td><td style="padding: 6px 0; text-align: right; font-weight: 600;">${completedCount}</td></tr>
+					<tr><td style="padding: 6px 0;">🪑 Sentados ahora</td><td style="padding: 6px 0; text-align: right; font-weight: 600;">${seatedCount}</td></tr>
+					<tr><td style="padding: 6px 0;">🟢 Confirmadas</td><td style="padding: 6px 0; text-align: right; font-weight: 600;">${confirmedCount}</td></tr>
+					<tr><td style="padding: 6px 0;">🟡 Pendientes</td><td style="padding: 6px 0; text-align: right; font-weight: 600;">${pendingCount}</td></tr>
+					<tr><td style="padding: 6px 0;">🚫 Canceladas</td><td style="padding: 6px 0; text-align: right; font-weight: 600;">${cancelledCount}</td></tr>
+					<tr><td style="padding: 6px 0;">🐾 Con mascota</td><td style="padding: 6px 0; text-align: right; font-weight: 600;">${petsCount}</td></tr>
+					<tr style="border-top: 1px solid #E2E8F0;"><td style="padding: 8px 0; font-weight: 700; color: #1A365D;">Total reservas</td><td style="padding: 8px 0; text-align: right; font-weight: 700; color: #1A365D;">${totalReservations}</td></tr>
 				</table>
 			</div>
 
@@ -290,7 +337,7 @@ async function buildAndSendReport(env: any): Promise<{ success: boolean; data?: 
 		</div>
 	`;
 
-	// ── 7. Send via Brevo ──
+	// ── 8. Send via Brevo ──
 	const senderEmail = env.SENDER_EMAIL || 'reservas@elatlantedesancristobal.com';
 	const senderName = env.SENDER_NAME || 'Sistema El Atlante';
 	const ownerEmail = env.OWNER_EMAIL || 'dev@elatlantedesancristobal.com';
@@ -318,6 +365,7 @@ async function buildAndSendReport(env: any): Promise<{ success: boolean; data?: 
 		success: true,
 		data: {
 			date: todayDateStr,
+			closingTime,
 			totalCovers,
 			totalReservations,
 			noShows,
@@ -334,15 +382,35 @@ async function buildAndSendReport(env: any): Promise<{ success: boolean; data?: 
 }
 
 // ── HTTP handler (GET /test-report) ──
+// Manual test: always sends even if closed (forceEvenIfClosed=true)
 export const onRequestGet = async (context: any) => {
 	try {
-		const result = await buildAndSendReport(context.env);
-		if (!result.success) {
-			return new Response(JSON.stringify(result), { status: 500, headers: { 'Content-Type': 'application/json' } });
-		}
-		return new Response(JSON.stringify(result), { headers: { 'Content-Type': 'application/json' } });
+		const result = await buildAndSendReport(context.env, true);
+		return new Response(JSON.stringify(result), {
+			status: result.success ? 200 : 500,
+			headers: { 'Content-Type': 'application/json' }
+		});
 	} catch (error: any) {
 		console.error("Error en test-report:", error.message);
-		return new Response(JSON.stringify({ success: false, error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+		return new Response(JSON.stringify({ success: false, error: error.message }), {
+			status: 500, headers: { 'Content-Type': 'application/json' }
+		});
+	}
+};
+
+// ── CRON handler (called by scheduled trigger) ──
+// Only sends if the restaurant was open today
+export const onRequestPost = async (context: any) => {
+	try {
+		const result = await buildAndSendReport(context.env, false);
+		return new Response(JSON.stringify(result), {
+			status: 200,
+			headers: { 'Content-Type': 'application/json' }
+		});
+	} catch (error: any) {
+		console.error("Error en cron-report:", error.message);
+		return new Response(JSON.stringify({ success: false, error: error.message }), {
+			status: 500, headers: { 'Content-Type': 'application/json' }
+		});
 	}
 };
