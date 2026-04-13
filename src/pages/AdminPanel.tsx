@@ -22,15 +22,7 @@ import { AdminThemeProvider, useAdminTheme } from '../contexts/AdminThemeContext
 import ThemeToggle from '../components/admin/ThemeToggle';
 
 // ── Status config ──
-const STATUS_CONFIG: Record<ReservationStatus, { label: string; color: string; bg: string }> = {
-  'pending':   { label: 'Pendiente',  color: 'text-amber-400',   bg: 'bg-amber-400/10 border-amber-400/20' },
-  'confirmed': { label: 'Confirmada', color: 'text-emerald-400', bg: 'bg-emerald-400/10 border-emerald-400/20' },
-  'seated':    { label: 'Sentados',   color: 'text-blue-400',    bg: 'bg-blue-400/10 border-blue-400/20' },
-  'completed': { label: 'Completada', color: 'text-slate-400',   bg: 'bg-slate-400/10 border-slate-400/20' },
-  'cancelled': { label: 'Cancelada',  color: 'text-red-400',     bg: 'bg-red-400/10 border-red-400/20' },
-  'no-show':   { label: 'No Show',    color: 'text-orange-400',  bg: 'bg-orange-400/10 border-orange-400/20' },
-  'waiting':   { label: 'En Espera', color: 'text-purple-400',  bg: 'bg-purple-400/10 border-purple-400/20' },
-};
+  // Status config removed
 
 type AdminTab = 'kanban' | 'dashboard' | 'crm' | 'staff' | 'feedback' | 'calendar';
 
@@ -224,51 +216,181 @@ function AdminPanelInner() {
   const exportPDF = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
-    const dayReservations = filtered.filter(r => r.status !== 'cancelled');
+    const dayReservations = filtered.filter(r => r.status !== 'cancelled' && r.status !== 'no-show');
+    
     printWindow.document.write(`
-      <html><head><title>Reservas El Atlante - ${filterDate}</title>
-      <style>
-        body { font-family: 'Segoe UI', system-ui, sans-serif; padding: 40px; color: #1e293b; }
-        h1 { font-size: 24px; border-bottom: 2px solid #1e293b; padding-bottom: 8px; }
-        h2 { font-size: 14px; color: #64748b; margin-top: -8px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: #f1f5f9; text-align: left; padding: 10px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #475569; border-bottom: 2px solid #e2e8f0; }
-        td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
-        tr:nth-child(even) { background: #f8fafc; }
-        .status { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
-        .pending { background: #fef3c7; color: #92400e; }
-        .confirmed { background: #d1fae5; color: #065f46; }
-        .seated { background: #dbeafe; color: #1e40af; }
-        .completed { background: #e2e8f0; color: #475569; }
-        .footer { margin-top: 30px; padding-top: 10px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; }
-        .header-logo { height: 60px; margin-bottom: 20px; }
-      </style></head><body>
-      <img src="${window.location.origin}/logoblack.png" alt="Logo" class="header-logo" />
-      <h1>🍽 Reservas El Atlante</h1>
-      <h2>${filterDate} · ${dayReservations.length} reservas · ${dayReservations.reduce((s, r) => s + r.guests, 0)} comensales</h2>
-      <table>
-        <tr><th>Hora</th><th>Nombre</th><th>Comensales</th><th>Mesa</th><th>Preferencia</th><th>Estado</th><th>Notas</th></tr>
-        ${dayReservations.map(r => `<tr>
-          <td><strong>${r.time}</strong></td>
-          <td>${r.name}${r.hasPet ? ' 🐾' : ''}</td>
-          <td>${r.guests}</td>
-          <td>${r.assignedTables && r.assignedTables.length > 0 ? r.assignedTables.join(', ') : (r.tableNumber || '—')}</td>
-          <td>${r.preference}</td>
-          <td><span class="status ${r.status}">${STATUS_CONFIG[r.status].label}</span></td>
-          <td>${r.notes || '—'}</td>
-        </tr>`).join('')}
-      </table>
-      ${shiftNote ? `
-        <div style="margin-top: 30px; background: #fffbeb; border: 1px solid #fde68a; padding: 15px; border-radius: 8px;">
-          <h3 style="margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #92400e; letter-spacing: 0.5px;">💡 Notas del Turno</h3>
-          <p style="margin: 0; font-size: 13px; white-space: pre-wrap; color: #78350f;">${shiftNote}</p>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Reservas El Atlante - ${filterDate}</title>
+        <meta charset="UTF-8">
+        <style>
+          @page { size: A4 portrait; margin: 15mm; }
+          body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            color: #000; 
+            background: #fff; 
+            margin: 0; 
+            padding: 0;
+            font-size: 12px;
+          }
+          .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+          }
+          .header img { height: 50px; filter: grayscale(100%); }
+          .title-area h1 { margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
+          .title-area h2 { margin: 5px 0 0 0; font-size: 14px; font-weight: normal; color: #333; }
+          .metrics { text-align: right; font-size: 14px; font-weight: bold; }
+          
+          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+          th { 
+            background: #f4f4f4; 
+            text-align: left; 
+            padding: 8px; 
+            font-size: 10px; 
+            text-transform: uppercase; 
+            border-bottom: 2px solid #000; 
+            border-top: 2px solid #000;
+          }
+          td { 
+            padding: 8px; 
+            border-bottom: 1px solid #ccc; 
+            vertical-align: top;
+          }
+          tr:nth-child(even) { background: #fafafa; }
+          
+          .check-box {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #000;
+            border-radius: 3px;
+            margin-right: 5px;
+            vertical-align: middle;
+          }
+          
+          .time { font-size: 14px; font-weight: bold; }
+          .pax { font-size: 16px; font-weight: 900; text-align: center; }
+          .table-number { font-size: 16px; font-weight: 900; text-align: center; }
+          
+          .client-name { font-weight: bold; font-size: 13px; display: block; }
+          .client-phone { font-size: 11px; color: #555; display: block; margin-top: 2px; }
+          
+          .badge { 
+            display: inline-block; 
+            padding: 1px 4px; 
+            border: 1px solid #000; 
+            border-radius: 4px; 
+            font-size: 9px; 
+            font-weight: bold;
+            margin-left: 4px;
+            vertical-align: middle;
+          }
+          
+          .notes { font-size: 11px; color: #444; max-width: 250px; }
+          
+          .shift-note {
+            border: 2px dashed #000;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            page-break-inside: avoid;
+          }
+          .shift-note h3 { margin: 0 0 8px 0; font-size: 14px; text-transform: uppercase; }
+          .shift-note p { margin: 0; font-size: 12px; white-space: pre-wrap; }
+          
+          .footer { margin-top: 20px; text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ccc; padding-top: 10px; }
+          
+          @media print {
+            .no-print { display: none; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          }
+        </style>
+      </head>
+      <body>
+        
+        <div class="header">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <img src="${window.location.origin}/logoblack.png" alt="El Atlante" />
+            <div class="title-area">
+              <h1>Planning de Sala</h1>
+              <h2>${new Date(filterDate === 'all' ? new Date().toISOString() : filterDate).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h2>
+            </div>
+          </div>
+          <div class="metrics">
+            <div>${dayReservations.length} Reservas</div>
+            <div>${dayReservations.reduce((s, r) => s + r.guests, 0)} Comensales</div>
+          </div>
         </div>
-      ` : ''}
-      <div class="footer">Generado automáticamente · El Atlante Panel de Administración</div>
-      </body></html>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 60px;">Check</th>
+              <th style="width: 50px;">Hora</th>
+              <th style="width: 250px;">Cliente & Contacto</th>
+              <th style="text-align: center; width: 50px;">PAX</th>
+              <th style="text-align: center; width: 60px;">Mesa</th>
+              <th>Notas / Prefe.</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${dayReservations.map(r => {
+              const profile = clientProfiles.find(c => c.phone === r.phone);
+              const isVIP = profile?.isVIP;
+              const isProblem = profile?.isProblem;
+              
+              return `
+                <tr>
+                  <td style="white-space: nowrap;">
+                    <div class="check-box"></div>
+                    <div class="check-box"></div>
+                  </td>
+                  <td><span class="time">${r.time}</span></td>
+                  <td>
+                    <span class="client-name">
+                      ${r.name}
+                      ${isVIP ? '<span class="badge">★ VIP</span>' : ''}
+                      ${isProblem ? '<span class="badge">⚠️ PROB</span>' : ''}
+                      ${r.hasPet ? '<span class="badge">🐾 MASCOTA</span>' : ''}
+                    </span>
+                    <span class="client-phone">📞 ${r.phone}</span>
+                  </td>
+                  <td class="pax">${r.guests}</td>
+                  <td class="table-number">${r.assignedTables && r.assignedTables.length > 0 ? r.assignedTables.join(',') : (r.tableNumber || '—')}</td>
+                  <td class="notes">
+                    ${r.preference && r.preference !== 'Indiferente' ? `<strong>[${r.preference}]</strong> ` : ''}
+                    ${r.notes || ''}
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+
+        ${shiftNote ? `
+          <div class="shift-note">
+            <h3>📝 Notas del Turno</h3>
+            <p>${shiftNote}</p>
+          </div>
+        ` : ''}
+        
+        <div class="footer">
+          Generado automáticamente — El Atlante Panel de Administración
+        </div>
+        
+        <script>
+          window.onload = function() { window.print(); }
+        </script>
+      </body>
+      </html>
     `);
     printWindow.document.close();
-    printWindow.print();
   };
 
   const logout = async () => { await signOut(); navigate('/admin'); };
@@ -368,7 +490,7 @@ function AdminPanelInner() {
               ➕ Nueva Reserva
             </button>
             <button onClick={exportPDF} className="rounded-xl px-4 py-2.5 text-sm font-medium transition-all flex items-center gap-2" style={{ background: 'var(--admin-bg-elevated)', border: '1px solid var(--admin-border)', color: 'var(--admin-text-secondary)' }}>
-              📄 PDF
+              🖨️ Imprimir Planning
             </button>
           </div>
         </div>
