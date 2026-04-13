@@ -282,7 +282,7 @@ function WaiterPanelInner() {
     <div className="min-h-screen" style={{ background: 'var(--admin-bg)', color: 'var(--admin-text)' }}>
       {/* Top Bar */}
       <header className="sticky top-0 z-50 backdrop-blur-xl border-b" style={{ background: 'var(--admin-header-bg)', borderColor: 'var(--admin-border)' }}>
-        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="max-w-full px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <ThemeToggle />
             <div className="h-7">
@@ -313,7 +313,7 @@ function WaiterPanelInner() {
       </header>
 
       {/* Quick Stats & Notes */}
-      <div className="max-w-3xl mx-auto px-4 py-4 space-y-4">
+      <div className="max-w-full px-6 py-4 space-y-4">
         {shiftNote && (
           <div className="rounded-2xl p-4 flex gap-3" style={{ background: 'var(--admin-bg-elevated)', border: '1px solid var(--admin-border)' }}>
             <span className="text-amber-400 text-lg">💡</span>
@@ -356,7 +356,7 @@ function WaiterPanelInner() {
       </div>
 
       {/* Reservation Cards */}
-      <div className="max-w-3xl mx-auto px-4 pb-28 space-y-3">
+      <div className="max-w-full px-6 pb-28 space-y-3">
         {tab === 'waitlist' ? (
           <WaitListView 
             waitList={grouped.waitlist} 
