@@ -103,12 +103,28 @@ async function buildAndSendReport(env: any, forceEvenIfClosed = false): Promise<
 		};
 	}
 
-	// 2c. Determine closing time for the subject line
+	// 2c. Determine closing time for the subject line and cron check
 	let closingTime = getClosingTime(dayName);
 	if (overrideFound && !overrideClosed && overrideSlots && overrideSlots.length > 0) {
 		// Use the latest slot end time as closing
 		closingTime = overrideSlots.reduce((latest, slot) => 
 			slot.end > latest ? slot.end : latest, overrideSlots[0].end);
+	}
+
+	// 2d. CRON time check: Ensure we are currently approx 30 minutes after closing time
+	if (!forceEvenIfClosed) {
+		const [cHours, cMins] = closingTime.split(':').map(Number);
+		const expectedSendMins = cHours * 60 + cMins + 30; // 30 mins after closing
+		const nowMins = today.getHours() * 60 + today.getMinutes();
+		
+		// If current time is not within a 15 min window of expected time, abort.
+		if (Math.abs(nowMins - expectedSendMins) > 15) {
+			return {
+				success: true,
+				skipped: true,
+				reason: `Aún no es la hora de envío. Cierre hoy: ${closingTime}. Esperando a +30 mins. (Son las ${today.getHours()}:${today.getMinutes()} y espero enviar a las ${Math.floor(expectedSendMins/60)}:${expectedSendMins%60})`
+			};
+		}
 	}
 
 	// ── 3. Fetch all reservations for today ──
