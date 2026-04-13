@@ -2,8 +2,7 @@ name = "el-atlante-email-service"
 main = "src/index.ts"
 compatibility_date = "2024-03-14"
 
-[triggers]
-crons = ["*/15 * * * *"] # 22:30 UTC = 23:30 in Canary Islands / 00:30 in Mainland Spain
+
 
 [vars]
 SUPABASE_URL = "https://sftdoiuqacbenefqewcr.supabase.co"

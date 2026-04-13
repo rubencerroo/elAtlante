@@ -222,9 +222,4 @@ export default {
 
 		return new Response('Not Found', { status: 404 });
 	},
-
-	async scheduled(event: any, env: Env, ctx: any): Promise<void> {
-		// Call the Pages Function which has all the advanced logic and strict timing validation
-		ctx.waitUntil(fetch('https://elatlantedesancristobal.com/test-report', { method: 'POST' }));
-	},
 };
