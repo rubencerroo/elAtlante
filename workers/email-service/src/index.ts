@@ -44,6 +44,111 @@ async function hmacVerify(secret: string, message: string, expectedHmac: string)
 	return result === 0;
 }
 
+async function sendDailyReport(env: Env): Promise<void> {
+	// 1. Get today's date in YYYY-MM-DD
+	// To handle timezones reasonably, we format the current date in Europe/Canaries timezone
+	const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Atlantic/Canary' });
+	const todayParts = formatter.formatToParts(new Date());
+	const year = todayParts.find(p => p.type === 'year')?.value;
+	const month = todayParts.find(p => p.type === 'month')?.value;
+	const day = todayParts.find(p => p.type === 'day')?.value;
+	const todayDateStr = `${year}-${month}-${day}`;
+
+	// 2. Fetch Reservations for today
+	const sbReservationsResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/reservations?date=eq.${todayDateStr}`, {
+		headers: {
+			'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+			'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+		}
+	});
+
+	if (!sbReservationsResponse.ok) {
+		console.error('Failed to fetch reservations', await sbReservationsResponse.text());
+		return;
+	}
+
+	const reservations = await sbReservationsResponse.json() as any[];
+
+	// Calculate metrics
+	let totalCovers = 0;
+	let noShowsCount = 0;
+	let walkInsGuests = 0;
+
+	for (const res of reservations) {
+		if (res.status === 'no-show') {
+			noShowsCount++;
+		}
+		
+		if (res.status === 'completed' || res.status === 'seated' || res.status === 'confirmed') {
+			totalCovers += (res.guests || 0);
+		}
+
+		if (res.is_walk_in === true) {
+			walkInsGuests += (res.guests || 0);
+		}
+	}
+
+	// 3. Fetch Shift Notes for today
+	const sbNotesResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/shift_notes?date=eq.${todayDateStr}`, {
+		headers: {
+			'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+			'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+		}
+	});
+
+	let shiftNotes = "Sin novedades para el turno de hoy.";
+	if (sbNotesResponse.ok) {
+		const notes = await sbNotesResponse.json() as any[];
+		if (notes && notes.length > 0 && notes[0].content) {
+			shiftNotes = notes[0].content;
+		}
+	} else {
+		console.error('Failed to fetch shift notes', await sbNotesResponse.text());
+	}
+
+	// 4. Send Email via Brevo
+	const htmlContent = `
+		<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #334155; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+			<h2 style="color: #0f172a; margin-top: 0;">Resumen del Turno - ${todayDateStr}</h2>
+			<p>Hola, aquí tienes el resumen del turno de hoy:</p>
+			
+			<div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+				<ul style="list-style: none; padding: 0; margin: 0; font-size: 16px; line-height: 1.6;">
+					<li>🍱 <strong>Cubiertos totales de hoy:</strong> ${totalCovers}</li>
+					<li>❌ <strong>No-shows:</strong> ${noShowsCount}</li>
+					<li>🚶 <strong>Walk-ins (comensales):</strong> ${walkInsGuests}</li>
+				</ul>
+			</div>
+
+			<h3 style="color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;">📝 Notas del Turno (Encargado)</h3>
+			<p style="white-space: pre-wrap; background-color: #fefce8; padding: 15px; border-radius: 6px; border-left: 4px solid #facc15; font-style: italic;">"${escapeHtml(shiftNotes)}"</p>
+			
+			<hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0 20px 0;" />
+			<p style="font-size: 0.75rem; color: #94a3b8; text-align: center;">Reporte automático generado por El Atlante</p>
+		</div>
+	`;
+
+	const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
+		method: 'POST',
+		headers: {
+			'api-key': env.BREVO_API_KEY,
+			'content-type': 'application/json',
+		},
+		body: JSON.stringify({
+			sender: { name: env.SENDER_NAME, email: env.SENDER_EMAIL },
+			to: [{ email: env.OWNER_EMAIL }],
+			subject: `Resumen del Turno - El Atlante (${todayDateStr})`,
+			htmlContent: htmlContent,
+		}),
+	});
+
+	if (!brevoResponse.ok) {
+		console.error('Brevo error sending daily report:', await brevoResponse.text());
+	} else {
+		console.log('Daily report sent successfully for', todayDateStr);
+	}
+}
+
 export default {
 	async fetch(request: Request, env: Env): Promise<Response> {
 		const url = new URL(request.url);
@@ -216,6 +321,20 @@ export default {
 			}
 		}
 
+		// 3. Test Report endpoint (hidden)
+		if (url.pathname === '/test-report' && request.method === 'GET') {
+			try {
+				await sendDailyReport(env);
+				return new Response('Test report triggered successfully.', { status: 200, headers: corsHeaders });
+			} catch (error: any) {
+				return new Response('Failed to trigger report: ' + error.message, { status: 500, headers: corsHeaders });
+			}
+		}
+
 		return new Response('Not Found', { status: 404 });
+	},
+
+	async scheduled(event: any, env: Env, ctx: any): Promise<void> {
+		ctx.waitUntil(sendDailyReport(env));
 	},
 };
