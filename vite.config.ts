@@ -55,7 +55,14 @@ export default defineConfig({
         ]
       },
       workbox: {
-        navigateFallbackDenylist: [/^\/assets\/pdf\//]
+        navigateFallbackDenylist: [
+          /^\/assets\/pdf\//,
+          /^\/send-confirmation/,
+          /^\/confirm/,
+          /^\/cancel/,
+          /^\/notify-owner/,
+          /^\/test-report/,
+        ]
       }
     })
   ],
