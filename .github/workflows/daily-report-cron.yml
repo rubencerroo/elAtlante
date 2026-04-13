@@ -14,5 +14,5 @@ jobs:
       - name: Ping Daily Report Endpoint
         run: |
           echo "Pinging Cloudflare Pages function..."
-          curl -X POST https://elatlantedesancristobal.com/test-report
+          curl -X POST https://elatlantedesancristobal.com/api/webhooks/daily-report-trigger
           echo "Done."
