@@ -8,15 +8,7 @@ const rawImages = Object.values(imageModules).map((mod: any) => mod.default);
 export default function AboutSlider() {
   const [isMobile, setIsMobile] = useState(false);
 
-  // Original images
-  const baseImages = useMemo(() => rawImages.length > 0 
-    ? rawImages 
-    : [
-        'https://lh3.googleusercontent.com/aida-public/AB6AXuDHN_4hnzs64uVTD9pNvyjzMd0gmF4u7d9jlcgGRfAeXVF6xYmg615NSyZS8rGp-W024Q6a7_VHAgETZykcP6iOmw5Q_bM7W4ySND3PfvJ0dKZeFEnZF7doKn5ut9QjDorkWL-tX8aPlHIukSpo6etujfLfe3dPBQuh8rfJoeS4UG_U9KSG3Y8sWtncAfSc0vaVFDKhnSKbOSMbQEx7lxCR4ub3_jIV_J89xZN_YklPuNB5zQlixYXbykzNRiO5ihIRGpKeVAtcraQ',
-        'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=1600&h=1000',
-        'https://images.unsplash.com/photo-1498654896293-37aacf113fd9?auto=format&fit=crop&q=80&w=1600&h=1000'
-      ]
-  , []);
+  const baseImages = useMemo(() => rawImages, []);
 
   // For infinite loop: [last, ...images, first]
   const images = useMemo(() => [baseImages[baseImages.length - 1], ...baseImages, baseImages[0]], [baseImages]);
@@ -30,7 +22,7 @@ export default function AboutSlider() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const slideWidth = isMobile ? 85 : 70; // %
+  const slideWidth = isMobile ? 65 : 42; // %
   const numImages = baseImages.length;
 
   const nextSlide = useCallback(() => {
@@ -99,7 +91,7 @@ export default function AboutSlider() {
             return (
               <motion.div
                 key={i}
-                className="flex-shrink-0 relative aspect-[16/9] md:aspect-[21/9] overflow-hidden shadow-2xl bg-slate-100 dark:bg-zinc-900"
+                className="flex-shrink-0 relative aspect-[4/3] md:aspect-[16/10] overflow-hidden shadow-2xl bg-slate-100 dark:bg-zinc-900"
                 style={{ 
                   width: `${slideWidth}%`,
                 }}

@@ -13,6 +13,7 @@ import { getAvailableTimes, isDateValid, getTodayDateString, isDayClosed, isRest
 import { CONTACT_INFO } from '../constants/contact';
 import { getBreadcrumbList } from '../utils/seoStructuredData';
 import type { CalendarOverride } from '../utils/reservationUtils';
+import reservasFondo from '../assets/restaurante-fondo.jpg';
 import { AlertModal } from '../components/AlertModal';
 
 export default function Reservations() {
@@ -319,8 +320,8 @@ export default function Reservations() {
             <div className="absolute inset-0 -z-10">
               <div className="absolute inset-0 bg-primary/5 dark:bg-primary/20 mix-blend-multiply"></div>
               <img
-                src="https://images.unsplash.com/photo-1551244072-5d12893278ab?auto=format&fit=crop&q=80&w=1200"
-                alt="Coastal texture"
+                src={reservasFondo}
+                alt="Fachada del Restaurante El Atlante de San Cristóbal"
                 className="w-full h-full object-cover opacity-30 grayscale"
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background-light/80 to-background-light dark:via-background-dark/80 dark:to-background-dark"></div>
