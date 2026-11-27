@@ -31,3 +31,10 @@ build_output*.txt
 errors.txt
 npm_audit_report.txt
 tsc_output.txt
+# Notas internas
+SEO_improvements.md
+ideas.md
+mejoras.md
+mesas.md
+presentacion_sistema.md
+security_advisor.md
