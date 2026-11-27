@@ -24,3 +24,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Salidas de herramientas
+audit.json
+build_output*.txt
+errors.txt
+npm_audit_report.txt
+tsc_output.txt

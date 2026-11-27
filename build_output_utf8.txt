@@ -1,8 +1,0 @@
-﻿
-> elatlante@0.0.0 build
-> tsc -b && vite build
-
-src/components/Header.tsx(3,32): error TS2307: Cannot find module 'react-i18next' or its corresponding type declarations.
-src/i18n/index.ts(1,18): error TS2307: Cannot find module 'i18next' or its corresponding type declarations.
-src/i18n/index.ts(2,34): error TS2307: Cannot find module 'react-i18next' or its corresponding type declarations.
-src/pages/Home.tsx(3,32): error TS2307: Cannot find module 'react-i18next' or its corresponding type declarations.
