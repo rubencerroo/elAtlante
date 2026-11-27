@@ -7,7 +7,7 @@
 
   **En producción:** https://www.elatlantedesancristobal.com
 
-  <img src="./src/assets/slider/entrada-restaurante.jpg" alt="Entrada del restaurante" width="100%" />
+  <img src="./docs/captura.jpg" alt="Web de El Atlante" width="100%" />
 </div>
 
 ## Qué incluye
